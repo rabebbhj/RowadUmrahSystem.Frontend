@@ -1,0 +1,103 @@
+export interface TripListItem {
+  id: number;
+  travelerId: number;
+  travelerName: string;
+  passportNumber: string;
+  tripType: string;
+  tripDate: string;
+  notes: string | null;
+  createdAt: string;
+  isDeleted: boolean;
+  deletedAt: string | null;
+  deletedBy: string | null;
+}
+
+export interface TripCreateRequest {
+  travelerId: number;
+  tripDate: string;
+  notes: string;
+}
+
+export async function getTrips(search = "", includeDeleted = false): Promise<TripListItem[]> {
+  const params = new URLSearchParams({
+    includeDeleted: String(includeDeleted)
+  });
+
+  if (search.trim()) {
+    params.set("search", search.trim());
+  }
+
+  const response = await fetch(`/api/trips?${params.toString()}`, {
+    credentials: "include"
+  });
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function createTrip(
+  request: TripCreateRequest
+): Promise<TripListItem> {
+  const response = await fetch("/api/trips", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(request)
+  });
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `API error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function archiveTrip(id: number): Promise<TripListItem> {
+  const response = await fetch(`/api/trips/${id}/archive`, {
+    method: "POST",
+    credentials: "include"
+  });
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `API error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function restoreTrip(id: number): Promise<TripListItem> {
+  const response = await fetch(`/api/trips/${id}/restore`, {
+    method: "POST",
+    credentials: "include"
+  });
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `API error: ${response.status}`);
+  }
+
+  return response.json();
+}
