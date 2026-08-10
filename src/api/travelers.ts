@@ -69,6 +69,17 @@ export interface TravelerBlockRequest {
   blockReason: string;
 }
 
+export interface PassportOcrResult {
+  passportNumber: string;
+  fullName: string;
+  nationality: string;
+  gender: string;
+  dateOfBirth: string | null;
+  passportExpiryDate: string | null;
+  mode: "ready" | "demo";
+  message: string;
+}
+
 async function readErrorMessage(response: Response): Promise<string> {
   const contentType = response.headers.get("content-type") ?? "";
 
@@ -192,4 +203,17 @@ export async function restoreTraveler(id: number): Promise<void> {
   });
 
   await requestJson<void>(response);
+}
+
+export async function readPassportOcr(passportImage: File): Promise<PassportOcrResult> {
+  const formData = new FormData();
+  formData.append("passportImage", passportImage);
+
+  const response = await fetch("/api/travelers/read-passport", {
+    method: "POST",
+    credentials: "include",
+    body: formData
+  });
+
+  return requestJson<PassportOcrResult>(response);
 }

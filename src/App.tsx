@@ -1,6 +1,6 @@
 import "./styles.css";
-import UmrahHomePage from "./components/landingpage/UmrahHomePage";
+import LandingPage from "./components/landingpage/LandingPage";
 
 export default function App() {
-  return <UmrahHomePage />;
+  return <LandingPage />;
 }

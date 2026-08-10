@@ -1,4 +1,3 @@
-export { BookingWizard } from "./bookingWizard";
 export { TopBar } from "./TopBar";
 export { MainNavbar } from "./MainNavbar";
 export { HeroSection } from "./HeroSection";
