@@ -379,7 +379,7 @@ img {
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(5, 5, 5, 0.92) 0%, rgba(5, 5, 5, 0.4) 35%, rgba(5, 5, 5, 0.06) 65%, rgba(5, 5, 5, 0.02) 100%),
-    url("/umrah/hero-bg.jpg") center right / cover no-repeat;
+    url("/landingpage/kaaba.png") center right / cover no-repeat;
   box-shadow: var(--shadow), var(--glow);
 }
 
