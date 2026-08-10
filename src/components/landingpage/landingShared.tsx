@@ -45,6 +45,15 @@ export function CalendarIcon({ className }: IconProps) {
   );
 }
 
+export function ClockIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M12 7.8v4.8l3.2 2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </SvgIcon>
+  );
+}
+
 export function WhatsAppIcon({ className }: IconProps) {
   return (
     <SvgIcon className={className}>

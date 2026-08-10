@@ -8,16 +8,16 @@ export function MainNavbar({
 }: {
   menuOpen: boolean;
   onToggle: () => void;
-  onNavigate: (target: "home" | "booking" | "services" | "footer") => void;
-  currentView: "home" | "booking";
+  onNavigate: (target: "home" | "booking" | "services" | "contact" | "about" | "corporate" | "footer") => void;
+  currentView: "home" | "booking" | "contact" | "about" | "corporate" | "services";
 }) {
   const navItems = [
     { label: "الرئيسية", target: "home" as const },
     { label: "رحلات العمرة", target: "booking" as const },
     { label: "خدماتنا", target: "services" as const },
-    { label: "عروض الشركات", target: "booking" as const },
-    { label: "من نحن", target: "footer" as const },
-    { label: "تواصل معنا", target: "footer" as const }
+    { label: "عروض الشركات", target: "corporate" as const },
+    { label: "من نحن", target: "about" as const },
+    { label: "تواصل معنا", target: "contact" as const }
   ];
 
   return (
@@ -34,7 +34,7 @@ export function MainNavbar({
             <button
               key={item.label}
               type="button"
-              className={`nav-link ${currentView === "booking" && item.target === "booking" ? "is-active" : ""}`}
+              className={`nav-link ${currentView === item.target ? "is-active" : ""}`}
               onClick={() => onNavigate(item.target)}
             >
               {item.label}
