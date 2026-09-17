@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { readPassportOcr } from "../../api/travelers";
+import { readCivilIdOcr, readPassportOcr } from "../../api/travelers";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -26,6 +26,10 @@ import {
 
 type BookingStep = 1 | 2 | 3 | 4;
 type OcrState = "idle" | "reading" | "ready" | "demo" | "error";
+
+function toDateInputValue(value: string | null | undefined) {
+  return value ? value.slice(0, 10) : "";
+}
 
 const BOOKING_WIZARD_SERVICES: BookingService[] = [
   ...BOOKING_SERVICES,
@@ -191,6 +195,7 @@ export function BookingWizard({
   const [passportPreview, setPassportPreview] = useState<string | null>(null);
   const [idPreview, setIdPreview] = useState<string | null>(null);
   const [ocrState, setOcrState] = useState<OcrState>("idle");
+  const [idOcrState, setIdOcrState] = useState<OcrState>("idle");
   const [serviceIds, setServiceIds] = useState<string[]>(["insurance", "support"]);
   const [submitState, setSubmitState] = useState<"idle" | "sending" | "done">("idle");
 
@@ -238,8 +243,8 @@ export function BookingWizard({
         fullName: result.fullName || current.fullName,
         nationality: result.nationality || current.nationality,
         gender: result.gender || current.gender,
-        dateOfBirth: result.dateOfBirth || current.dateOfBirth,
-        passportExpiryDate: result.passportExpiryDate || current.passportExpiryDate
+        dateOfBirth: toDateInputValue(result.dateOfBirth) || current.dateOfBirth,
+        passportExpiryDate: toDateInputValue(result.passportExpiryDate) || current.passportExpiryDate
       }));
       setOcrState(result.mode === "demo" ? "demo" : "ready");
     } catch {
@@ -247,10 +252,28 @@ export function BookingWizard({
     }
   }
 
-  function handleIdUpload(file?: File) {
+  async function handleIdUpload(file?: File) {
     if (!file) return;
     if (idPreview) URL.revokeObjectURL(idPreview);
     setIdPreview(URL.createObjectURL(file));
+    setIdOcrState("reading");
+
+    try {
+      const result = await readCivilIdOcr(file);
+      setForm((current) => ({
+        ...current,
+        residenceNumber: result.civilId || current.residenceNumber,
+        passportNumber: result.passportNumber || current.passportNumber,
+        fullName: result.fullName || current.fullName,
+        nationality: result.nationality || current.nationality,
+        gender: result.gender || current.gender,
+        dateOfBirth: toDateInputValue(result.dateOfBirth) || current.dateOfBirth,
+        passportExpiryDate: toDateInputValue(result.passportExpiryDate) || current.passportExpiryDate
+      }));
+      setIdOcrState(result.mode === "demo" ? "demo" : "ready");
+    } catch {
+      setIdOcrState("error");
+    }
   }
 
   function goNext() {
