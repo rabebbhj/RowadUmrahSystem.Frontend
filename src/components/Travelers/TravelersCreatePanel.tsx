@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from "react";
 import type { AuthUser } from "../../api/auth";
-import { createTraveler } from "../../api/travelers";
+import { createTraveler, readPassportOcr } from "../../api/travelers";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
 
 type TravelersCreatePanelProps = {
@@ -9,6 +9,28 @@ type TravelersCreatePanelProps = {
   onNavigate: (path: string) => void;
   onLogout: () => void;
 };
+
+function toDateInputValue(value: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  return value.slice(0, 10);
+}
+
+function toGenderInputValue(value: string) {
+  const normalized = value.trim().toLowerCase();
+
+  if (normalized === "m" || normalized === "male" || normalized === "ذكر") {
+    return "M";
+  }
+
+  if (normalized === "f" || normalized === "female" || normalized === "أنثى") {
+    return "F";
+  }
+
+  return value;
+}
 
 export function TravelersCreatePanel({ user, activePath, onNavigate, onLogout }: TravelersCreatePanelProps) {
   const [passportNumber, setPassportNumber] = useState("");
@@ -27,28 +49,9 @@ export function TravelersCreatePanel({ user, activePath, onNavigate, onLogout }:
 
   const preview = useMemo(() => passportPreview, [passportPreview]);
 
-  async function readPassportToken() {
-    const response = await fetch("/Travelers/Create", {
-      credentials: "include"
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to prepare passport OCR");
-    }
-
-    const html = await response.text();
-    const token = html.match(/name="__RequestVerificationToken"[^>]*value="([^"]+)"/i)?.[1];
-
-    if (!token) {
-      throw new Error("Unable to read anti-forgery token");
-    }
-
-    return token;
-  }
-
   async function handleReadPassport() {
     if (!passportImage) {
-      setError("الرجاء اختيار صورة الجواز أولاً.");
+      setError("الرجاء اختيار صورة الجواز أولا.");
       return;
     }
 
@@ -56,44 +59,25 @@ export function TravelersCreatePanel({ user, activePath, onNavigate, onLogout }:
     setError(null);
 
     try {
-      const token = await readPassportToken();
-      const formData = new FormData();
-      formData.append("__RequestVerificationToken", token);
-      formData.append("passportImage", passportImage);
+      const result = await readPassportOcr(passportImage);
 
-      const response = await fetch("/Travelers/ReadPassport", {
-        method: "POST",
-        credentials: "include",
-        body: formData
-      });
+      setPassportNumber(result.passportNumber ?? "");
+      setFullName(result.fullName ?? "");
+      setNationality(result.nationality ?? "");
+      setGender(toGenderInputValue(result.gender ?? ""));
+      setDateOfBirth(toDateInputValue(result.dateOfBirth));
+      setPassportExpiryDate(toDateInputValue(result.passportExpiryDate));
 
-      if (!response.ok) {
-        throw new Error("Failed to read passport");
+      if (result.message) {
+        setError(result.mode === "demo" ? result.message : null);
       }
-
-      const html = await response.text();
-      const parser = new DOMParser();
-      const document = parser.parseFromString(html, "text/html");
-
-      const readValue = (name: string) => document.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[name="${name}"]`)?.value ?? "";
-
-      setPassportNumber(readValue("PassportNumber"));
-      setFullName(readValue("FullName"));
-      setNationality(readValue("Nationality"));
-      setGender(readValue("Gender"));
-      setDateOfBirth(readValue("DateOfBirth"));
-      setPassportExpiryDate(readValue("PassportExpiryDate"));
-      setPhoneNumber(readValue("PhoneNumber"));
-      setEmail(readValue("Email"));
-      setNotes(readValue("Notes"));
-      setPassportPreview(readValue("PassportImagePath") || passportPreview);
     } catch (error) {
       if (error instanceof Error && error.message === "UNAUTHORIZED") {
         onLogout();
         return;
       }
 
-      setError(error instanceof Error ? error.message : "Failed to read passport");
+      setError(error instanceof Error ? error.message : "تعذر قراءة بيانات الجواز.");
     } finally {
       setSaving(false);
     }
@@ -105,6 +89,11 @@ export function TravelersCreatePanel({ user, activePath, onNavigate, onLogout }:
     setError(null);
 
     try {
+      if (!phoneNumber.trim()) {
+        setError("رقم الهاتف مطلوب.");
+        return;
+      }
+
       const formData = new FormData();
       formData.append("PassportNumber", passportNumber);
       formData.append("FullName", fullName);
@@ -162,21 +151,29 @@ export function TravelersCreatePanel({ user, activePath, onNavigate, onLogout }:
                   <h4 className="section-title">صورة الجواز</h4>
 
                   <div className="mb-3">
-                    <label className="form-label">رفع صورة الجواز</label>
-                    <input
-                      type="file"
-                      name="passportImage"
-                      className="form-control"
-                      accept=".jpg,.jpeg,.png,.webp"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0] ?? null;
-                        setPassportImage(file);
-                        if (passportPreview) {
-                          URL.revokeObjectURL(passportPreview);
-                        }
-                        setPassportPreview(file ? URL.createObjectURL(file) : null);
-                      }}
-                    />
+                    <label className="form-label" htmlFor="passportImageInput">
+                      رفع صورة الجواز
+                    </label>
+                    <div className="rowad-file-picker">
+                      <input
+                        id="passportImageInput"
+                        type="file"
+                        name="passportImage"
+                        accept=".jpg,.jpeg,.png,.webp"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0] ?? null;
+                          setPassportImage(file);
+                          if (passportPreview) {
+                            URL.revokeObjectURL(passportPreview);
+                          }
+                          setPassportPreview(file ? URL.createObjectURL(file) : null);
+                        }}
+                      />
+                      <label htmlFor="passportImageInput" className="btn btn-outline-gold">
+                        اختيار صورة
+                      </label>
+                      <span>{passportImage ? passportImage.name : "لم يتم اختيار ملف"}</span>
+                    </div>
                   </div>
 
                   <button type="button" className="btn btn-outline-gold w-100 mb-3" onClick={() => void handleReadPassport()}>

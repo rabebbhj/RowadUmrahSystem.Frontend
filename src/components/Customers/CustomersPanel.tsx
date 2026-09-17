@@ -57,7 +57,7 @@ export function CustomersPanel({ user, activePath, onNavigate, onLogout }: Custo
           return;
         }
 
-        setError(error instanceof Error ? error.message : "Failed to load customers");
+        setError(error instanceof Error ? error.message : "تعذر تحميل العملاء");
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -88,7 +88,7 @@ export function CustomersPanel({ user, activePath, onNavigate, onLogout }: Custo
         return;
       }
 
-      setError(error instanceof Error ? error.message : "Unable to update customer");
+      setError(error instanceof Error ? error.message : "تعذر تحديث حالة العميل");
     } finally {
       setTogglingCustomerId(null);
     }
@@ -101,9 +101,9 @@ export function CustomersPanel({ user, activePath, onNavigate, onLogout }: Custo
       <main className="main-panel">
         <header className="hero">
           <div>
-            <span className="eyebrow">Accounting React</span>
-            <h2>Customers</h2>
-            <p>Manage customer profiles linked to travelers with React + TypeScript.</p>
+            <span className="eyebrow">المحاسبة</span>
+            <h2>العملاء</h2>
+            <p>إدارة ملفات العملاء وربطها ببيانات المسافرين داخل النظام.</p>
           </div>
 
           <form
@@ -117,16 +117,16 @@ export function CustomersPanel({ user, activePath, onNavigate, onLogout }: Custo
               type="text"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search name, civil ID, passport or email"
+              placeholder="بحث بالاسم أو الرقم المدني أو الجواز أو البريد"
             />
 
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as CustomerStatusFilter)}>
-              <option value="all">All statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="all">كل الحالات</option>
+              <option value="active">فعال</option>
+              <option value="inactive">معطل</option>
             </select>
 
-            <button type="submit">Search</button>
+            <button type="submit">بحث</button>
 
             <button
               type="button"
@@ -137,57 +137,57 @@ export function CustomersPanel({ user, activePath, onNavigate, onLogout }: Custo
                 setStatusFilter("all");
               }}
             >
-              Reset
+              إعادة
             </button>
 
             <button type="button" className="ghost" onClick={() => onNavigate("/customers/create")}>
-              New customer
+              عميل جديد
             </button>
           </form>
         </header>
 
         <section className="stats-grid">
           <article className="stat-card">
-            <span>Total</span>
+            <span>الإجمالي</span>
             <strong>{stats.total}</strong>
           </article>
           <article className="stat-card">
-            <span>Active</span>
+            <span>العملاء الفعالون</span>
             <strong>{stats.active}</strong>
           </article>
           <article className="stat-card">
-            <span>Inactive</span>
+            <span>العملاء المعطلون</span>
             <strong>{stats.inactive}</strong>
           </article>
           <article className="stat-card">
-            <span>Linked travelers</span>
+            <span>مرتبطون بمسافرين</span>
             <strong>{stats.linked}</strong>
           </article>
         </section>
 
         <section className="content-card">
           <div className="content-card-header">
-            <h3>Customers list</h3>
-            <span>{searchTerm ? `Filter: ${searchTerm}` : "All customers"}</span>
+            <h3>قائمة العملاء</h3>
+            <span>{searchTerm ? `بحث: ${searchTerm}` : "كل العملاء"}</span>
           </div>
 
           {error && <div className="state-box error">{error}</div>}
-          {loading && <div className="state-box">Loading customers...</div>}
-          {!loading && !error && customers.length === 0 && <div className="state-box">No customers found.</div>}
+          {loading && <div className="state-box">جاري تحميل العملاء...</div>}
+          {!loading && !error && customers.length === 0 && <div className="state-box">لا توجد عملاء مطابقون.</div>}
 
           {!loading && !error && customers.length > 0 && (
             <div className="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Civil ID</th>
-                    <th>Passport</th>
-                    <th>Phone</th>
-                    <th>Traveler</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th>Actions</th>
+                    <th>الاسم</th>
+                    <th>الرقم المدني</th>
+                    <th>الجواز</th>
+                    <th>الهاتف</th>
+                    <th>المسافر المرتبط</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الإنشاء</th>
+                    <th>الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -207,10 +207,10 @@ export function CustomersPanel({ user, activePath, onNavigate, onLogout }: Custo
                       <td>
                         <div className="row-actions">
                           <button type="button" className="ghost-row" onClick={() => onNavigate(`/customers/${item.id}`)}>
-                            View
+                            عرض
                           </button>
                           <button type="button" className="ghost-row" onClick={() => onNavigate(`/customers/${item.id}/edit`)}>
-                            Edit
+                            تعديل
                           </button>
                           <button
                             type="button"
@@ -218,7 +218,7 @@ export function CustomersPanel({ user, activePath, onNavigate, onLogout }: Custo
                             disabled={togglingCustomerId === item.id}
                             onClick={() => void handleToggleStatus(item.id)}
                           >
-                            {item.isActive ? "Deactivate" : "Activate"}
+                            {item.isActive ? "تعطيل" : "تفعيل"}
                           </button>
                         </div>
                       </td>

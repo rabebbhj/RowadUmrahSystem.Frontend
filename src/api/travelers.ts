@@ -80,6 +80,10 @@ export interface PassportOcrResult {
   message: string;
 }
 
+export interface CivilIdOcrResult extends PassportOcrResult {
+  civilId: string;
+}
+
 async function readErrorMessage(response: Response): Promise<string> {
   const contentType = response.headers.get("content-type") ?? "";
 
@@ -94,8 +98,25 @@ async function readErrorMessage(response: Response): Promise<string> {
         return data.message;
       }
 
+      if (data && data.errors && typeof data.errors === "object") {
+        const messages = Object.entries(data.errors)
+          .flatMap(([field, value]) => {
+            const label = getArabicFieldLabel(field);
+            const values = Array.isArray(value) ? value : [value];
+
+            return values
+              .filter((item): item is string => typeof item === "string")
+              .map((message) => translateValidationMessage(label, message));
+          })
+          .filter(Boolean);
+
+        if (messages.length > 0) {
+          return messages.join("\n");
+        }
+      }
+
       if (data && typeof data.title === "string") {
-        return data.title;
+        return translateProblemTitle(data.title, response.status);
       }
     } catch {
       // Fallback to text below.
@@ -103,7 +124,55 @@ async function readErrorMessage(response: Response): Promise<string> {
   }
 
   const text = await response.text();
-  return text || `API error: ${response.status}`;
+  return text || translateProblemTitle("", response.status);
+}
+
+function getArabicFieldLabel(field: string): string {
+  const normalized = field.replace(/^.*\./, "");
+
+  const labels: Record<string, string> = {
+    PassportNumber: "رقم الجواز",
+    FullName: "الاسم الكامل",
+    Nationality: "الجنسية",
+    Gender: "الجنس",
+    DateOfBirth: "تاريخ الميلاد",
+    PassportExpiryDate: "تاريخ انتهاء الجواز",
+    PhoneNumber: "رقم الهاتف",
+    Email: "البريد الإلكتروني",
+    Notes: "الملاحظات"
+  };
+
+  return labels[normalized] ?? "هذا الحقل";
+}
+
+function translateValidationMessage(fieldLabel: string, message: string): string {
+  const lower = message.toLowerCase();
+
+  if (lower.includes("field is required") || lower.includes("is required")) {
+    return `${fieldLabel} مطلوب.`;
+  }
+
+  if (lower.includes("not a valid e-mail") || lower.includes("not a valid email")) {
+    return "البريد الإلكتروني غير صحيح.";
+  }
+
+  return message;
+}
+
+function translateProblemTitle(title: string, status: number): string {
+  if (title === "One or more validation errors occurred." || status === 400) {
+    return "يرجى مراجعة البيانات المدخلة وتصحيح الحقول المطلوبة.";
+  }
+
+  if (status === 401) {
+    return "انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.";
+  }
+
+  if (status === 403) {
+    return "ليس لديك صلاحية لتنفيذ هذه العملية.";
+  }
+
+  return "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.";
 }
 
 async function requestJson<T>(response: Response): Promise<T> {
@@ -216,4 +285,17 @@ export async function readPassportOcr(passportImage: File): Promise<PassportOcrR
   });
 
   return requestJson<PassportOcrResult>(response);
+}
+
+export async function readCivilIdOcr(civilIdImage: File): Promise<CivilIdOcrResult> {
+  const formData = new FormData();
+  formData.append("civilIdImage", civilIdImage);
+
+  const response = await fetch("/api/travelers/read-civil-id", {
+    method: "POST",
+    credentials: "include",
+    body: formData
+  });
+
+  return requestJson<CivilIdOcrResult>(response);
 }

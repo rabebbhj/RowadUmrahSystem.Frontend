@@ -29,41 +29,40 @@ export function LoginPanel({
     <div className="auth-shell">
       <section className="auth-hero">
         <div className="brand">
-          <div className="brand-badge">R</div>
+          <div className="brand-badge">ر</div>
           <div>
-            <div className="brand-title">Rowad Umrah</div>
-            <div className="brand-subtitle">ASP.NET Core + React</div>
+            <div className="brand-title">رواد العمرة</div>
+            <div className="brand-subtitle">نظام الإدارة الذكي</div>
           </div>
         </div>
 
-        <h1>Login to the new React front</h1>
+        <h1>تسجيل الدخول</h1>
         <p>
-          The backend remains ASP.NET Core. React only handles the UI and calls
-          the API routes.
+          أدخل بيانات حسابك للوصول إلى لوحة إدارة رواد العمرة.
         </p>
 
         <div className="auth-points">
           <div>
-            <span>Backend API</span>
+            <span>واجهة النظام</span>
             <strong>/api/auth</strong>
           </div>
           <div>
-            <span>Data API</span>
+            <span>مسار البيانات</span>
             <strong>/api/travelers</strong>
           </div>
         </div>
       </section>
 
       <section className="auth-card">
-        <span className="eyebrow">Authentication</span>
-        <h2>Sign in</h2>
+        <span className="eyebrow">المصادقة</span>
+        <h2>دخول المستخدم</h2>
 
         {authError && <div className="state-box error">{authError}</div>}
         {error && <div className="state-box error">{error}</div>}
 
         <form className="auth-form" onSubmit={onSubmit}>
           <label>
-            Email
+            البريد الإلكتروني
             <input
               type="email"
               value={email}
@@ -73,7 +72,7 @@ export function LoginPanel({
           </label>
 
           <label>
-            Password
+            كلمة المرور
             <input
               type="password"
               value={password}
@@ -88,16 +87,16 @@ export function LoginPanel({
               checked={rememberMe}
               onChange={(event) => onRememberMeChange(event.target.checked)}
             />
-            Remember me
+            تذكرني
           </label>
 
           <button type="submit" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
           </button>
         </form>
 
         <div className="auth-footer">
-          <p>Test account: admin@rowad.local / Admin@12345</p>
+          <p>حساب التجربة: admin@rowad.local / Admin@12345</p>
         </div>
       </section>
     </div>

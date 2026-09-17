@@ -132,7 +132,7 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
           return;
         }
 
-        setError(error instanceof Error ? error.message : "Failed to load bank accounts");
+        setError(error instanceof Error ? error.message : "تعذر تحميل الحسابات البنكية");
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -175,7 +175,7 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
           return;
         }
 
-        setSelectedError(error instanceof Error ? error.message : "Failed to load bank account");
+        setSelectedError(error instanceof Error ? error.message : "تعذر تحميل بيانات الحساب البنكي");
         setSelectedBankAccount(null);
       } finally {
         if (!cancelled) {
@@ -220,7 +220,7 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
 
     try {
       const updated = await toggleBankAccountStatus(id);
-      setActionMessage(updated.isActive ? `Bank account ${updated.bankName} activated.` : `Bank account ${updated.bankName} deactivated.`);
+      setActionMessage(updated.isActive ? `تم تفعيل الحساب ${updated.bankName}.` : `تم تعطيل الحساب ${updated.bankName}.`);
       setRefreshToken((value) => value + 1);
       setSelectedBankAccountId(updated.id);
     } catch (error) {
@@ -229,7 +229,7 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
         return;
       }
 
-      setActionMessage(error instanceof Error ? error.message : "Unable to update bank account");
+      setActionMessage(error instanceof Error ? error.message : "تعذر تحديث الحساب البنكي");
     } finally {
       setTogglingBankAccountId(null);
     }
@@ -257,7 +257,7 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
           ? await updateBankAccount(editingBankAccountId, payload)
           : await createBankAccount(payload);
 
-      setFormMessage(mode === "edit" ? "Bank account updated successfully." : "Bank account created successfully.");
+      setFormMessage(mode === "edit" ? "تم تحديث الحساب البنكي بنجاح." : "تم إنشاء الحساب البنكي بنجاح.");
       setSelectedBankAccountId(saved.id);
       setRefreshToken((value) => value + 1);
 
@@ -284,7 +284,7 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
         return;
       }
 
-      setFormError(error instanceof Error ? error.message : "Failed to save bank account");
+      setFormError(error instanceof Error ? error.message : "تعذر حفظ الحساب البنكي");
     } finally {
       setFormLoading(false);
     }
@@ -296,9 +296,9 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
       <main className="main-panel">
         <header className="hero">
           <div>
-            <span className="eyebrow">Accounting React</span>
-            <h2>Bank Accounts</h2>
-            <p>Manage bank accounts and cash boxes from the new React front while keeping the backend rules in ASP.NET Core.</p>
+            <span className="eyebrow">المحاسبة</span>
+            <h2>البنوك والصناديق</h2>
+            <p>إدارة الحسابات البنكية والصناديق النقدية داخل النظام.</p>
           </div>
 
           <form
@@ -312,14 +312,14 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
               type="text"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search bank, account number or IBAN"
+              placeholder="بحث باسم البنك أو رقم الحساب أو الآيبان"
             />
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as BankAccountStatusFilter)}>
-              <option value="all">All statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="all">كل الحالات</option>
+              <option value="active">فعال</option>
+              <option value="inactive">معطل</option>
             </select>
-            <button type="submit">Search</button>
+            <button type="submit">بحث</button>
             <button
               type="button"
               className="ghost"
@@ -329,37 +329,37 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
                 setStatusFilter("all");
               }}
             >
-              Reset
+              إعادة
             </button>
             <button type="button" className="ghost" onClick={beginCreate}>
-              New bank account
+              حساب بنكي جديد
             </button>
           </form>
         </header>
 
         <section className="stats-grid">
           <article className="stat-card">
-            <span>Total</span>
+            <span>الإجمالي</span>
             <strong>{stats.total}</strong>
           </article>
           <article className="stat-card">
-            <span>Active</span>
+            <span>الحسابات الفعالة</span>
             <strong>{stats.active}</strong>
           </article>
           <article className="stat-card">
-            <span>Cash boxes</span>
+            <span>الصناديق النقدية</span>
             <strong>{stats.cashBoxes}</strong>
           </article>
           <article className="stat-card">
-            <span>Opening balance</span>
+            <span>الرصيد الافتتاحي</span>
             <strong>{stats.totalOpeningBalance.toFixed(3)}</strong>
           </article>
         </section>
 
         <section className="content-card">
           <div className="content-card-header">
-            <h3>{mode === "edit" ? "Edit bank account" : "Create bank account"}</h3>
-            <span>{mode === "edit" ? "Update an existing bank account" : "Add a new bank account"}</span>
+            <h3>{mode === "edit" ? "تعديل حساب بنكي" : "إضافة حساب بنكي"}</h3>
+            <span>{mode === "edit" ? "تحديث بيانات حساب موجود" : "تسجيل حساب بنكي جديد"}</span>
           </div>
 
           {formError && <div className="state-box error">{formError}</div>}
@@ -369,16 +369,16 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
 
           <form className="account-form bank-account-form" onSubmit={handleSubmit}>
             <label>
-              Bank name
+              اسم البنك
               <input
                 type="text"
                 value={form.bankName}
                 onChange={(event) => setForm((current) => ({ ...current, bankName: event.target.value }))}
-                placeholder="Al Rajhi Bank"
+                placeholder="مثال: بنك الراجحي"
               />
             </label>
             <label>
-              Account number
+              رقم الحساب
               <input
                 type="text"
                 value={form.accountNumber}
@@ -398,7 +398,7 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
               />
             </label>
             <label>
-              Opening balance
+              الرصيد الافتتاحي
               <input
                 type="number"
                 step="0.001"
@@ -414,7 +414,7 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
                 checked={form.isCashBox}
                 onChange={(event) => setForm((current) => ({ ...current, isCashBox: event.target.checked }))}
               />
-              Cash box
+              صندوق نقدي
             </label>
             <label className="checkbox-row account-full">
               <input
@@ -422,15 +422,15 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
                 checked={form.isActive}
                 onChange={(event) => setForm((current) => ({ ...current, isActive: event.target.checked }))}
               />
-              Account active
+              الحساب فعال
             </label>
             <div className="account-form-actions account-full">
               <button type="submit" className="btn btn-gold" disabled={formLoading}>
-                {formLoading ? "Saving..." : mode === "edit" ? "Save changes" : "Create account"}
+                {formLoading ? "جاري الحفظ..." : mode === "edit" ? "حفظ التعديلات" : "إنشاء الحساب"}
               </button>
               {mode === "edit" && (
                 <button type="button" className="ghost-row" onClick={beginCreate}>
-                  Cancel edit
+                  إلغاء التعديل
                 </button>
               )}
             </div>
@@ -439,13 +439,13 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
 
         <section className="content-card">
           <div className="content-card-header">
-            <h3>Bank accounts list</h3>
-            <span>{searchTerm ? `Filter: ${searchTerm}` : "All bank accounts"}</span>
+            <h3>قائمة الحسابات البنكية</h3>
+            <span>{searchTerm ? `بحث: ${searchTerm}` : "كل الحسابات البنكية"}</span>
           </div>
 
-          {loading && <div className="state-box">Loading bank accounts...</div>}
+          {loading && <div className="state-box">جاري تحميل الحسابات البنكية...</div>}
           {!loading && !error && filteredBankAccounts.length === 0 && (
-            <div className="state-box">No bank accounts found.</div>
+            <div className="state-box">لا توجد حسابات بنكية مطابقة.</div>
           )}
 
           {!loading && !error && filteredBankAccounts.length > 0 && (
@@ -453,14 +453,14 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
               <table>
                 <thead>
                   <tr>
-                    <th>Bank</th>
-                    <th>Account number</th>
+                    <th>البنك</th>
+                    <th>رقم الحساب</th>
                     <th>IBAN</th>
-                    <th>Opening balance</th>
-                    <th>Cash box</th>
-                    <th>Status</th>
-                    <th>Transactions</th>
-                    <th>Actions</th>
+                    <th>الرصيد الافتتاحي</th>
+                    <th>صندوق نقدي</th>
+                    <th>الحالة</th>
+                    <th>الحركات</th>
+                    <th>الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -472,20 +472,20 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
                       <td>{item.accountNumber || "-"}</td>
                       <td>{item.iban || "-"}</td>
                       <td>{item.openingBalance.toFixed(3)}</td>
-                      <td>{item.isCashBox ? "Yes" : "No"}</td>
+                      <td>{item.isCashBox ? "نعم" : "لا"}</td>
                       <td>
                         <span className={item.isActive ? "pill success" : "pill danger"}>
-                          {item.isActive ? "Active" : "Inactive"}
+                          {item.isActive ? "فعال" : "معطل"}
                         </span>
                       </td>
                       <td>{item.transactionCount}</td>
                       <td>
                         <div className="row-actions">
                           <button type="button" className="ghost-row" onClick={() => setSelectedBankAccountId(item.id)}>
-                            View
+                            عرض
                           </button>
                           <button type="button" className="ghost-row" onClick={() => beginEdit(item)}>
-                            Edit
+                            تعديل
                           </button>
                           <button
                             type="button"
@@ -493,7 +493,7 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
                             disabled={togglingBankAccountId === item.id}
                             onClick={() => void handleToggleStatus(item.id)}
                           >
-                            {item.isActive ? "Deactivate" : "Activate"}
+                            {item.isActive ? "تعطيل" : "تفعيل"}
                           </button>
                         </div>
                       </td>
@@ -507,26 +507,26 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
 
         <section className="content-card">
           <div className="content-card-header">
-            <h3>Bank account details</h3>
-            <span>{selectedBankAccount ? selectedBankAccount.bankName : "Select a bank account"}</span>
+            <h3>تفاصيل الحساب البنكي</h3>
+            <span>{selectedBankAccount ? selectedBankAccount.bankName : "اختر حساباً بنكياً"}</span>
           </div>
 
-          {selectedLoading && <div className="state-box">Loading details...</div>}
+          {selectedLoading && <div className="state-box">جاري تحميل التفاصيل...</div>}
           {selectedError && <div className="state-box error">{selectedError}</div>}
 
           {!selectedLoading && !selectedBankAccount && (
-            <div className="state-box">Select a bank account from the table to see its details.</div>
+            <div className="state-box">اختر حساباً بنكياً من الجدول لعرض تفاصيله.</div>
           )}
 
           {selectedBankAccount && (
             <>
               <div className="account-summary-box">
                 <div className="account-summary-row">
-                  <span>Bank name</span>
+                  <span>اسم البنك</span>
                   <strong>{selectedBankAccount.bankName}</strong>
                 </div>
                 <div className="account-summary-row">
-                  <span>Account number</span>
+                  <span>رقم الحساب</span>
                   <strong>{selectedBankAccount.accountNumber || "-"}</strong>
                 </div>
                 <div className="account-summary-row">
@@ -534,49 +534,49 @@ export function BankAccountsPanel({ user, activePath, onNavigate, onLogout }: Ba
                   <strong>{selectedBankAccount.iban || "-"}</strong>
                 </div>
                 <div className="account-summary-row">
-                  <span>Opening balance</span>
+                  <span>الرصيد الافتتاحي</span>
                   <strong>{selectedBankAccount.openingBalance.toFixed(3)}</strong>
                 </div>
                 <div className="account-summary-row">
-                  <span>Cash box</span>
-                  <strong>{selectedBankAccount.isCashBox ? "Yes" : "No"}</strong>
+                  <span>صندوق نقدي</span>
+                  <strong>{selectedBankAccount.isCashBox ? "نعم" : "لا"}</strong>
                 </div>
                 <div className="account-summary-row">
-                  <span>Status</span>
-                  <strong>{selectedBankAccount.isActive ? "Active" : "Inactive"}</strong>
+                  <span>الحالة</span>
+                  <strong>{selectedBankAccount.isActive ? "فعال" : "معطل"}</strong>
                 </div>
                 <div className="account-summary-row">
-                  <span>Transactions</span>
+                  <span>الحركات</span>
                   <strong>{selectedBankAccount.transactionCount}</strong>
                 </div>
                 <div className="account-summary-row">
-                  <span>Created</span>
+                  <span>تاريخ الإنشاء</span>
                   <strong>{formatDateTime(selectedBankAccount.createdAt)}</strong>
                 </div>
               </div>
 
               <div className="section-title-row">
-                <h3>Recent transactions</h3>
-                <span>Last {selectedBankAccount.recentTransactions.length} items</span>
+                <h3>آخر الحركات</h3>
+                <span>عدد الحركات: {selectedBankAccount.recentTransactions.length}</span>
               </div>
 
               <div className="table-wrap">
                 <table>
                   <thead>
                     <tr>
-                      <th>Date</th>
-                      <th>Type</th>
-                      <th>Amount</th>
-                      <th>Reference</th>
-                      <th>Description</th>
-                      <th>Journal</th>
+                      <th>التاريخ</th>
+                      <th>النوع</th>
+                      <th>المبلغ</th>
+                      <th>المرجع</th>
+                      <th>الوصف</th>
+                      <th>القيد</th>
                     </tr>
                   </thead>
                   <tbody>
                     {selectedBankAccount.recentTransactions.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="text-center">
-                          No transactions found.
+                          لا توجد حركات مسجلة.
                         </td>
                       </tr>
                     ) : (

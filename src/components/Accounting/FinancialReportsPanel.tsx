@@ -37,7 +37,7 @@ export function FinancialReportsPanel({ user, activePath, onNavigate, onLogout }
                   <h3>صفحة التقارير</h3>
                   <p>هذه الصفحة جاهزة للربط مع تقارير الميزان والأرباح والخسائر عند تجهيزها.</p>
                 </div>
-                <span className="accounting-panel-badge">Coming soon</span>
+                <span className="accounting-panel-badge">قريباً</span>
               </div>
 
               <div className="accounting-summary-row">

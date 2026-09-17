@@ -111,7 +111,7 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
           return;
         }
 
-        setLookupsError(error instanceof Error ? error.message : "Failed to load expenses lookups");
+        setLookupsError(error instanceof Error ? error.message : "تعذر تحميل بيانات المصاريف المساعدة");
       } finally {
         if (!cancelled) {
           setLookupsLoading(false);
@@ -163,7 +163,7 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
           return;
         }
 
-        setError(error instanceof Error ? error.message : "Failed to load expenses");
+        setError(error instanceof Error ? error.message : "تعذر تحميل المصاريف");
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -205,7 +205,7 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
           return;
         }
 
-        setSelectedError(error instanceof Error ? error.message : "Failed to load expense details");
+        setSelectedError(error instanceof Error ? error.message : "تعذر تحميل تفاصيل المصروف");
       } finally {
         if (!cancelled) {
           setSelectedLoading(false);
@@ -230,17 +230,17 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
       const amount = Number(formAmount);
 
       if (!formCategory.trim()) {
-        setCreateError("Category is required.");
+        setCreateError("التصنيف مطلوب.");
         return;
       }
 
       if (!formTitle.trim()) {
-        setCreateError("Title is required.");
+        setCreateError("العنوان مطلوب.");
         return;
       }
 
       if (!Number.isFinite(amount) || amount <= 0) {
-        setCreateError("Amount must be greater than zero.");
+        setCreateError("يجب أن يكون المبلغ أكبر من صفر.");
         return;
       }
 
@@ -255,7 +255,7 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
         notes: formNotes
       });
 
-      setCreateSuccess(`Expense #${result.id} created successfully.`);
+      setCreateSuccess(`تم إنشاء المصروف رقم ${result.id} بنجاح.`);
       setSelectedExpenseId(result.id);
       setRefreshToken((value) => value + 1);
       setFormTitle("");
@@ -267,7 +267,7 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
         return;
       }
 
-      setCreateError(error instanceof Error ? error.message : "Failed to create expense");
+      setCreateError(error instanceof Error ? error.message : "تعذر إنشاء المصروف");
     } finally {
       setCreateLoading(false);
     }
@@ -306,11 +306,10 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
       <main className="main-panel">
         <header className="hero">
           <div>
-            <span className="eyebrow">Accounting React</span>
-            <h2>Expenses</h2>
+            <span className="eyebrow">المحاسبة</span>
+            <h2>المصاريف</h2>
             <p>
-              Track operating expenses from the new React front while the ASP.NET Core backend keeps
-              the accounting data and permissions.
+              تسجيل ومتابعة مصاريف التشغيل والرحلات وربطها بالحسابات والقيود المحاسبية.
             </p>
           </div>
 
@@ -325,44 +324,44 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
               type="text"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search by category, title, notes, bank or trip"
+              placeholder="بحث بالتصنيف أو العنوان أو الملاحظات أو البنك أو الرحلة"
             />
             <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
             <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
             <select value={bankAccountId} onChange={(event) => setBankAccountId(event.target.value)}>
-              <option value="">All bank accounts</option>
+              <option value="">كل الحسابات البنكية</option>
               {lookups?.bankAccounts.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.label}
                 </option>
               ))}
             </select>
-            <button type="submit">Search</button>
+            <button type="submit">بحث</button>
             <button type="button" className="ghost" onClick={handleResetFilters}>
-              Reset
+              إعادة
             </button>
           </form>
         </header>
 
         <section className="stats-grid">
           <article className="stat-card">
-            <span>Total expenses</span>
+            <span>عدد المصاريف</span>
             <strong>{expenses.length}</strong>
           </article>
           <article className="stat-card">
-            <span>Total amount</span>
+            <span>إجمالي المبلغ</span>
             <strong>{expenseStats.totalAmount.toFixed(3)}</strong>
           </article>
           <article className="stat-card">
-            <span>Linked to trips</span>
+            <span>مرتبطة برحلات</span>
             <strong>{expenseStats.linkedToTrips}</strong>
           </article>
         </section>
 
         <section className="content-card">
           <div className="content-card-header">
-            <h3>New expense</h3>
-            <span>{lookupsLoading ? "Loading lookups..." : "Ready to create"}</span>
+            <h3>مصروف جديد</h3>
+            <span>{lookupsLoading ? "جاري تحميل البيانات..." : "جاهز للإضافة"}</span>
           </div>
 
           {lookupsError && <div className="state-box error">{lookupsError}</div>}
@@ -371,7 +370,7 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
 
           <form className="invoice-form" onSubmit={handleCreateExpense}>
             <label>
-              Expense date
+              تاريخ المصروف
               <input
                 type="date"
                 value={formExpenseDate}
@@ -380,27 +379,27 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
             </label>
 
             <label>
-              Category
+              التصنيف
               <input
                 type="text"
                 value={formCategory}
                 onChange={(event) => setFormCategory(event.target.value)}
-                placeholder="Transport, hotel, office..."
+                placeholder="نقل، فندق، مكتب..."
               />
             </label>
 
             <label>
-              Title
+              العنوان
               <input
                 type="text"
                 value={formTitle}
                 onChange={(event) => setFormTitle(event.target.value)}
-                placeholder="Expense description"
+                placeholder="وصف المصروف"
               />
             </label>
 
             <label>
-              Amount
+              المبلغ
               <input
                 type="number"
                 step="0.001"
@@ -412,7 +411,7 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
             </label>
 
             <label>
-              Payment method
+              طريقة الدفع
               <select
                 value={formPaymentMethod}
                 onChange={(event) => setFormPaymentMethod(Number(event.target.value) as PaymentMethod)}
@@ -429,12 +428,12 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
             </label>
 
             <label>
-              Bank account
+              الحساب البنكي
               <select
                 value={formBankAccountId}
                 onChange={(event) => setFormBankAccountId(event.target.value)}
               >
-                <option value="">No bank account</option>
+                <option value="">بدون حساب بنكي</option>
                 {lookups?.bankAccounts.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.label}
@@ -444,9 +443,9 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
             </label>
 
             <label>
-              Trip
+              الرحلة
               <select value={formTripId} onChange={(event) => setFormTripId(event.target.value)}>
-                <option value="">No trip</option>
+                <option value="">بدون رحلة</option>
                 {lookups?.trips.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.label}
@@ -456,20 +455,20 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
             </label>
 
             <label className="invoice-full">
-              Notes
+              الملاحظات
               <textarea
                 value={formNotes}
                 onChange={(event) => setFormNotes(event.target.value)}
-                placeholder="Optional notes"
+                placeholder="ملاحظات اختيارية"
               />
             </label>
 
             <div className="invoice-form-actions invoice-full">
               <button type="submit" disabled={createLoading}>
-                {createLoading ? "Saving..." : "Create expense"}
+                {createLoading ? "جاري الحفظ..." : "إنشاء المصروف"}
               </button>
               <button type="button" className="ghost-row" onClick={handleResetForm}>
-                Reset form
+                إعادة النموذج
               </button>
             </div>
           </form>
@@ -477,16 +476,16 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
 
         <section className="content-card">
           <div className="content-card-header">
-            <h3>Expenses list</h3>
-            <span>{loading ? "Loading..." : `${expenses.length} items`}</span>
+            <h3>قائمة المصاريف</h3>
+            <span>{loading ? "جاري التحميل..." : `عدد السجلات: ${expenses.length}`}</span>
           </div>
 
-          {loading && <div className="state-box">Loading expenses...</div>}
+          {loading && <div className="state-box">جاري تحميل المصاريف...</div>}
 
           {!loading && error && <div className="state-box error">{error}</div>}
 
           {!loading && !error && expenses.length === 0 && (
-            <div className="state-box">No expenses found for the current filters.</div>
+            <div className="state-box">لا توجد مصاريف مطابقة للفلاتر الحالية.</div>
           )}
 
           {!loading && !error && expenses.length > 0 && (
@@ -494,15 +493,15 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
               <table>
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Title</th>
-                    <th>Amount</th>
-                    <th>Method</th>
-                    <th>Bank account</th>
-                    <th>Trip</th>
-                    <th>Journal</th>
-                    <th>Actions</th>
+                    <th>التاريخ</th>
+                    <th>التصنيف</th>
+                    <th>العنوان</th>
+                    <th>المبلغ</th>
+                    <th>الطريقة</th>
+                    <th>الحساب البنكي</th>
+                    <th>الرحلة</th>
+                    <th>القيد</th>
+                    <th>الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -529,7 +528,7 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
                             className="ghost-row"
                             onClick={() => setSelectedExpenseId(item.id)}
                           >
-                            View
+                            عرض
                           </button>
                         </div>
                       </td>
@@ -543,16 +542,16 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
 
         <section className="content-card">
           <div className="content-card-header">
-            <h3>Expense details</h3>
-            <span>{selectedExpense ? `#${selectedExpense.id}` : "No selection"}</span>
+            <h3>تفاصيل المصروف</h3>
+            <span>{selectedExpense ? `#${selectedExpense.id}` : "لا يوجد اختيار"}</span>
           </div>
 
-          {selectedLoading && <div className="state-box">Loading expense details...</div>}
+          {selectedLoading && <div className="state-box">جاري تحميل تفاصيل المصروف...</div>}
 
           {selectedError && <div className="state-box error">{selectedError}</div>}
 
           {!selectedLoading && !selectedError && !selectedExpense && (
-            <div className="state-box">Select an expense from the list to see its details.</div>
+            <div className="state-box">اختر مصروفاً من القائمة لعرض تفاصيله.</div>
           )}
 
           {selectedExpense && (
@@ -560,82 +559,82 @@ export function ExpensesPanel({ user, activePath, onNavigate, onLogout }: Expens
               <div className="invoice-details-grid">
                 <div className="invoice-summary-box">
                   <div className="invoice-summary-row">
-                    <span>Expense date</span>
+                    <span>تاريخ المصروف</span>
                     <strong>{formatDate(selectedExpense.expenseDate)}</strong>
                   </div>
                   <div className="invoice-summary-row">
-                    <span>Created at</span>
+                    <span>تاريخ الإنشاء</span>
                     <strong>{formatDateTime(selectedExpense.createdAt)}</strong>
                   </div>
                   <div className="invoice-summary-row">
-                    <span>Category</span>
+                    <span>التصنيف</span>
                     <strong>{selectedExpense.category}</strong>
                   </div>
                   <div className="invoice-summary-row">
-                    <span>Title</span>
+                    <span>العنوان</span>
                     <strong>{selectedExpense.title}</strong>
                   </div>
                 </div>
 
                 <div className="invoice-summary-box">
                   <div className="invoice-summary-row">
-                    <span>Amount</span>
+                    <span>المبلغ</span>
                     <strong>{selectedExpense.amount.toFixed(3)}</strong>
                   </div>
                   <div className="invoice-summary-row">
-                    <span>Payment method</span>
+                    <span>طريقة الدفع</span>
                     <strong>{paymentMethodLabel(selectedExpense.paymentMethod)}</strong>
                   </div>
                   <div className="invoice-summary-row">
-                    <span>Bank account</span>
+                    <span>الحساب البنكي</span>
                     <strong>{selectedExpense.bankAccountName || "-"}</strong>
                   </div>
                   <div className="invoice-summary-row">
-                    <span>Trip</span>
+                    <span>الرحلة</span>
                     <strong>{selectedExpense.tripLabel || "-"}</strong>
                   </div>
                 </div>
 
                 <div className="invoice-summary-box">
                   <div className="invoice-summary-row">
-                    <span>Journal entry</span>
+                    <span>القيد اليومي</span>
                     <strong>{selectedExpense.journalEntryNumber || "-"}</strong>
                   </div>
                   <div className="invoice-summary-row">
-                    <span>Journal date</span>
+                    <span>تاريخ القيد</span>
                     <strong>
                       {selectedExpense.journalEntryDate ? formatDate(selectedExpense.journalEntryDate) : "-"}
                     </strong>
                   </div>
                   <div className="invoice-summary-row">
-                    <span>Posted</span>
-                    <strong>{selectedExpense.journalEntryIsPosted ? "Yes" : "No"}</strong>
+                    <span>مرحل</span>
+                    <strong>{selectedExpense.journalEntryIsPosted ? "نعم" : "لا"}</strong>
                   </div>
                   <div className="invoice-summary-row">
-                    <span>Journal link</span>
+                    <span>رابط القيد</span>
                     <strong>{selectedExpense.journalEntryId ? `#${selectedExpense.journalEntryId}` : "-"}</strong>
                   </div>
                 </div>
               </div>
 
               <div className="section-title-row">
-                <h3>Notes</h3>
-                <span>{selectedExpense.notes ? "Has notes" : "No notes"}</span>
+                <h3>الملاحظات</h3>
+                <span>{selectedExpense.notes ? "توجد ملاحظات" : "لا توجد ملاحظات"}</span>
               </div>
               <div className="state-box">
-                {selectedExpense.notes ? selectedExpense.notes : "No notes available."}
+                {selectedExpense.notes ? selectedExpense.notes : "لا توجد ملاحظات مسجلة."}
               </div>
 
               <div className="section-title-row">
-                <h3>Journal status</h3>
-                <span>{selectedExpense.journalEntryId ? "Linked" : "Not linked"}</span>
+                <h3>حالة القيد</h3>
+                <span>{selectedExpense.journalEntryId ? "مرتبط" : "غير مرتبط"}</span>
               </div>
               {selectedExpense.journalEntryId ? (
                 <div className="state-box">
-                  {selectedExpense.journalEntryDescription || "Journal entry linked with no description."}
+                  {selectedExpense.journalEntryDescription || "يوجد قيد مرتبط بدون وصف."}
                 </div>
               ) : (
-                <div className="state-box">No journal entry linked to this expense.</div>
+                <div className="state-box">لا يوجد قيد يومي مرتبط بهذا المصروف.</div>
               )}
             </>
           )}

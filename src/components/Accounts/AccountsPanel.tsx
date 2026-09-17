@@ -87,7 +87,7 @@ export function AccountsPanel({ user, activePath, onNavigate, onLogout }: Accoun
           return;
         }
 
-        setError(error instanceof Error ? error.message : "Failed to load accounts");
+        setError(error instanceof Error ? error.message : "تعذر تحميل الحسابات");
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -151,7 +151,7 @@ export function AccountsPanel({ user, activePath, onNavigate, onLogout }: Accoun
         return;
       }
 
-      setActionMessage(error instanceof Error ? error.message : "Unable to update account");
+      setActionMessage(error instanceof Error ? error.message : "تعذر تحديث الحساب");
     }
   }
 

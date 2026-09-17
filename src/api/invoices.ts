@@ -152,17 +152,17 @@ export function invoiceStatusLabel(status: InvoiceStatus): string {
 export function paymentMethodLabel(method: PaymentMethod): string {
   switch (method) {
     case PaymentMethod.Cash:
-      return "Cash";
+      return "نقدي";
     case PaymentMethod.BankTransfer:
-      return "Bank transfer";
+      return "تحويل بنكي";
     case PaymentMethod.KNet:
       return "KNet";
     case PaymentMethod.Visa:
       return "Visa";
     case PaymentMethod.Cheque:
-      return "Cheque";
+      return "شيك";
     case PaymentMethod.Other:
-      return "Other";
+      return "أخرى";
     default:
       return "Unknown";
   }
