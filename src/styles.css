@@ -1353,6 +1353,30 @@ img {
   border: 1px solid rgba(228, 184, 102, 0.34);
 }
 
+.gv-smart-extract {
+  position: relative;
+  z-index: 2;
+  min-height: 36px;
+  margin-top: 4px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #f3d27b, #c99331);
+  color: #0d0b08;
+  font-weight: 900;
+}
+
+.gv-ocr-status {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(201, 155, 72, 0.28);
+  border-radius: 10px;
+  background: rgba(7, 16, 24, 0.08);
+  color: #6f4d18;
+  text-align: center;
+  font-weight: 900;
+}
+
 .gv-reservation__form {
   display: grid;
   gap: 12px;

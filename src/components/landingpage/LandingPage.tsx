@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { readCivilIdOcr, readPassportOcr } from "../../api/travelers";
 import {
   BusIcon,
   CalendarIcon,
@@ -97,6 +98,9 @@ export default function LandingPage() {
   const [selectedBookingTitle, setSelectedBookingTitle] = useState("");
   const [passportPreview, setPassportPreview] = useState<string | null>(null);
   const [idPreview, setIdPreview] = useState<string | null>(null);
+  const [passportFile, setPassportFile] = useState<File | null>(null);
+  const [idFile, setIdFile] = useState<File | null>(null);
+  const [ocrStatus, setOcrStatus] = useState("");
 
   useEffect(() => {
     document.documentElement.lang = "ar";
@@ -162,13 +166,45 @@ export default function LandingPage() {
   const updatePassportFile = (file?: File) => {
     if (!file) return;
     if (passportPreview) URL.revokeObjectURL(passportPreview);
+    setPassportFile(file);
     setPassportPreview(URL.createObjectURL(file));
   };
 
   const updateIdFile = (file?: File) => {
     if (!file) return;
     if (idPreview) URL.revokeObjectURL(idPreview);
+    setIdFile(file);
     setIdPreview(URL.createObjectURL(file));
+  };
+
+  const extractPassportData = async () => {
+    if (!passportFile) {
+      setOcrStatus("الرجاء إضافة صورة جواز السفر أولاً.");
+      return;
+    }
+
+    setOcrStatus("جارٍ استخراج بيانات جواز السفر...");
+    try {
+      const result = await readPassportOcr(passportFile);
+      setOcrStatus(result.mode === "demo" ? result.message : "تم استخراج بيانات جواز السفر بنجاح.");
+    } catch (error) {
+      setOcrStatus(error instanceof Error ? error.message : "تعذر استخراج بيانات جواز السفر.");
+    }
+  };
+
+  const extractIdData = async () => {
+    if (!idFile) {
+      setOcrStatus("الرجاء إضافة صورة بطاقة الهوية أولاً.");
+      return;
+    }
+
+    setOcrStatus("جارٍ استخراج بيانات بطاقة الهوية...");
+    try {
+      const result = await readCivilIdOcr(idFile);
+      setOcrStatus(result.mode === "demo" ? result.message : "تم استخراج بيانات بطاقة الهوية بنجاح.");
+    } catch (error) {
+      setOcrStatus(error instanceof Error ? error.message : "تعذر استخراج بيانات بطاقة الهوية.");
+    }
   };
 
   return (
@@ -289,10 +325,10 @@ export default function LandingPage() {
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation();
-                      openBookingSection(program.badge);
+                      openPackageView(program.type);
                     }}
                   >
-                    حجز
+                    عرض التفاصيل
                   </button>
                 </div>
               </div>
@@ -357,6 +393,9 @@ export default function LandingPage() {
                 <strong>إضافة جواز السفر</strong>
                 <span>ارفع صورة جواز السفر</span>
                 {passportPreview ? <img src={passportPreview} alt="معاينة جواز السفر" /> : null}
+                <button type="button" className="gv-smart-extract" onClick={(event) => { event.preventDefault(); event.stopPropagation(); void extractPassportData(); }}>
+                  استخراج ذكي
+                </button>
               </label>
 
               <label className="gv-upload-card">
@@ -365,6 +404,9 @@ export default function LandingPage() {
                 <strong>إضافة بطاقة الهوية</strong>
                 <span>ارفع صورة بطاقة الهوية</span>
                 {idPreview ? <img src={idPreview} alt="معاينة بطاقة الهوية" /> : null}
+                <button type="button" className="gv-smart-extract" onClick={(event) => { event.preventDefault(); event.stopPropagation(); void extractIdData(); }}>
+                  استخراج ذكي
+                </button>
               </label>
 
               <div className="gv-reservation__form">
@@ -383,6 +425,7 @@ export default function LandingPage() {
                 <button type="button">تأكيد طلب الحجز</button>
               </div>
             </div>
+            {ocrStatus ? <div className="gv-ocr-status">{ocrStatus}</div> : null}
           </section>
         </div>
       )}
