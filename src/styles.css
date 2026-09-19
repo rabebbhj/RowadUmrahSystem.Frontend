@@ -893,15 +893,60 @@ img {
   font-size: 13px;
 }
 
-.gv-search small {
+.gv-search select,
+.gv-search input {
+  width: 100%;
+  min-height: 30px;
+  padding: 0 0 7px;
+  border: 0;
+  border-bottom: 1px solid #e8ded0;
+  border-radius: 0;
+  background: transparent;
   color: #a29a8e;
   font-size: 13px;
-  border-bottom: 1px solid #e8ded0;
-  padding-bottom: 8px;
+  font-family: inherit;
+  text-align: right;
+  outline: none;
+}
+
+.gv-search select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #b98a39 50%), linear-gradient(135deg, #b98a39 50%, transparent 50%);
+  background-position: left 8px top 12px, left 3px top 12px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.gv-search input {
+  direction: rtl;
+}
+
+.gv-search select:focus,
+.gv-search input:focus {
+  border-bottom-color: #c99b48;
+  color: #31271c;
 }
 
 .gv-packages {
   padding: 16px 0 22px;
+}
+
+.gv-packages__header {
+  position: relative;
+}
+
+.gv-packages__header > button {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(201, 155, 72, 0.45);
+  background: #fff;
+  color: #9a6a1e;
+  font-weight: 800;
 }
 
 .gv-packages h2,
@@ -930,6 +975,17 @@ img {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 22px;
+}
+
+.gv-empty {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid rgba(201, 155, 72, 0.34);
+  border-radius: 8px;
+  background: #fff;
+  color: #6e5a3d;
+  text-align: center;
+  font-weight: 800;
 }
 
 .gv-card {

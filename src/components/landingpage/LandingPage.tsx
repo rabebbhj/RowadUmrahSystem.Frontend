@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BusIcon,
   CalendarIcon,
@@ -20,21 +20,30 @@ const packages = [
     image: "/landingpage/lit.png",
     price: "2,490",
     hotel: "فنادق 3 نجوم",
-    flight: "طيران مباشر"
+    flight: "طيران مباشر",
+    people: "1-2",
+    city: "مكة",
+    duration: "7"
   },
   {
     badge: "مميزة",
     image: "/landingpage/chambre.png",
     price: "4,590",
     hotel: "فنادق 4 نجوم",
-    flight: "طيران مباشر"
+    flight: "طيران مباشر",
+    people: "3-4",
+    city: "مكة والمدينة",
+    duration: "10"
   },
   {
     badge: "VIP",
     image: "/landingpage/dormir.png",
     price: "7,990",
     hotel: "فنادق 5 نجوم",
-    flight: "طيران مباشر"
+    flight: "طيران مباشر",
+    people: "5+",
+    city: "المدينة",
+    duration: "14"
   }
 ];
 
@@ -47,7 +56,20 @@ const services = [
   { icon: <UsersIcon className="icon icon-md" />, title: "مجموعات صغيرة", text: "خدمة أفضل واهتمام أكبر" }
 ];
 
+const emptyFilters = {
+  people: "",
+  city: "",
+  duration: "",
+  startDate: ""
+};
+
+type Filters = typeof emptyFilters;
+type FilterName = keyof Filters;
+
 export default function LandingPage() {
+  const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const [submittedFilters, setSubmittedFilters] = useState<Filters>(emptyFilters);
+
   useEffect(() => {
     document.documentElement.lang = "ar";
     document.documentElement.dir = "rtl";
@@ -57,6 +79,34 @@ export default function LandingPage() {
       document.body.classList.remove("umrah-body");
     };
   }, []);
+
+  const filteredPackages = useMemo(() => {
+    return packages.filter((program) => {
+      return (
+        (!submittedFilters.people || program.people === submittedFilters.people) &&
+        (!submittedFilters.city || program.city === submittedFilters.city) &&
+        (!submittedFilters.duration || program.duration === submittedFilters.duration)
+      );
+    });
+  }, [submittedFilters]);
+
+  const hasActiveFilters = Boolean(
+    submittedFilters.people || submittedFilters.city || submittedFilters.duration || submittedFilters.startDate
+  );
+
+  const updateFilter = (name: FilterName, value: string) => {
+    setFilters((current) => ({ ...current, [name]: value }));
+  };
+
+  const submitFilters = () => {
+    setSubmittedFilters(filters);
+    document.getElementById("gv-packages")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const resetFilters = () => {
+    setFilters(emptyFilters);
+    setSubmittedFilters(emptyFilters);
+  };
 
   return (
     <main className="globalview-page" dir="rtl" lang="ar">
@@ -92,27 +142,64 @@ export default function LandingPage() {
           <HeadsetIcon className="icon" />
           <strong>خدمة عملاء</strong>
           <b>24/7</b>
-          <span>لا تتواصل معنا في خدمتك</span>
+          <span>نحن معك قبل الرحلة وأثناءها وبعدها</span>
         </aside>
       </section>
 
-      <section className="gv-search">
-        <button type="button">
+      <section className="gv-search" aria-label="فلترة باقات العمرة">
+        <button type="button" onClick={submitFilters}>
           <SearchIcon className="icon icon-sm" />
           بحث
         </button>
-        {["عدد المعتمرين", "المدينة", "المدة", "تاريخ الانطلاق"].map((item) => (
-          <label key={item}>
-            <span>{item}</span>
-            <small>{item === "تاريخ الانطلاق" ? "اختر التاريخ" : item === "المدة" ? "اختر المدة" : item === "المدينة" ? "اختر المدينة" : "اختر العدد"}</small>
-          </label>
-        ))}
+        <label>
+          <span>عدد المعتمرين</span>
+          <select value={filters.people} onChange={(event) => updateFilter("people", event.target.value)}>
+            <option value="">اختر العدد</option>
+            <option value="1-2">1 - 2</option>
+            <option value="3-4">3 - 4</option>
+            <option value="5+">5 وأكثر</option>
+          </select>
+        </label>
+        <label>
+          <span>المدينة</span>
+          <select value={filters.city} onChange={(event) => updateFilter("city", event.target.value)}>
+            <option value="">اختر المدينة</option>
+            <option value="مكة">مكة</option>
+            <option value="المدينة">المدينة</option>
+            <option value="مكة والمدينة">مكة والمدينة</option>
+          </select>
+        </label>
+        <label>
+          <span>المدة</span>
+          <select value={filters.duration} onChange={(event) => updateFilter("duration", event.target.value)}>
+            <option value="">اختر المدة</option>
+            <option value="7">7 ليالي</option>
+            <option value="10">10 ليالي</option>
+            <option value="14">14 ليلة</option>
+          </select>
+        </label>
+        <label>
+          <span>تاريخ الانطلاق</span>
+          <input
+            type="date"
+            value={filters.startDate}
+            min={new Date().toISOString().split("T")[0]}
+            onChange={(event) => updateFilter("startDate", event.target.value)}
+          />
+        </label>
       </section>
 
-      <section className="gv-packages">
-        <h2>أفضل باقات العمرة</h2>
+      <section className="gv-packages" id="gv-packages">
+        <div className="gv-packages__header">
+          <h2>أفضل باقات العمرة</h2>
+          {hasActiveFilters && (
+            <button type="button" onClick={resetFilters}>
+              إلغاء الفلتر
+            </button>
+          )}
+        </div>
         <div className="gv-package-grid">
-          {packages.map((program) => (
+          {filteredPackages.map((program) => (
             <article className="gv-card" key={program.badge}>
               <div className="gv-card__media" style={{ backgroundImage: `url(${program.image})` }}>
                 <span>{program.badge}</span>
@@ -132,6 +219,9 @@ export default function LandingPage() {
             </article>
           ))}
         </div>
+        {filteredPackages.length === 0 && (
+          <div className="gv-empty">لا توجد باقات مطابقة لهذا البحث. جرّب تعديل المدينة أو المدة.</div>
+        )}
       </section>
 
       <section className="gv-services">
