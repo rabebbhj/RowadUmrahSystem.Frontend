@@ -35,7 +35,7 @@ import { JournalEntriesPanel } from "./components/JournalEntries/JournalEntriesP
 import { ReceiptVouchersPanel } from "./components/ReceiptVouchers/ReceiptVouchersPanel";
 import { PaymentVouchersPanel } from "./components/PaymentVouchers/PaymentVouchersPanel";
 
-const publicPaths = new Set(["/", "/services", "/about", "/corporate", "/contact"]);
+const publicPaths = new Set(["/", "/globalview"]);
 
 function currentPath() {
   return window.location.pathname || "/";
