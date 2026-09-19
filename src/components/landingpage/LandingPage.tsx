@@ -18,6 +18,7 @@ import {
 const packages = [
   {
     badge: "الرحلات",
+    type: "travel",
     image: "/landingpage/avion.png",
     price: "2,490",
     features: ["حجوزات طيران", "حجوزات فنادق", "تنظيم الجولات", "دعم مباشر"],
@@ -27,6 +28,7 @@ const packages = [
   },
   {
     badge: "التأشيرات",
+    type: "visa",
     image: "/landingpage/mains.png",
     price: "490",
     features: ["تأشيرات سياحية", "حجز المواعيد", "متابعة الطلب", "استشارات السفر"],
@@ -36,6 +38,7 @@ const packages = [
   },
   {
     badge: "برامج الشركات",
+    type: "corporate",
     image: "/landingpage/reunion.png",
     price: "7,990",
     features: ["رحلات عمل", "حجوزات جماعية", "تنظيم الفعاليات", "خدمة مخصصة"],
@@ -50,6 +53,21 @@ const packageFeatureIcons = [
   <BusIcon className="icon icon-sm" />,
   <MosqueIcon className="icon icon-sm" />,
   <HeadsetIcon className="icon icon-sm" />
+];
+
+const travelPackages = [
+  {
+    days: "10 أيام",
+    image: "/landingpage/avion.png",
+    price: "4,990",
+    features: ["حجز طيران", "حجز فنادق", "تنظيم الجولات", "دعم مباشر"]
+  },
+  {
+    days: "6 أيام",
+    image: "/landingpage/paysage.png",
+    price: "2,990",
+    features: ["حجز طيران", "حجز فنادق", "تنظيم الجولات", "دعم مباشر"]
+  }
 ];
 
 const services = [
@@ -74,6 +92,11 @@ type FilterName = keyof Filters;
 export default function LandingPage() {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [submittedFilters, setSubmittedFilters] = useState<Filters>(emptyFilters);
+  const [activePackageView, setActivePackageView] = useState<"travel" | null>(null);
+  const [bookingSectionOpen, setBookingSectionOpen] = useState(false);
+  const [selectedBookingTitle, setSelectedBookingTitle] = useState("");
+  const [passportPreview, setPassportPreview] = useState<string | null>(null);
+  const [idPreview, setIdPreview] = useState<string | null>(null);
 
   useEffect(() => {
     document.documentElement.lang = "ar";
@@ -84,6 +107,13 @@ export default function LandingPage() {
       document.body.classList.remove("umrah-body");
     };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (passportPreview) URL.revokeObjectURL(passportPreview);
+      if (idPreview) URL.revokeObjectURL(idPreview);
+    };
+  }, [passportPreview, idPreview]);
 
   const filteredPackages = useMemo(() => {
     return packages.filter((program) => {
@@ -111,6 +141,34 @@ export default function LandingPage() {
   const resetFilters = () => {
     setFilters(emptyFilters);
     setSubmittedFilters(emptyFilters);
+  };
+
+  const openPackageView = (type: string) => {
+    if (type !== "travel") {
+      return;
+    }
+
+    setActivePackageView("travel");
+    window.setTimeout(() => {
+      document.getElementById("gv-travel-packages")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  };
+
+  const openBookingSection = (title: string) => {
+    setSelectedBookingTitle(title);
+    setBookingSectionOpen(true);
+  };
+
+  const updatePassportFile = (file?: File) => {
+    if (!file) return;
+    if (passportPreview) URL.revokeObjectURL(passportPreview);
+    setPassportPreview(URL.createObjectURL(file));
+  };
+
+  const updateIdFile = (file?: File) => {
+    if (!file) return;
+    if (idPreview) URL.revokeObjectURL(idPreview);
+    setIdPreview(URL.createObjectURL(file));
   };
 
   return (
@@ -205,7 +263,11 @@ export default function LandingPage() {
         </div>
         <div className="gv-package-grid">
           {filteredPackages.map((program) => (
-            <article className="gv-card" key={program.badge}>
+            <article
+              className={`gv-card ${program.type === "travel" ? "is-clickable" : ""}`}
+              key={program.badge}
+              onClick={() => openPackageView(program.type)}
+            >
               <div className="gv-card__media" style={{ backgroundImage: `url(${program.image})` }}>
                 <span>{program.badge}</span>
               </div>
@@ -213,9 +275,9 @@ export default function LandingPage() {
                 <div className="gv-card__features">
                   {program.features.map((feature, index) => (
                     <span key={feature}>
-                      {index === 0 && program.badge === "الرحلات" ? <StarIcon className="icon icon-sm" /> : null}
-                      {index === 0 && program.badge === "التأشيرات" ? <DocumentIcon className="icon icon-sm" /> : null}
-                      {index === 0 && program.badge === "برامج الشركات" ? <CalendarIcon className="icon icon-sm" /> : null}
+                      {index === 0 && program.type === "travel" ? <StarIcon className="icon icon-sm" /> : null}
+                      {index === 0 && program.type === "visa" ? <DocumentIcon className="icon icon-sm" /> : null}
+                      {index === 0 && program.type === "corporate" ? <CalendarIcon className="icon icon-sm" /> : null}
                       {index > 0 ? packageFeatureIcons[index] : null}
                       {feature}
                     </span>
@@ -223,7 +285,15 @@ export default function LandingPage() {
                 </div>
                 <div className="gv-card__footer">
                   <p>تبدأ من <b>{program.price}</b> د.ك</p>
-                  <button type="button">عرض التفاصيل</button>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      openBookingSection(program.badge);
+                    }}
+                  >
+                    حجز
+                  </button>
                 </div>
               </div>
             </article>
@@ -233,6 +303,89 @@ export default function LandingPage() {
           <div className="gv-empty">لا توجد باقات مطابقة لهذا البحث. جرّب تعديل المدينة أو المدة.</div>
         )}
       </section>
+
+      {activePackageView === "travel" && (
+        <section className="gv-travel-packages" id="gv-travel-packages">
+          <h2>باقات الرحلات</h2>
+          <div className="gv-travel-grid">
+            {travelPackages.map((program) => (
+              <article className="gv-travel-card" key={program.days}>
+                <div className="gv-travel-card__media" style={{ backgroundImage: `url(${program.image})` }}>
+                  <span>{program.days}</span>
+                </div>
+                <div className="gv-travel-card__body">
+                  <div className="gv-travel-card__features">
+                    {program.features.map((feature, index) => (
+                      <span key={feature}>
+                        {index === 0 ? <StarIcon className="icon icon-sm" /> : null}
+                        {index === 1 ? <MosqueIcon className="icon icon-sm" /> : null}
+                        {index === 2 ? <LocationIcon className="icon icon-sm" /> : null}
+                        {index === 3 ? <HeadsetIcon className="icon icon-sm" /> : null}
+                        {feature}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="gv-travel-card__divider" />
+                  <div className="gv-travel-card__footer">
+                    <p>تبدأ من <b>{program.price}</b> د.ك</p>
+                    <button type="button" onClick={() => openBookingSection(program.days)}>
+                      حجز
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {bookingSectionOpen && (
+        <div className="gv-reservation-modal" role="dialog" aria-modal="true" aria-labelledby="gv-reservation-title" onClick={() => setBookingSectionOpen(false)}>
+          <section className="gv-reservation" id="gv-reservation" onClick={(event) => event.stopPropagation()}>
+            <button className="gv-reservation__close" type="button" onClick={() => setBookingSectionOpen(false)} aria-label="إغلاق">
+              ×
+            </button>
+            <div className="gv-reservation__header">
+              <span>طلب الحجز</span>
+              <h2 id="gv-reservation-title">{selectedBookingTitle || "حجز جديد"}</h2>
+            </div>
+
+            <div className="gv-reservation__layout">
+              <label className="gv-upload-card">
+                <input type="file" accept="image/*" onChange={(event) => updatePassportFile(event.target.files?.[0])} />
+                <DocumentIcon className="icon" />
+                <strong>إضافة جواز السفر</strong>
+                <span>ارفع صورة جواز السفر</span>
+                {passportPreview ? <img src={passportPreview} alt="معاينة جواز السفر" /> : null}
+              </label>
+
+              <label className="gv-upload-card">
+                <input type="file" accept="image/*" onChange={(event) => updateIdFile(event.target.files?.[0])} />
+                <DocumentIcon className="icon" />
+                <strong>إضافة بطاقة الهوية</strong>
+                <span>ارفع صورة بطاقة الهوية</span>
+                {idPreview ? <img src={idPreview} alt="معاينة بطاقة الهوية" /> : null}
+              </label>
+
+              <div className="gv-reservation__form">
+                <label>
+                  الاسم الكامل
+                  <input type="text" placeholder="اكتب الاسم الكامل" />
+                </label>
+                <label>
+                  رقم الهاتف
+                  <input type="tel" placeholder="+965" />
+                </label>
+                <label>
+                  البريد الإلكتروني
+                  <input type="email" placeholder="name@example.com" />
+                </label>
+                <button type="button">تأكيد طلب الحجز</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
 
       <section className="gv-services">
         <h2>خدماتنا المتميزة</h2>
