@@ -938,7 +938,10 @@ img {
 }
 
 .gv-packages {
-  padding: 16px 0 22px;
+  width: 100%;
+  max-width: none;
+  padding: 22px max(36px, calc((100% - 1500px) / 2)) 32px;
+  background: linear-gradient(180deg, #f7f2ea 0%, #f4eee5 100%);
 }
 
 .gv-packages__header {
@@ -983,7 +986,7 @@ img {
 .gv-package-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 22px;
+  gap: 26px;
 }
 
 .gv-empty {
@@ -998,18 +1001,18 @@ img {
 }
 
 .gv-card {
-  min-height: 230px;
+  min-height: 292px;
   overflow: hidden;
   background: #080b10;
   color: #f4ead8;
   border: 1px solid rgba(186, 143, 70, 0.45);
-  border-radius: 8px;
-  box-shadow: 0 8px 18px rgba(24, 18, 12, 0.28);
+  border-radius: 10px;
+  box-shadow: 0 10px 22px rgba(24, 18, 12, 0.28);
 }
 
 .gv-card__media {
   position: relative;
-  min-height: 105px;
+  min-height: 126px;
   background-size: cover;
   background-position: center;
 }
@@ -1024,36 +1027,41 @@ img {
 .gv-card__media span {
   position: absolute;
   z-index: 2;
-  top: 12px;
-  right: 14px;
-  padding: 6px 14px;
+  top: 16px;
+  right: 18px;
+  min-width: 104px;
+  padding: 8px 14px;
   border-radius: 7px;
   background: linear-gradient(135deg, #e3bc6d, #bc862e);
   color: #20160b;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 900;
+  text-align: center;
 }
 
 .gv-card__body {
-  padding: 14px 18px 12px;
+  padding: 18px 22px 16px;
 }
 
 .gv-card__features {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
   color: #e9dbc4;
-  font-size: 12px;
+  font-size: 13px;
   text-align: center;
 }
 
 .gv-card__features span {
   display: grid;
   justify-items: center;
-  gap: 4px;
+  gap: 6px;
+  line-height: 1.25;
 }
 
 .gv-card__features .icon {
+  width: 21px;
+  height: 21px;
   color: #d6aa5c;
 }
 
@@ -1062,25 +1070,29 @@ img {
   align-items: end;
   justify-content: space-between;
   gap: 14px;
-  margin-top: 12px;
+  margin-top: 18px;
 }
 
 .gv-card__footer p {
   margin: 0;
   color: #d7c6a9;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .gv-card__footer b {
   display: block;
   color: #e4b866;
-  font-size: 30px;
+  font-size: 34px;
   line-height: 1;
 }
 
 .gv-card__footer button {
-  min-height: 36px;
-  padding: 0 22px;
+  min-width: 154px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-size: 18px;
+  white-space: nowrap;
 }
 
 .gv-services {

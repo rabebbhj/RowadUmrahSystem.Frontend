@@ -3,6 +3,7 @@ import {
   BusIcon,
   CalendarIcon,
   ChatIcon,
+  DocumentIcon,
   HeadsetIcon,
   LocationIcon,
   MailIcon,
@@ -16,35 +17,39 @@ import {
 
 const packages = [
   {
-    badge: "اقتصادية",
-    image: "/landingpage/lit.png",
+    badge: "الرحلات",
+    image: "/landingpage/avion.png",
     price: "2,490",
-    hotel: "فنادق 3 نجوم",
-    flight: "طيران مباشر",
+    features: ["حجوزات طيران", "حجوزات فنادق", "تنظيم الجولات", "دعم مباشر"],
     people: "1-2",
     city: "مكة",
     duration: "7"
   },
   {
-    badge: "مميزة",
-    image: "/landingpage/chambre.png",
-    price: "4,590",
-    hotel: "فنادق 4 نجوم",
-    flight: "طيران مباشر",
+    badge: "التأشيرات",
+    image: "/landingpage/mains.png",
+    price: "490",
+    features: ["تأشيرات سياحية", "حجز المواعيد", "متابعة الطلب", "استشارات السفر"],
     people: "3-4",
     city: "مكة والمدينة",
     duration: "10"
   },
   {
-    badge: "VIP",
-    image: "/landingpage/dormir.png",
+    badge: "برامج الشركات",
+    image: "/landingpage/reunion.png",
     price: "7,990",
-    hotel: "فنادق 5 نجوم",
-    flight: "طيران مباشر",
+    features: ["رحلات عمل", "حجوزات جماعية", "تنظيم الفعاليات", "خدمة مخصصة"],
     people: "5+",
     city: "المدينة",
     duration: "14"
   }
+];
+
+const packageFeatureIcons = [
+  <LocationIcon className="icon icon-sm" />,
+  <BusIcon className="icon icon-sm" />,
+  <MosqueIcon className="icon icon-sm" />,
+  <HeadsetIcon className="icon icon-sm" />
 ];
 
 const services = [
@@ -191,7 +196,7 @@ export default function LandingPage() {
 
       <section className="gv-packages" id="gv-packages">
         <div className="gv-packages__header">
-          <h2>أفضل باقات العمرة</h2>
+          <h2>أفضل الباقات</h2>
           {hasActiveFilters && (
             <button type="button" onClick={resetFilters}>
               إلغاء الفلتر
@@ -206,10 +211,15 @@ export default function LandingPage() {
               </div>
               <div className="gv-card__body">
                 <div className="gv-card__features">
-                  <span><StarIcon className="icon icon-sm" /> {program.hotel}</span>
-                  <span><MosqueIcon className="icon icon-sm" /> إفطار</span>
-                  <span><BusIcon className="icon icon-sm" /> التنقلات</span>
-                  <span><LocationIcon className="icon icon-sm" /> {program.flight}</span>
+                  {program.features.map((feature, index) => (
+                    <span key={feature}>
+                      {index === 0 && program.badge === "الرحلات" ? <StarIcon className="icon icon-sm" /> : null}
+                      {index === 0 && program.badge === "التأشيرات" ? <DocumentIcon className="icon icon-sm" /> : null}
+                      {index === 0 && program.badge === "برامج الشركات" ? <CalendarIcon className="icon icon-sm" /> : null}
+                      {index > 0 ? packageFeatureIcons[index] : null}
+                      {feature}
+                    </span>
+                  ))}
                 </div>
                 <div className="gv-card__footer">
                   <p>تبدأ من <b>{program.price}</b> د.ك</p>
