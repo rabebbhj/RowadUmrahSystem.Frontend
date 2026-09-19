@@ -734,8 +734,8 @@ img {
   display: grid;
   align-items: center;
   background:
-    linear-gradient(90deg, rgba(5, 6, 9, 0.18), rgba(5, 6, 9, 0.38) 36%, rgba(5, 6, 9, 0.98) 78%),
-    url("/landingpage/kaaba.png") center 45% / cover no-repeat;
+    linear-gradient(90deg, rgba(5, 6, 9, 0.96) 0%, rgba(5, 6, 9, 0.62) 30%, rgba(5, 6, 9, 0.12) 58%, rgba(5, 6, 9, 0.44) 100%),
+    url("/landingpage/kaaba.png") center right / cover no-repeat;
   color: #fff;
   overflow: hidden;
 }
@@ -755,8 +755,8 @@ img {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 7% 0%, rgba(218, 177, 98, 0.18), transparent 22%),
-    linear-gradient(180deg, rgba(4, 5, 8, 0.25), rgba(4, 5, 8, 0.48));
+    radial-gradient(circle at 8% 8%, rgba(218, 177, 98, 0.16), transparent 24%),
+    linear-gradient(180deg, rgba(4, 5, 8, 0.08), rgba(4, 5, 8, 0.36));
 }
 
 .gv-hero__content {
@@ -764,24 +764,33 @@ img {
   z-index: 2;
   width: min(1230px, calc(100% - 40px));
   margin-inline: auto;
-  padding: 42px 86px 74px 0;
-  max-width: 760px;
-  justify-self: start;
+  padding: 36px 0 76px;
+  max-width: none;
   text-align: right;
 }
 
+.gv-hero__content p,
+.gv-hero__content h1,
+.gv-hero__content > span,
+.gv-actions {
+  width: min(560px, 46vw);
+  margin-right: auto;
+}
+
 .gv-hero__content p {
-  margin: 0 0 8px;
+  margin-top: 0;
+  margin-bottom: 8px;
   color: #d7a957;
-  font-size: clamp(2rem, 4vw, 4.25rem);
+  font-size: clamp(2rem, 3.5vw, 3.85rem);
   font-weight: 900;
   line-height: 1.05;
 }
 
 .gv-hero__content h1 {
-  margin: 0 0 12px;
+  margin-top: 0;
+  margin-bottom: 12px;
   color: #fff;
-  font-size: clamp(1.8rem, 2.8vw, 3.2rem);
+  font-size: clamp(1.7rem, 2.55vw, 2.95rem);
   line-height: 1.18;
 }
 
@@ -816,8 +825,8 @@ img {
 .gv-support {
   position: absolute;
   z-index: 3;
-  left: max(24px, calc((100% - 1230px) / 2 + 32px));
-  top: 66px;
+  right: max(24px, calc((100% - 1230px) / 2 + 18px));
+  top: 48px;
   width: 150px;
   min-height: 205px;
   padding: 22px 14px;
