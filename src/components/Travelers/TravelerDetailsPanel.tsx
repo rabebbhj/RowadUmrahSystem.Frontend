@@ -21,6 +21,46 @@ function extractAntiForgeryToken(html: string) {
   return match?.[1] ?? null;
 }
 
+function normalizeDisplayText(value: string | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  if (!/[ØÙÃÂ]/.test(value)) {
+    return value;
+  }
+
+  try {
+    const bytes = Uint8Array.from(Array.from(value, (char) => char.charCodeAt(0) & 0xff));
+    return new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+  } catch {
+    return value;
+  }
+}
+
+function isPendingReservationRequest(traveler: TravelerDetail) {
+  const notes = normalizeDisplayText(traveler.notes);
+
+  return Boolean(
+    notes.includes("قيد التأكيد") ||
+    notes.includes("محال إلى خدمة العملاء") ||
+    notes.includes("طلب حجز عمرة من الصفحة العامة")
+  );
+}
+
+function documentTypeLabel(type: string) {
+  const labels: Record<string, string> = {
+    PersonalPhoto: "صورة شخصية",
+    Visa: "تأشيرة",
+    PassportCopy: "نسخة جواز",
+    CivilId: "بطاقة الهوية",
+    PDF: "ملف PDF",
+    Other: "أخرى"
+  };
+
+  return labels[type] ?? normalizeDisplayText(type);
+}
+
 export function TravelerDetailsPanel({
   user,
   activePath,
@@ -62,7 +102,7 @@ export function TravelerDetailsPanel({
           return;
         }
 
-        setError(error instanceof Error ? error.message : "Failed to load traveler");
+        setError(error instanceof Error ? error.message : "تعذر تحميل بيانات المسافر.");
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -83,14 +123,14 @@ export function TravelerDetailsPanel({
     });
 
     if (!response.ok) {
-      throw new Error("Failed to prepare document upload");
+      throw new Error("تعذر تجهيز رفع المستند.");
     }
 
     const html = await response.text();
     const token = extractAntiForgeryToken(html);
 
     if (!token) {
-      throw new Error("Unable to read anti-forgery token");
+      throw new Error("تعذر قراءة رمز الحماية.");
     }
 
     return token;
@@ -128,7 +168,7 @@ export function TravelerDetailsPanel({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to upload document");
+        throw new Error("تعذر رفع المستند.");
       }
 
       setDocumentSuccess("تم رفع المستند بنجاح.");
@@ -142,7 +182,7 @@ export function TravelerDetailsPanel({
         return;
       }
 
-      setDocumentError(error instanceof Error ? error.message : "Failed to upload document");
+      setDocumentError(error instanceof Error ? error.message : "تعذر رفع المستند.");
     } finally {
       setDocumentSubmitting(false);
     }
@@ -169,7 +209,7 @@ export function TravelerDetailsPanel({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to archive document");
+        throw new Error("تعذر أرشفة المستند.");
       }
 
       setDocumentSuccess("تم أرشفة المستند بنجاح.");
@@ -181,7 +221,7 @@ export function TravelerDetailsPanel({
         return;
       }
 
-      setDocumentError(error instanceof Error ? error.message : "Failed to archive document");
+      setDocumentError(error instanceof Error ? error.message : "تعذر أرشفة المستند.");
     }
   }
 
@@ -200,17 +240,18 @@ export function TravelerDetailsPanel({
             <>
               <div className="d-flex flex-wrap justify-content-between align-items-start mb-4">
                 <div>
-                  <h1 className="page-title mb-1">{traveler.fullName}</h1>
+                  <h1 className="page-title mb-1">{normalizeDisplayText(traveler.fullName)}</h1>
                   <p className="text-muted mb-2">
                     رقم الجواز: <strong>{traveler.passportNumber}</strong>
                   </p>
 
-                  {traveler.isBlocked ? (
+                  {isPendingReservationRequest(traveler) ? (
+                    <span className="badge badge-soft-warning">قيد التأكيد</span>
+                  ) : traveler.isBlocked ? (
                     <span className="badge badge-soft-danger">محظور</span>
                   ) : (
                     <span className="badge badge-soft-success">مسموح</span>
                   )}
-
                   <span className="badge badge-soft-warning">عدد العمرات: {traveler.tripCount}</span>
                 </div>
 
@@ -257,26 +298,22 @@ export function TravelerDetailsPanel({
                     <div className="row">
                       <div className="col-md-6 mb-3">
                         <small className="text-muted">الرقم</small>
-                        <div>
-                          <strong>{traveler.id}</strong>
-                        </div>
+                        <div><strong>{traveler.id}</strong></div>
                       </div>
 
                       <div className="col-md-6 mb-3">
                         <small className="text-muted">الاسم الكامل</small>
-                        <div>
-                          <strong>{traveler.fullName}</strong>
-                        </div>
+                        <div><strong>{normalizeDisplayText(traveler.fullName)}</strong></div>
                       </div>
 
                       <div className="col-md-6 mb-3">
                         <small className="text-muted">الجنسية</small>
-                        <div>{traveler.nationality}</div>
+                        <div>{normalizeDisplayText(traveler.nationality)}</div>
                       </div>
 
                       <div className="col-md-6 mb-3">
                         <small className="text-muted">الجنس</small>
-                        <div>{traveler.gender}</div>
+                        <div>{normalizeDisplayText(traveler.gender)}</div>
                       </div>
 
                       <div className="col-md-6 mb-3">
@@ -290,15 +327,13 @@ export function TravelerDetailsPanel({
                       </div>
 
                       <div className="col-md-6 mb-3">
-                        <small className="text-muted">الإيميل</small>
+                        <small className="text-muted">البريد الإلكتروني</small>
                         <div>{traveler.email || "-"}</div>
                       </div>
 
                       <div className="col-md-6 mb-3">
                         <small className="text-muted">تاريخ انتهاء الجواز</small>
-                        <div>
-                          {traveler.passportExpiryDate ? formatDate(traveler.passportExpiryDate) : <span className="text-muted">غير مسجل</span>}
-                        </div>
+                        <div>{traveler.passportExpiryDate ? formatDate(traveler.passportExpiryDate) : <span className="text-muted">غير مسجل</span>}</div>
                       </div>
                     </div>
                   </div>
@@ -312,7 +347,7 @@ export function TravelerDetailsPanel({
                   <div className="row">
                     <div className="col-md-8 mb-3">
                       <small className="text-muted">سبب الحظر</small>
-                      <div>{traveler.blockReason || "-"}</div>
+                      <div>{normalizeDisplayText(traveler.blockReason) || "-"}</div>
                     </div>
 
                     <div className="col-md-4 mb-3">
@@ -327,7 +362,7 @@ export function TravelerDetailsPanel({
                 <h4 className="section-title">الملاحظات</h4>
 
                 {traveler.notes ? (
-                  <p className="mb-0">{traveler.notes}</p>
+                  <p className="mb-0">{normalizeDisplayText(traveler.notes)}</p>
                 ) : (
                   <div className="alert alert-info mb-0">لا توجد ملاحظات لهذا المسافر.</div>
                 )}
@@ -342,7 +377,7 @@ export function TravelerDetailsPanel({
                     className="btn btn-sm btn-outline-gold"
                     onClick={() => window.location.assign("/TravelerDocuments/ExportToExcel")}
                   >
-                    Excel جميع الوثائق
+                    تصدير جميع الوثائق Excel
                   </button>
                 </div>
 
@@ -350,16 +385,12 @@ export function TravelerDetailsPanel({
                   <div className="row g-3">
                     <div className="col-md-3">
                       <label className="form-label">نوع المستند</label>
-                      <select
-                        className="form-select"
-                        required
-                        value={documentType}
-                        onChange={(event) => setDocumentType(event.target.value)}
-                      >
+                      <select className="form-select" required value={documentType} onChange={(event) => setDocumentType(event.target.value)}>
                         <option value="">اختر النوع</option>
                         <option value="PersonalPhoto">صورة شخصية</option>
                         <option value="Visa">تأشيرة</option>
                         <option value="PassportCopy">نسخة جواز</option>
+                        <option value="CivilId">بطاقة الهوية</option>
                         <option value="PDF">ملف PDF</option>
                         <option value="Other">أخرى</option>
                       </select>
@@ -367,12 +398,7 @@ export function TravelerDetailsPanel({
 
                     <div className="col-md-4">
                       <label className="form-label">الملف</label>
-                      <input
-                        type="file"
-                        className="form-control"
-                        required
-                        onChange={(event) => setDocumentFile(event.target.files?.[0] ?? null)}
-                      />
+                      <input type="file" className="form-control" required onChange={(event) => setDocumentFile(event.target.files?.[0] ?? null)} />
                     </div>
 
                     <div className="col-md-3">
@@ -413,9 +439,9 @@ export function TravelerDetailsPanel({
                           .sort((left, right) => right.uploadedAt.localeCompare(left.uploadedAt))
                           .map((doc) => (
                             <tr key={doc.id}>
-                              <td>{doc.documentType}</td>
-                              <td>{doc.fileName}</td>
-                              <td>{doc.notes || "-"}</td>
+                              <td>{documentTypeLabel(doc.documentType)}</td>
+                              <td>{normalizeDisplayText(doc.fileName)}</td>
+                              <td>{normalizeDisplayText(doc.notes) || "-"}</td>
                               <td>{formatDateTime(doc.uploadedAt)}</td>
                               <td>
                                 <button
@@ -474,16 +500,16 @@ export function TravelerDetailsPanel({
                           .map((trip) => (
                             <tr key={trip.id}>
                               <td>{trip.id}</td>
-                              <td>{trip.tripType}</td>
+                              <td>{normalizeDisplayText(trip.tripType)}</td>
                               <td>{formatDate(trip.tripDate)}</td>
-                              <td>{trip.notes || "-"}</td>
+                              <td>{normalizeDisplayText(trip.notes) || "-"}</td>
                             </tr>
                           ))}
                       </tbody>
                     </table>
                   </div>
                 ) : (
-                  <div className="alert alert-warning mb-0">لا يوجد رحلات مسجلة لهذا المسافر.</div>
+                  <div className="alert alert-warning mb-0">لا توجد رحلات مسجلة لهذا المسافر.</div>
                 )}
               </div>
             </>

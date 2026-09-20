@@ -6,7 +6,6 @@ import {
   unblockTraveler,
   type TravelerListItem
 } from "../../api/travelers";
-import { formatDateTime } from "../../utils/dates";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
 
 type TravelersPanelProps = {
@@ -16,11 +15,46 @@ type TravelersPanelProps = {
   onLogout: () => void;
 };
 
+function normalizeDisplayText(value: string | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  if (!/[ØÙÃÂ]/.test(value)) {
+    return value;
+  }
+
+  try {
+    const bytes = Uint8Array.from(Array.from(value, (char) => char.charCodeAt(0) & 0xff));
+    return new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+  } catch {
+    return value;
+  }
+}
+
+function isPendingReservationRequest(traveler: TravelerListItem) {
+  const notes = normalizeDisplayText(traveler.notes);
+
+  return Boolean(
+    notes.includes("قيد التأكيد") ||
+    notes.includes("محال إلى خدمة العملاء") ||
+    notes.includes("طلب حجز عمرة من الصفحة العامة")
+  );
+}
+
 function statusClass(traveler: TravelerListItem) {
+  if (isPendingReservationRequest(traveler)) {
+    return "badge badge-soft-warning";
+  }
+
   return traveler.isBlocked ? "badge badge-soft-danger" : "badge badge-soft-success";
 }
 
 function statusText(traveler: TravelerListItem) {
+  if (isPendingReservationRequest(traveler)) {
+    return "قيد التأكيد";
+  }
+
   return traveler.isBlocked ? "محظور" : "مسموح";
 }
 
@@ -55,7 +89,7 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
           return;
         }
 
-        setError(error instanceof Error ? error.message : "Failed to load travelers");
+        setError(error instanceof Error ? error.message : "تعذر تحميل بيانات المسافرين.");
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -82,7 +116,7 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
         return;
       }
 
-      setActionMessage(error instanceof Error ? error.message : "Failed to unblock traveler");
+      setActionMessage(error instanceof Error ? error.message : "تعذر رفع الحظر عن المسافر.");
     }
   }
 
@@ -102,7 +136,7 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
         return;
       }
 
-      setActionMessage(error instanceof Error ? error.message : "Failed to archive traveler");
+      setActionMessage(error instanceof Error ? error.message : "تعذر أرشفة المسافر.");
     }
   }
 
@@ -189,7 +223,7 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
           {loading && <div className="state-box">جاري تحميل المسافرين...</div>}
 
           {!loading && !error && travelers.length === 0 && (
-            <div className="alert alert-info mb-0">لا يوجد مسافرين مطابقين للبحث.</div>
+            <div className="alert alert-info mb-0">لا يوجد مسافرون مطابقون للبحث.</div>
           )}
 
           {!loading && !error && travelers.length > 0 && (
@@ -212,19 +246,12 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
                   {travelers.map((traveler) => (
                     <tr key={traveler.id}>
                       <td>{traveler.id}</td>
-                      <td>
-                        <strong>{traveler.passportNumber}</strong>
-                      </td>
-                      <td>{traveler.fullName}</td>
-                      <td>{traveler.nationality}</td>
+                      <td><strong>{traveler.passportNumber}</strong></td>
+                      <td>{normalizeDisplayText(traveler.fullName)}</td>
+                      <td>{normalizeDisplayText(traveler.nationality)}</td>
                       <td>{traveler.phoneNumber}</td>
-                      <td>
-                        <span className="badge badge-soft-warning">{traveler.tripCount}</span>
-                      </td>
-
-                      <td>
-                        <span className={statusClass(traveler)}>{statusText(traveler)}</span>
-                      </td>
+                      <td><span className="badge badge-soft-warning">{traveler.tripCount}</span></td>
+                      <td><span className={statusClass(traveler)}>{statusText(traveler)}</span></td>
 
                       <td className="text-center">
                         <div className="dropdown rowad-actions-dropdown">
@@ -262,9 +289,7 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
                               </button>
                             </li>
 
-                            <li>
-                              <hr className="dropdown-divider" />
-                            </li>
+                            <li><hr className="dropdown-divider" /></li>
 
                             {traveler.isBlocked ? (
                               <li>

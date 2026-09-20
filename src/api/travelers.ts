@@ -1,4 +1,4 @@
-export interface TravelerListItem {
+﻿export interface TravelerListItem {
   id: number;
   passportNumber: string;
   fullName: string;
@@ -91,11 +91,11 @@ async function readErrorMessage(response: Response): Promise<string> {
     try {
       const data = await response.json();
       if (typeof data === "string") {
-        return data;
+        return normalizeArabicMessage(data);
       }
 
       if (data && typeof data.message === "string") {
-        return data.message;
+        return normalizeArabicMessage(data.message);
       }
 
       if (data && data.errors && typeof data.errors === "object") {
@@ -111,12 +111,12 @@ async function readErrorMessage(response: Response): Promise<string> {
           .filter(Boolean);
 
         if (messages.length > 0) {
-          return messages.join("\n");
+          return normalizeArabicMessage(messages.join("\n"));
         }
       }
 
       if (data && typeof data.title === "string") {
-        return translateProblemTitle(data.title, response.status);
+        return normalizeArabicMessage(translateProblemTitle(data.title, response.status));
       }
     } catch {
       // Fallback to text below.
@@ -124,7 +124,20 @@ async function readErrorMessage(response: Response): Promise<string> {
   }
 
   const text = await response.text();
-  return text || translateProblemTitle("", response.status);
+  return normalizeArabicMessage(text || translateProblemTitle("", response.status));
+}
+
+function normalizeArabicMessage(message: string): string {
+  if (!/[ØÙÃÂ]/.test(message)) {
+    return message;
+  }
+
+  try {
+    const bytes = Uint8Array.from(Array.from(message, (char) => char.charCodeAt(0) & 0xff));
+    return new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+  } catch {
+    return message;
+  }
 }
 
 function getArabicFieldLabel(field: string): string {
@@ -174,7 +187,6 @@ function translateProblemTitle(title: string, status: number): string {
 
   return "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.";
 }
-
 async function requestJson<T>(response: Response): Promise<T> {
   if (response.status === 401) {
     throw new Error("UNAUTHORIZED");
@@ -299,3 +311,4 @@ export async function readCivilIdOcr(civilIdImage: File): Promise<CivilIdOcrResu
 
   return requestJson<CivilIdOcrResult>(response);
 }
+

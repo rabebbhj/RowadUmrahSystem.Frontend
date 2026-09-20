@@ -293,7 +293,7 @@ export const LANDING_PROGRAMS: BookingProgram[] = [
     city: "مكة - المدينة",
     transport: "طيران اقتصادي",
     transfer: "نقل مشترك",
-    price: "2,490 د.ك",
+    price: "45 د.ك",
     details: ["فنادق 3 نجوم", "رحلة مريحة", "أفضل سعر"]
   },
   {
@@ -317,7 +317,7 @@ export const LANDING_PROGRAMS: BookingProgram[] = [
     city: "مكة - المدينة",
     transport: "طيران درجة أعمال",
     transfer: "نقل خاص",
-    price: "7,990 د.ك",
+    price: "60 د.ك",
     details: ["فنادق 5 نجوم", "مرافقة خاصة", "تجربة فاخرة"]
   }
 ];

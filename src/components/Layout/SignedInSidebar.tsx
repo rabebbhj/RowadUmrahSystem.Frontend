@@ -68,7 +68,6 @@ function CalculatorIcon({ className }: IconProps) {
       <path d="M16 14h.01" />
       <path d="M8 18h.01" />
       <path d="M12 18h.01" />
-      <path d="M16 18h.01" />
     </svg>
   );
 }
@@ -124,8 +123,6 @@ function ArrowDownToLineIcon({ className }: IconProps) {
       <path d="M12 3v12" />
       <path d="m7 10 5 5 5-5" />
       <path d="M5 21h14" />
-      <path d="M5 17v4" />
-      <path d="M19 17v4" />
     </svg>
   );
 }
@@ -136,8 +133,6 @@ function ArrowUpFromLineIcon({ className }: IconProps) {
       <path d="M12 15V3" />
       <path d="m7 8 5-5 5 5" />
       <path d="M5 21h14" />
-      <path d="M5 17v4" />
-      <path d="M19 17v4" />
     </svg>
   );
 }

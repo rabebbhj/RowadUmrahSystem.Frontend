@@ -2408,3 +2408,278 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Global compact scale for all authenticated menus at 100% browser zoom */
+@media (min-width: 981px) {
+    :root {
+        --rowad-sidebar-width: clamp(220px, 17vw, 280px);
+        --rowad-radius: clamp(14px, 1.25vw, 18px);
+    }
+
+    body {
+        font-size: clamp(0.82rem, 0.88vw, 0.96rem);
+    }
+
+    .rowad-sidebar {
+        padding: clamp(12px, 1.2vw, 18px);
+    }
+
+    .rowad-brand {
+        gap: clamp(10px, 1vw, 14px);
+        padding: clamp(6px, 0.8vw, 9px) 2px clamp(14px, 1.4vw, 20px);
+        margin-bottom: clamp(12px, 1.4vw, 18px);
+    }
+
+    .rowad-brand-mark {
+        width: clamp(42px, 3.2vw, 52px);
+        height: clamp(42px, 3.2vw, 52px);
+        flex-basis: clamp(42px, 3.2vw, 52px);
+        border-radius: clamp(12px, 1vw, 16px);
+        font-size: clamp(1.35rem, 1.8vw, 1.65rem);
+    }
+
+    .rowad-brand-title {
+        font-size: clamp(1.15rem, 1.55vw, 1.55rem);
+    }
+
+    .rowad-brand-subtitle {
+        font-size: clamp(0.68rem, 0.78vw, 0.82rem);
+        margin-top: 3px;
+    }
+
+    .rowad-nav {
+        gap: clamp(5px, 0.55vw, 7px);
+    }
+
+    .rowad-nav-link {
+        min-height: clamp(42px, 4.3vw, 52px);
+        padding: 0 clamp(10px, 1.1vw, 16px);
+        gap: clamp(8px, 0.9vw, 12px);
+        border-radius: clamp(11px, 1vw, 14px);
+    }
+
+    .rowad-nav-link .rowad-nav-icon {
+        width: clamp(17px, 1.45vw, 20px);
+        height: clamp(17px, 1.45vw, 20px);
+        flex-basis: clamp(17px, 1.45vw, 20px);
+    }
+
+    .rowad-nav-link strong {
+        font-size: clamp(0.82rem, 0.9vw, 1rem);
+    }
+
+    .rowad-sidebar-footer {
+        padding-top: clamp(10px, 1vw, 14px);
+        margin-top: clamp(10px, 1vw, 14px);
+    }
+
+    .rowad-user-mini {
+        gap: clamp(8px, 0.8vw, 10px);
+        padding: clamp(8px, 0.8vw, 11px);
+        border-radius: clamp(12px, 1vw, 14px);
+    }
+
+    .rowad-user-avatar {
+        width: clamp(34px, 2.8vw, 40px);
+        height: clamp(34px, 2.8vw, 40px);
+        border-radius: clamp(10px, 0.9vw, 13px);
+        font-size: clamp(1rem, 1.25vw, 1.2rem);
+    }
+
+    .rowad-user-mini strong {
+        font-size: clamp(0.78rem, 0.86vw, 0.94rem);
+    }
+
+    .rowad-user-mini small {
+        font-size: clamp(0.66rem, 0.72vw, 0.78rem);
+    }
+
+    .rowad-logout-button {
+        min-height: clamp(34px, 3vw, 40px);
+        margin-top: clamp(8px, 0.8vw, 12px);
+        border-radius: clamp(10px, 0.9vw, 13px);
+        font-size: clamp(0.78rem, 0.84vw, 0.92rem);
+    }
+
+    .app-shell .main-panel,
+    .rowad-content {
+        padding: clamp(14px, 1.45vw, 22px);
+    }
+
+    .page-card,
+    .app-shell .content-card,
+    .app-shell .invoice-details-grid > div,
+    .app-shell .invoice-summary-box,
+    .app-shell .permission-section,
+    .app-shell .hero {
+        padding: clamp(16px, 1.55vw, 22px) !important;
+        border-radius: clamp(14px, 1.3vw, 18px) !important;
+        margin-bottom: clamp(14px, 1.35vw, 20px);
+    }
+
+    .page-title,
+    .app-shell .hero h1,
+    .app-shell .hero h2 {
+        font-size: clamp(1.55rem, 2.35vw, 2.45rem) !important;
+        line-height: 1.15;
+    }
+
+    .section-title,
+    .app-shell .content-card-header h3,
+    .app-shell .section-title-row h3 {
+        font-size: clamp(1rem, 1.2vw, 1.28rem);
+    }
+
+    .text-muted,
+    .app-shell .hero p,
+    .app-shell .content-card-header span,
+    .app-shell .section-title-row span {
+        font-size: clamp(0.78rem, 0.88vw, 0.95rem);
+    }
+
+    .action-bar {
+        gap: clamp(7px, 0.75vw, 10px);
+    }
+
+    .btn,
+    .app-shell .btn,
+    .app-shell .search-bar button,
+    .app-shell .content-card-header button,
+    .app-shell .invoice-form-actions button,
+    .app-shell .row-actions button,
+    .app-shell .ghost-row {
+        min-height: clamp(34px, 3vw, 40px) !important;
+        padding: 0 clamp(10px, 1vw, 15px) !important;
+        border-radius: clamp(10px, 0.9vw, 13px) !important;
+        font-size: clamp(0.76rem, 0.84vw, 0.94rem) !important;
+    }
+
+    .btn-sm,
+    .app-shell .btn-sm {
+        min-height: clamp(28px, 2.4vw, 32px) !important;
+        padding: 0 clamp(8px, 0.7vw, 11px) !important;
+        font-size: clamp(0.66rem, 0.72vw, 0.8rem) !important;
+    }
+
+    .form-control,
+    .form-select,
+    .app-shell input,
+    .app-shell select,
+    .app-shell textarea {
+        min-height: clamp(34px, 3vw, 40px) !important;
+        padding: clamp(7px, 0.75vw, 10px) clamp(10px, 0.9vw, 13px) !important;
+        border-radius: clamp(10px, 0.95vw, 13px) !important;
+        font-size: clamp(0.78rem, 0.86vw, 0.95rem) !important;
+    }
+
+    .app-shell textarea {
+        min-height: clamp(76px, 7vw, 100px) !important;
+    }
+
+    .app-shell .row {
+        --bs-gutter-x: clamp(0.75rem, 1vw, 1rem);
+        --bs-gutter-y: clamp(0.75rem, 1vw, 1rem);
+    }
+
+    .app-shell .stats-grid,
+    .app-shell .mini-grid,
+    .app-shell .invoice-details-grid {
+        gap: clamp(10px, 1vw, 14px);
+    }
+
+    .app-shell .stat-card strong {
+        font-size: clamp(1.55rem, 2.2vw, 2.3rem);
+    }
+
+    .app-shell .stat-card span,
+    .app-shell label,
+    .app-shell .form-label {
+        font-size: clamp(0.76rem, 0.84vw, 0.92rem);
+    }
+
+    .app-shell .table-wrap,
+    .app-shell .table-responsive {
+        border-radius: clamp(12px, 1vw, 16px);
+    }
+
+    .app-shell table {
+        font-size: clamp(0.76rem, 0.82vw, 0.92rem);
+    }
+
+    .app-shell th,
+    .app-shell td {
+        padding: clamp(8px, 0.82vw, 11px) clamp(9px, 0.9vw, 12px);
+    }
+
+    .app-shell .pill,
+    .app-shell .badge {
+        min-height: clamp(22px, 2vw, 26px);
+        padding: 3px clamp(7px, 0.7vw, 9px);
+        font-size: clamp(0.64rem, 0.68vw, 0.75rem);
+    }
+
+    .app-shell .dropdown-menu {
+        min-width: clamp(150px, 12vw, 190px);
+        padding: clamp(6px, 0.7vw, 9px);
+        border-radius: clamp(12px, 1vw, 15px);
+    }
+
+    .app-shell .dropdown-item {
+        min-height: clamp(32px, 2.8vw, 38px);
+        padding: 0 clamp(10px, 0.9vw, 14px);
+        font-size: clamp(0.78rem, 0.84vw, 0.92rem);
+    }
+}
+
+@media (min-width: 981px) and (max-height: 820px) {
+    :root {
+        --rowad-sidebar-width: clamp(205px, 15vw, 255px);
+    }
+
+    .rowad-sidebar {
+        padding: 10px 12px;
+    }
+
+    .rowad-brand {
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+
+    .rowad-nav-link {
+        min-height: 39px;
+    }
+
+    .rowad-nav-link strong {
+        font-size: 0.82rem;
+    }
+
+    .rowad-sidebar-footer {
+        padding-top: 8px;
+        margin-top: 8px;
+    }
+
+    .app-shell .main-panel,
+    .rowad-content {
+        padding: 12px;
+    }
+
+    .page-card,
+    .app-shell .content-card,
+    .app-shell .invoice-details-grid > div,
+    .app-shell .invoice-summary-box,
+    .app-shell .permission-section,
+    .app-shell .hero {
+        padding: 14px !important;
+    }
+
+    .page-title,
+    .app-shell .hero h1,
+    .app-shell .hero h2 {
+        font-size: clamp(1.35rem, 2vw, 2rem) !important;
+    }
+
+    .app-shell th,
+    .app-shell td {
+        padding: 7px 9px;
+    }
+}

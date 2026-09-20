@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap");
+﻿@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap");
 
 :root {
   --bg-main: #080909;
@@ -663,10 +663,13 @@ img {
 
 .gv-header {
   position: relative;
-  z-index: 5;
-  background: #08090b;
-  color: #f4ead8;
-  border-bottom: 1px solid rgba(210, 169, 94, 0.35);
+  z-index: 6;
+  width: 100%;
+  min-height: 82px;
+  background: rgba(8, 9, 11, 0.88);
+  border-bottom: 1px solid rgba(217, 166, 63, 0.22);
+  color: #f8f3e9;
+  backdrop-filter: blur(14px);
 }
 
 .gv-topbar,
@@ -674,17 +677,73 @@ img {
 .gv-packages,
 .gv-services,
 .gv-footer {
-  width: min(1230px, calc(100% - 40px));
+  width: min(1540px, calc(100% - 80px));
   margin-inline: auto;
 }
 
 .gv-topbar {
-  min-height: 42px;
+  min-height: 82px;
+  display: grid;
+  grid-template-columns: auto minmax(360px, 1fr) auto;
+  align-items: center;
+  gap: 28px;
+}
+
+.gv-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  min-width: max-content;
+}
+
+.gv-brand > .icon {
+  width: 52px;
+  height: 52px;
+  color: #f0c86a;
+}
+
+.gv-brand strong {
+  display: block;
+  font-size: 28px;
+  line-height: 1.05;
+}
+
+.gv-brand span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 13px;
+}
+
+.gv-nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  direction: ltr;
+  justify-content: center;
+  gap: clamp(18px, 2.2vw, 46px);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.gv-nav a {
+  position: relative;
+  padding: 30px 0 26px;
+}
+
+.gv-nav a.active {
+  color: #f0c86a;
+}
+
+.gv-nav a.active::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  border-radius: 999px;
+  background: #f0c86a;
 }
 
 .gv-book,
@@ -692,203 +751,320 @@ img {
 .gv-search button,
 .gv-card button {
   border: 0;
-  border-radius: 9px;
-  background: linear-gradient(135deg, #e5c079, #c89437);
-  color: #19130b;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f6d67e, #d9a63f);
+  color: #0b0d10;
   font-weight: 900;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+  transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+}
+
+.gv-book:hover,
+.gv-hero button:hover,
+.gv-search button:hover,
+.gv-card button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
 }
 
 .gv-book {
-  min-height: 36px;
-  padding: 0 18px;
+  min-height: 56px;
+  padding: 0 24px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  font-size: 18px;
 }
 
 .gv-contact {
   display: flex;
   align-items: center;
-  gap: 34px;
-  color: #e7ddcb;
-  font-size: 13px;
+  justify-content: flex-end;
+  gap: 24px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 14px;
+  direction: ltr;
 }
 
 .gv-contact span,
 .gv-footer__contact span {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   white-space: nowrap;
 }
 
 .gv-contact .icon,
 .gv-footer__contact .icon {
-  color: #d6aa5c;
+  color: #f0c86a;
 }
 
 .gv-hero {
   position: relative;
-  min-height: 330px;
+  min-height: clamp(720px, 78vh, 820px);
   display: grid;
-  align-items: center;
+  align-items: start;
   background:
-    linear-gradient(90deg, rgba(5, 6, 9, 0.96) 0%, rgba(5, 6, 9, 0.62) 30%, rgba(5, 6, 9, 0.12) 58%, rgba(5, 6, 9, 0.44) 100%),
-    url("/landingpage/kaaba.png") center right / cover no-repeat;
+    linear-gradient(90deg, rgba(5, 6, 8, 0.92) 0%, rgba(5, 6, 8, 0.72) 35%, rgba(5, 6, 8, 0.25) 70%, rgba(5, 6, 8, 0.35) 100%),
+    url("/landingpage/hero-kaaba-premium.png") center center / cover no-repeat;
   color: #fff;
   overflow: hidden;
+}
+
+.gv-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 34%;
+  opacity: 0.08;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 18px, rgba(240, 200, 106, 0.5) 19px 20px),
+    repeating-linear-gradient(-45deg, transparent 0 18px, rgba(240, 200, 106, 0.35) 19px 20px);
+  pointer-events: none;
 }
 
 .gv-hero::after {
   content: "";
   position: absolute;
-  inset-inline: -3%;
-  bottom: -64px;
-  height: 110px;
-  background: #f6f0e8;
+  inset-inline: -4%;
+  bottom: -88px;
+  height: 150px;
+  background: #f8f3e9;
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  border-top: 3px solid #d9b365;
+  border-top: 5px solid #d9a63f;
 }
 
 .gv-hero__shade {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 8% 8%, rgba(218, 177, 98, 0.16), transparent 24%),
-    linear-gradient(180deg, rgba(4, 5, 8, 0.08), rgba(4, 5, 8, 0.36));
+    radial-gradient(circle at 48% 20%, rgba(240, 200, 106, 0.18), transparent 20%),
+    linear-gradient(180deg, rgba(5, 6, 8, 0.04), rgba(5, 6, 8, 0.36));
+  pointer-events: none;
 }
 
 .gv-hero__content {
   position: relative;
   z-index: 2;
-  width: min(1230px, calc(100% - 40px));
+  width: min(1540px, calc(100% - 80px));
   margin-inline: auto;
-  padding: 36px 0 76px;
-  max-width: none;
+  padding: clamp(58px, 7vh, 92px) 0 170px;
   text-align: right;
 }
 
 .gv-hero__content p,
 .gv-hero__content h1,
 .gv-hero__content > span,
+.gv-hero-features,
 .gv-actions {
-  width: min(560px, 46vw);
+  width: min(700px, 50vw);
   margin-right: auto;
 }
 
 .gv-hero__content p {
   margin-top: 0;
-  margin-bottom: 8px;
-  color: #d7a957;
-  font-size: clamp(2rem, 3.5vw, 3.85rem);
+  margin-bottom: 6px;
+  color: #f0c86a;
+  font-size: clamp(3rem, 5.1vw, 5rem);
   font-weight: 900;
-  line-height: 1.05;
+  line-height: 1.06;
+  animation: gv-rise 700ms ease both;
 }
 
 .gv-hero__content h1 {
   margin-top: 0;
-  margin-bottom: 12px;
+  margin-bottom: 18px;
   color: #fff;
-  font-size: clamp(1.7rem, 2.55vw, 2.95rem);
-  line-height: 1.18;
+  font-size: clamp(2.5rem, 4.35vw, 4.35rem);
+  font-weight: 900;
+  line-height: 1.12;
+  animation: gv-rise 800ms ease 80ms both;
 }
 
 .gv-hero__content > span {
   display: block;
-  max-width: 560px;
-  color: #f2eadb;
-  font-size: 16px;
-  line-height: 1.85;
+  max-width: 650px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(1.05rem, 1.35vw, 1.45rem);
+  line-height: 1.95;
+  animation: gv-rise 850ms ease 140ms both;
+}
+
+.gv-hero-features {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 34px;
+  color: #fff;
+  animation: gv-rise 900ms ease 200ms both;
+}
+
+.gv-hero-features article {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  min-height: 88px;
+  padding: 0 18px;
+  text-align: center;
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.gv-hero-features article:last-child {
+  border-inline-start: 0;
+}
+
+.gv-hero-features .icon {
+  color: #f0c86a;
+  width: 30px;
+  height: 30px;
+}
+
+.gv-hero-features strong {
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 .gv-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 22px;
+  gap: 18px;
+  margin-top: 28px;
+  animation: gv-rise 950ms ease 260ms both;
 }
 
 .gv-hero button {
-  min-height: 44px;
-  padding: 0 24px;
+  min-height: 58px;
+  padding: 0 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 17px;
 }
 
 .gv-hero button.ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid rgba(230, 196, 131, 0.48);
-  background: rgba(8, 9, 11, 0.55);
-  color: #e8d7b7;
+  border: 1px solid rgba(240, 200, 106, 0.68);
+  background: rgba(8, 9, 11, 0.56);
+  color: #fff;
+  box-shadow: none;
+}
+
+.gv-spiritual {
+  position: absolute;
+  z-index: 3;
+  right: max(320px, calc((100% - 1540px) / 2 + 370px));
+  top: 282px;
+  width: 250px;
+  color: #f0c86a;
+  text-align: center;
+  pointer-events: none;
+}
+
+.gv-spiritual strong {
+  display: block;
+  font-size: 36px;
+  line-height: 1.3;
+  font-weight: 900;
+}
+
+.gv-spiritual span {
+  display: block;
+  width: 78px;
+  height: 2px;
+  margin: 18px auto;
+  background: #f0c86a;
+}
+
+.gv-spiritual p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.8;
 }
 
 .gv-support {
   position: absolute;
   z-index: 3;
-  right: max(24px, calc((100% - 1230px) / 2 + 18px));
-  top: 48px;
-  width: 150px;
-  min-height: 205px;
-  padding: 22px 14px;
+  right: max(52px, calc((100% - 1540px) / 2 + 28px));
+  left: auto;
+  top: 205px;
+  width: 236px;
+  min-height: 300px;
+  padding: 32px 22px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 10px;
   text-align: center;
-  color: #f4e5c5;
-  background: rgba(7, 8, 10, 0.76);
-  border: 2px solid #b89149;
-  border-radius: 74px 74px 12px 12px;
-  box-shadow: inset 0 0 0 1px rgba(230, 196, 131, 0.18), 0 18px 42px rgba(0, 0, 0, 0.35);
+  color: #f8f3e9;
+  background: rgba(8, 9, 11, 0.82);
+  border: 2px solid rgba(217, 166, 63, 0.75);
+  border-radius: 32px;
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255,255,255,0.04);
+  backdrop-filter: blur(10px);
 }
 
 .gv-support .icon {
-  width: 30px;
-  height: 30px;
+  width: 46px;
+  height: 46px;
+  color: #f0c86a;
 }
 
 .gv-support b {
   display: block;
-  color: #e6bc6e;
-  font-size: 30px;
+  color: #f0c86a;
+  font-size: 44px;
   line-height: 1.05;
 }
 
 .gv-support span {
-  color: #d8c9ad;
-  font-size: 12px;
-  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.gv-support em {
+  margin-top: 12px;
+  padding-top: 14px;
+  width: 100%;
+  border-top: 1px solid rgba(240, 200, 106, 0.6);
+  color: #f0c86a;
+  font-style: normal;
+  font-weight: 800;
 }
 
 .gv-search {
   position: relative;
-  z-index: 4;
-  margin-top: -40px;
+  z-index: 5;
+  margin-top: -70px;
   display: grid;
-  grid-template-columns: 118px repeat(4, minmax(0, 1fr));
+  grid-template-columns: 190px repeat(4, minmax(0, 1fr));
   gap: 0;
-  min-height: 74px;
-  padding: 14px 18px;
-  background: #fff;
-  border-radius: 11px;
-  box-shadow: 0 10px 28px rgba(22, 18, 13, 0.18);
+  min-height: 116px;
+  padding: 18px 26px;
+  background: #fcfaf6;
+  border: 1px solid rgba(217, 166, 63, 0.22);
+  border-radius: 28px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
 }
 
 .gv-search button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-left: 16px;
-  background: #080b10;
-  color: #e9c078;
+  gap: 14px;
+  min-height: 70px;
+  margin-left: 22px;
+  background: #0b0d10;
+  color: #e6b74f;
+  border-radius: 16px;
+  font-size: 18px;
 }
 
 .gv-search label {
   display: grid;
-  gap: 4px;
-  padding: 0 26px;
+  gap: 8px;
+  align-content: center;
+  padding: 0 34px;
   border-inline-start: 1px solid #eadfce;
 }
 
@@ -897,22 +1073,22 @@ img {
 }
 
 .gv-search span {
-  color: #31271c;
-  font-weight: 800;
-  font-size: 13px;
+  color: #111820;
+  font-weight: 900;
+  font-size: 18px;
 }
 
 .gv-search select,
 .gv-search input {
   width: 100%;
-  min-height: 30px;
+  min-height: 34px;
   padding: 0 0 7px;
   border: 0;
-  border-bottom: 1px solid #e8ded0;
+  border-bottom: 1px solid transparent;
   border-radius: 0;
   background: transparent;
-  color: #a29a8e;
-  font-size: 13px;
+  color: #9b958c;
+  font-size: 16px;
   font-family: inherit;
   text-align: right;
   outline: none;
@@ -920,8 +1096,8 @@ img {
 
 .gv-search select {
   appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #b98a39 50%), linear-gradient(135deg, #b98a39 50%, transparent 50%);
-  background-position: left 8px top 12px, left 3px top 12px;
+  background-image: linear-gradient(45deg, transparent 50%, #0b0d10 50%), linear-gradient(135deg, #0b0d10 50%, transparent 50%);
+  background-position: left 8px top 15px, left 3px top 15px;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
   cursor: pointer;
@@ -933,44 +1109,224 @@ img {
 
 .gv-search select:focus,
 .gv-search input:focus {
-  border-bottom-color: #c99b48;
-  color: #31271c;
+  border-bottom-color: #d9a63f;
+  color: #111820;
 }
 
+@keyframes gv-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1180px) {
+  .gv-topbar {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding: 14px 0;
+  }
+
+  .gv-nav,
+  .gv-contact {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .gv-hero__content p,
+  .gv-hero__content h1,
+  .gv-hero__content > span,
+  .gv-hero-features,
+  .gv-actions {
+    width: min(680px, 70vw);
+  }
+
+  .gv-support,
+  .gv-spiritual {
+    display: none;
+  }
+
+  .gv-search {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+
+  .gv-search button {
+    grid-column: 1 / -1;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .gv-topbar,
+  .gv-search,
+  .gv-packages,
+  .gv-services,
+  .gv-footer,
+  .gv-hero__content {
+    width: min(100% - 32px, 540px);
+  }
+
+  .gv-header {
+    min-height: 0;
+  }
+
+  .gv-nav {
+    display: none;
+  }
+
+  .gv-contact span {
+    display: none;
+  }
+
+  .gv-hero {
+    min-height: 760px;
+    background-position: center;
+  }
+
+  .gv-hero__content {
+    padding: 44px 0 150px;
+  }
+
+  .gv-hero__content p,
+  .gv-hero__content h1,
+  .gv-hero__content > span,
+  .gv-hero-features,
+  .gv-actions {
+    width: 100%;
+  }
+
+  .gv-hero__content p {
+    font-size: 42px;
+  }
+
+  .gv-hero__content h1 {
+    font-size: 36px;
+  }
+
+  .gv-hero-features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .gv-hero-features article {
+    border: 1px solid rgba(240, 200, 106, 0.22);
+    border-radius: 14px;
+    padding: 14px;
+    min-height: 0;
+    background: rgba(8, 9, 11, 0.45);
+  }
+
+  .gv-actions {
+    flex-direction: column;
+  }
+
+  .gv-search {
+    grid-template-columns: 1fr;
+    margin-top: -52px;
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .gv-search label {
+    padding: 0;
+    border-inline-start: 0;
+    border-top: 1px solid #eadfce;
+    padding-top: 12px;
+  }
+}
 .gv-packages {
+  position: relative;
   width: 100%;
   max-width: none;
-  padding: 22px max(36px, calc((100% - 1500px) / 2)) 32px;
-  background: linear-gradient(180deg, #f7f2ea 0%, #f4eee5 100%);
+  overflow: hidden;
+  padding: 70px max(38px, calc((100% - 1750px) / 2)) 80px;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(216, 163, 62, 0.13), transparent 34%),
+    radial-gradient(circle at 12% 22%, rgba(216, 163, 62, 0.09), transparent 26%),
+    linear-gradient(180deg, #fbf6ed 0%, #f6eedf 100%);
+  color: #0d1013;
+}
+
+.gv-packages::before,
+.gv-packages::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.08;
+}
+
+.gv-packages::before {
+  top: 0;
+  right: -90px;
+  width: 360px;
+  height: 360px;
+  border: 28px double #d8a33e;
+  border-radius: 50% 50% 4px 4px;
+  transform: rotate(45deg);
+}
+
+.gv-packages::after {
+  left: -40px;
+  bottom: -70px;
+  width: 540px;
+  height: 190px;
+  background: url("/landingpage/hero-kaaba-premium.png") center bottom / cover no-repeat;
+  filter: sepia(0.45);
+  opacity: 0.09;
 }
 
 .gv-packages__header {
   position: relative;
+  z-index: 1;
+  margin: 0 auto 30px;
+  text-align: center;
+}
+
+.gv-section-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 28px;
+  margin-bottom: 4px;
+  color: #b88732;
+}
+
+.gv-section-kicker .icon {
+  width: 28px;
+  height: 28px;
 }
 
 .gv-packages__header > button {
   position: absolute;
-  top: 0;
+  top: 8px;
   left: 0;
-  min-height: 34px;
-  padding: 0 14px;
-  border-radius: 8px;
-  border: 1px solid rgba(201, 155, 72, 0.45);
-  background: #fff;
-  color: #9a6a1e;
-  font-weight: 800;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(201, 155, 72, 0.5);
+  background: rgba(255, 255, 255, 0.72);
+  color: #8f631c;
+  font-weight: 900;
 }
 
 .gv-packages h2,
 .gv-services h2 {
-  margin: 0 0 18px;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  color: #211811;
-  font-size: 24px;
-  line-height: 1.25;
+  gap: 26px;
+  color: #15100c;
+  font-size: clamp(2rem, 3.2vw, 3.2rem);
+  font-weight: 900;
+  line-height: 1.12;
+}
+
+.gv-packages__header p {
+  margin: 12px 0 0;
+  color: #6a5640;
+  font-size: clamp(1rem, 1.25vw, 1.35rem);
+  font-weight: 700;
 }
 
 .gv-packages h2::before,
@@ -978,153 +1334,278 @@ img {
 .gv-services h2::before,
 .gv-services h2::after {
   content: "";
-  width: 68px;
+  width: clamp(68px, 8vw, 140px);
   height: 1px;
-  background: linear-gradient(90deg, transparent, #c99b48, transparent);
+  background: linear-gradient(90deg, transparent, #d8a33e, transparent);
 }
 
 .gv-package-grid {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 26px;
+  gap: clamp(20px, 1.6vw, 30px);
 }
 
 .gv-empty {
-  margin-top: 18px;
+  position: relative;
+  z-index: 1;
+  margin-top: 22px;
   padding: 18px;
   border: 1px solid rgba(201, 155, 72, 0.34);
-  border-radius: 8px;
-  background: #fff;
-  color: #6e5a3d;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #6a5640;
   text-align: center;
-  font-weight: 800;
+  font-weight: 900;
+}
+
+.gv-card,
+.gv-travel-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #101316 0%, #07090b 100%);
+  color: #f7ecd9;
+  border: 1px solid rgba(216, 163, 62, 0.68);
+  border-radius: 22px;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.16);
+  isolation: isolate;
 }
 
 .gv-card {
-  min-height: 292px;
-  overflow: hidden;
-  background: #080b10;
-  color: #f4ead8;
-  border: 1px solid rgba(186, 143, 70, 0.45);
-  border-radius: 10px;
-  box-shadow: 0 10px 22px rgba(24, 18, 12, 0.28);
+  min-height: 455px;
+  animation: gv-rise 0.7s ease both;
+}
+
+.gv-card:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.gv-card:nth-child(3) {
+  animation-delay: 0.16s;
 }
 
 .gv-card.is-clickable {
   cursor: pointer;
 }
 
-.gv-card.is-clickable:hover {
-  transform: translateY(-2px);
-  border-color: rgba(213, 170, 88, 0.78);
+.gv-card:hover,
+.gv-travel-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(233, 190, 96, 0.92);
+  box-shadow: 0 24px 46px rgba(0, 0, 0, 0.22);
 }
 
-.gv-card__media {
+.gv-card__media,
+.gv-travel-card__media {
   position: relative;
-  min-height: 126px;
+  min-height: 210px;
+  overflow: hidden;
   background-size: cover;
   background-position: center;
+}
+
+.gv-card__media::before,
+.gv-travel-card__media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0) 42%, rgba(7, 9, 11, 0.96) 100%),
+    linear-gradient(90deg, rgba(7, 9, 11, 0.54), rgba(7, 9, 11, 0.04) 52%);
 }
 
 .gv-card__media::after {
   content: "";
   position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(8, 11, 16, 0.64));
-}
-
-.gv-card__media span {
-  position: absolute;
   z-index: 2;
-  top: 16px;
-  right: 18px;
-  min-width: 104px;
-  padding: 8px 14px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, #e3bc6d, #bc862e);
-  color: #20160b;
-  font-size: 16px;
+  right: -3%;
+  bottom: -18px;
+  width: 106%;
+  height: 42px;
+  border-top: 2px solid rgba(216, 163, 62, 0.75);
+  border-radius: 50% 50% 0 0;
+}
+
+.gv-card__badge,
+.gv-travel-card__media span {
+  position: absolute;
+  z-index: 3;
+  top: 26px;
+  right: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 150px;
+  min-height: 58px;
+  padding: 0 22px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f2d984 0%, #d8a33e 100%);
+  color: #090806;
+  font-size: clamp(1.05rem, 1.05vw, 1.35rem);
   font-weight: 900;
-  text-align: center;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
 }
 
-.gv-card__body {
-  padding: 18px 22px 16px;
+.gv-card__badge .icon {
+  width: 24px;
+  height: 24px;
 }
 
-.gv-card__features {
+.gv-card__image-text {
+  position: absolute;
+  z-index: 3;
+  right: 28px;
+  bottom: 34px;
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  color: #fff6e8;
+  font-size: clamp(0.95rem, 0.9vw, 1.1rem);
+  font-weight: 800;
+  line-height: 1.35;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+}
+
+.gv-card__image-text::after {
+  content: "";
+  width: 42px;
+  height: 2px;
+  margin-top: 8px;
+  background: #d8a33e;
+}
+
+.gv-card__body,
+.gv-travel-card__body {
+  position: relative;
+  z-index: 2;
+  padding: 24px 26px 24px;
+  background:
+    radial-gradient(circle at 50% 120%, rgba(216, 163, 62, 0.12), transparent 40%),
+    linear-gradient(180deg, #091016 0%, #06090d 100%);
+}
+
+.gv-card__features,
+.gv-travel-card__features {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  color: #e9dbc4;
-  font-size: 13px;
+  gap: 0;
+  color: #fff4df;
+  font-size: clamp(0.92rem, 0.9vw, 1.05rem);
   text-align: center;
 }
 
-.gv-card__features span {
+.gv-card__features span,
+.gv-travel-card__features span {
   display: grid;
   justify-items: center;
-  gap: 6px;
+  align-content: start;
+  gap: 8px;
+  min-height: 76px;
+  padding: 0 10px;
   line-height: 1.25;
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.gv-card__features .icon {
-  width: 21px;
-  height: 21px;
-  color: #d6aa5c;
+.gv-card__features span:last-child,
+.gv-travel-card__features span:last-child {
+  border-inline-start: 0;
 }
 
-.gv-card__footer {
+.gv-card__features .icon,
+.gv-travel-card__features .icon {
+  width: 28px;
+  height: 28px;
+  color: #dfad4b;
+}
+
+.gv-card__divider,
+.gv-travel-card__divider {
+  height: 1px;
+  margin: 20px 0 18px;
+  background: linear-gradient(90deg, transparent, rgba(233, 190, 96, 0.82), transparent);
+}
+
+.gv-card__footer,
+.gv-travel-card__footer {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 14px;
-  margin-top: 18px;
+  gap: 18px;
 }
 
-.gv-card__footer p {
+.gv-card__footer p,
+.gv-travel-card__footer p {
   margin: 0;
-  color: #d7c6a9;
-  font-size: 13px;
+  color: #f3d18b;
+  font-size: 1rem;
+  font-weight: 800;
+  text-align: right;
 }
 
-.gv-card__footer b {
+.gv-card__footer b,
+.gv-travel-card__footer b {
   display: block;
-  color: #e4b866;
-  font-size: 34px;
-  line-height: 1;
+  color: #f3c863;
+  font-size: clamp(2.4rem, 3.1vw, 3.35rem);
+  font-weight: 900;
+  line-height: 0.98;
 }
 
-.gv-card__footer button {
-  min-width: 154px;
-  min-height: 44px;
-  padding: 0 18px;
-  border-radius: 10px;
-  font-size: 18px;
+.gv-card__footer button,
+.gv-travel-card__footer button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: 210px;
+  min-height: 56px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f4d67c 0%, #d8a33e 100%);
+  color: #090806;
+  font-size: clamp(1rem, 1vw, 1.25rem);
+  font-weight: 900;
   white-space: nowrap;
+  box-shadow: 0 12px 24px rgba(216, 163, 62, 0.18);
+}
+
+.gv-card__footer button:hover,
+.gv-travel-card__footer button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #ffe29a 0%, #dca43b 100%);
+  box-shadow: 0 16px 28px rgba(216, 163, 62, 0.25);
 }
 
 .gv-travel-packages {
-  padding: 20px max(44px, calc((100% - 900px) / 2)) 28px;
-  background: #f8f3ec;
+  position: relative;
+  overflow: hidden;
+  padding: 54px max(44px, calc((100% - 1450px) / 2)) 64px;
+  background:
+    radial-gradient(circle at 10% 8%, rgba(216, 163, 62, 0.1), transparent 26%),
+    linear-gradient(180deg, #fbf6ed 0%, #f6eedf 100%);
   color: #101820;
 }
 
 .gv-travel-packages h2 {
-  margin: 0 0 18px;
+  margin: 0 0 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 24px;
+  gap: 28px;
   color: #101820;
-  font-size: clamp(1.45rem, 2vw, 2.15rem);
+  font-size: clamp(2rem, 3vw, 3rem);
+  font-weight: 900;
   line-height: 1.1;
 }
 
 .gv-travel-packages h2::before,
 .gv-travel-packages h2::after {
   content: "";
-  width: 78px;
+  width: clamp(74px, 8vw, 140px);
   height: 2px;
   background: linear-gradient(90deg, transparent, #c99b48, transparent);
 }
@@ -1132,282 +1613,1063 @@ img {
 .gv-travel-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.gv-travel-card {
-  overflow: hidden;
-  border: 1px solid rgba(186, 143, 70, 0.58);
-  border-radius: 12px;
-  background: #071018;
-  color: #fff4df;
-  box-shadow: 0 14px 28px rgba(24, 18, 12, 0.24);
+  gap: clamp(22px, 2vw, 34px);
+  max-width: 1320px;
+  margin: 0 auto;
 }
 
 .gv-travel-card__media {
-  position: relative;
-  min-height: 118px;
-  background-size: cover;
-  background-position: center;
-}
-
-.gv-travel-card__media::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(7, 16, 24, 0.16));
+  min-height: 245px;
 }
 
 .gv-travel-card__media span {
-  position: absolute;
-  z-index: 2;
-  top: 16px;
-  right: 16px;
-  min-width: 74px;
-  padding: 7px 12px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #f1d27e, #c99331);
-  color: #0c0c09;
-  font-size: 15px;
-  font-weight: 900;
-  text-align: center;
+  right: 26px;
+  min-width: 118px;
+  min-height: 54px;
 }
 
-.gv-travel-card__body {
-  padding: 16px 20px 18px;
-  background: #071018;
+@media (max-width: 1279px) {
+  .gv-packages {
+    padding-inline: 32px;
+  }
+
+  .gv-package-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gv-card {
+    min-height: 430px;
+  }
+
+  .gv-travel-grid {
+    max-width: 980px;
+  }
 }
 
-.gv-travel-card__features {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  text-align: center;
-  color: #f4e8d1;
-  font-size: 12px;
+@media (max-width: 900px) {
+  .gv-package-grid,
+  .gv-travel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gv-card,
+  .gv-travel-card {
+    max-width: 620px;
+    width: 100%;
+    margin-inline: auto;
+  }
 }
 
-.gv-travel-card__features span {
-  display: grid;
-  gap: 5px;
-  justify-items: center;
-  border-inline-start: 1px solid rgba(255, 255, 255, 0.22);
-}
+@media (max-width: 760px) {
+  .gv-packages,
+  .gv-travel-packages {
+    width: 100%;
+    padding: 44px 16px 54px;
+  }
 
-.gv-travel-card__features span:last-child {
-  border-inline-start: 0;
-}
+  .gv-packages__header {
+    margin-bottom: 22px;
+  }
 
-.gv-travel-card__features .icon {
-  width: 20px;
-  height: 20px;
-  color: #e4b866;
-}
+  .gv-packages__header > button {
+    position: static;
+    margin-top: 14px;
+  }
 
-.gv-travel-card__divider {
-  height: 1px;
-  margin: 14px 0;
-  background: linear-gradient(90deg, transparent, rgba(228, 184, 102, 0.84), transparent);
-}
+  .gv-packages h2,
+  .gv-services h2,
+  .gv-travel-packages h2 {
+    gap: 12px;
+    font-size: 2rem;
+  }
 
-.gv-travel-card__footer {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 12px;
-}
+  .gv-packages h2::before,
+  .gv-packages h2::after,
+  .gv-services h2::before,
+  .gv-services h2::after,
+  .gv-travel-packages h2::before,
+  .gv-travel-packages h2::after {
+    width: 46px;
+  }
 
-.gv-travel-card__footer p {
-  margin: 0;
-  color: #e5c783;
-  font-size: 12px;
-}
+  .gv-card {
+    min-height: 0;
+    border-radius: 18px;
+  }
 
-.gv-travel-card__footer b {
-  display: block;
-  color: #f0c66c;
-  font-size: 30px;
-  line-height: 1;
-}
+  .gv-card__media,
+  .gv-travel-card__media {
+    min-height: 170px;
+  }
 
-.gv-travel-card__footer button {
-  min-width: 126px;
-  min-height: 38px;
-  border: 0;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #f3d27b, #c99331);
-  color: #0d0b08;
-  font-size: 15px;
-  font-weight: 900;
+  .gv-card__badge,
+  .gv-travel-card__media span {
+    top: 16px;
+    right: 16px;
+    min-width: 118px;
+    min-height: 46px;
+    padding: 0 16px;
+    border-radius: 12px;
+    font-size: 1rem;
+  }
+
+  .gv-card__body,
+  .gv-travel-card__body {
+    padding: 20px 16px;
+  }
+
+  .gv-card__features,
+  .gv-travel-card__features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 18px;
+  }
+
+  .gv-card__features span,
+  .gv-travel-card__features span {
+    min-height: 66px;
+  }
+
+  .gv-card__features span:nth-child(2n),
+  .gv-travel-card__features span:nth-child(2n) {
+    border-inline-start: 0;
+  }
+
+  .gv-card__footer,
+  .gv-travel-card__footer {
+    display: grid;
+    gap: 16px;
+  }
+
+  .gv-card__footer button,
+  .gv-travel-card__footer button {
+    width: 100%;
+    min-width: 0;
+    order: 2;
+  }
 }
 
 .gv-reservation-modal {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: 22px;
-  background: rgba(0, 0, 0, 0.68);
-  backdrop-filter: blur(6px);
+  overflow-y: auto;
+  padding: 24px;
+  background: rgba(7, 10, 12, 0.66);
+  backdrop-filter: blur(5px);
 }
 
 .gv-reservation {
   position: relative;
-  width: min(980px, 100%);
-  max-height: min(86vh, 760px);
-  overflow-y: auto;
-  padding: 24px;
-  border: 1px solid rgba(228, 184, 102, 0.42);
-  border-radius: 16px;
-  background: #f8f3ec;
+  width: min(1740px, 100%);
+  min-height: min(900px, calc(100vh - 48px));
+  margin: 0 auto;
+  overflow: hidden;
+  padding: 34px clamp(22px, 3vw, 54px) 30px;
+  border: 1px solid rgba(218, 167, 67, 0.58);
+  border-radius: 28px;
+  background:
+    linear-gradient(90deg, rgba(250, 244, 233, 0.22), rgba(250, 244, 233, 0.9) 48%, rgba(250, 244, 233, 0.28)),
+    url("/landingpage/reservation-bg.png") center center / cover no-repeat;
   color: #111820;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+  isolation: isolate;
+}
+
+.gv-reservation::before,
+.gv-reservation::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.gv-reservation::before {
+  right: 4%;
+  top: 7%;
+  width: 280px;
+  height: 280px;
+  opacity: 0.07;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 17px, #d9a23d 18px 19px),
+    repeating-linear-gradient(-45deg, transparent 0 17px, #d9a23d 18px 19px);
+}
+
+.gv-reservation::after {
+  left: -70px;
+  bottom: -110px;
+  width: 480px;
+  height: 260px;
+  border-radius: 0 170px 0 0;
+  background: linear-gradient(135deg, rgba(7, 16, 21, 0.96), rgba(12, 21, 27, 0.9));
+  border-top: 5px solid #d9a23d;
 }
 
 .gv-reservation__close {
   position: absolute;
-  top: 14px;
-  left: 14px;
-  width: 38px;
-  height: 38px;
+  top: 24px;
+  left: 26px;
+  z-index: 5;
+  width: 46px;
+  height: 46px;
   border: 0;
   border-radius: 50%;
   background: #071018;
   color: #f1c96f;
-  font-size: 28px;
+  font-size: 30px;
   line-height: 1;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
 }
 
 .gv-reservation__header {
-  margin-bottom: 18px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 28px;
   text-align: center;
 }
 
-.gv-reservation__header span {
-  color: #b47d24;
-  font-weight: 900;
+.gv-reservation__header > .icon {
+  color: #bd842a;
+  width: 34px;
+  height: 34px;
 }
 
 .gv-reservation__header h2 {
-  margin: 6px 0 0;
-  font-size: clamp(1.6rem, 2.4vw, 2.5rem);
+  margin: 5px 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  color: #071015;
+  font-size: clamp(2.4rem, 4vw, 4rem);
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.gv-reservation__header h2::before,
+.gv-reservation__header h2::after,
+.gv-reservation__foot::before,
+.gv-reservation__foot::after {
+  content: "";
+  width: clamp(70px, 8vw, 150px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #d9a23d, transparent);
+}
+
+.gv-reservation__header p {
+  margin: 0;
+  color: #4f4a43;
+  font-size: clamp(1.05rem, 1.35vw, 1.45rem);
+  font-weight: 700;
 }
 
 .gv-reservation__layout {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) 1.1fr;
-  gap: 14px;
+  direction: ltr;
+  grid-template-columns: 0.95fr 1fr 1fr;
+  gap: clamp(18px, 1.55vw, 24px);
   align-items: stretch;
+  max-width: 1500px;
+  margin: 0 auto;
 }
 
 .gv-upload-card,
 .gv-reservation__form {
-  min-height: 240px;
-  border: 1px solid rgba(201, 155, 72, 0.34);
-  border-radius: 12px;
-  background: #071018;
+  direction: rtl;
+  min-height: 560px;
+  border-radius: 24px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.16);
+  animation: gv-rise 0.55s ease both;
+}
+
+.gv-reservation__form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(217, 162, 61, 0.65);
+  background:
+    radial-gradient(circle at 15% 12%, rgba(217, 162, 61, 0.14), transparent 28%),
+    linear-gradient(160deg, #071015, #0a151c);
   color: #f8edda;
-  box-shadow: 0 10px 22px rgba(24, 18, 12, 0.18);
 }
 
 .gv-upload-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 26px;
+  border: 1px solid rgba(217, 162, 61, 0.46);
+  background: rgba(251, 245, 234, 0.92);
+  color: #071015;
+}
+
+.gv-upload-card:nth-child(3) {
+  animation-delay: 0.08s;
+}
+
+.gv-reservation__form-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.gv-reservation__form-head > span {
+  width: 74px;
+  height: 74px;
   display: grid;
   place-items: center;
-  align-content: center;
+  border-radius: 50%;
+  border: 1px solid #d9a23d;
+  background: radial-gradient(circle, #f1cb72, #926318);
+  color: #071015;
+}
+
+.gv-reservation__form-head strong {
+  display: block;
+  color: #fff;
+  font-size: clamp(1.35rem, 1.5vw, 1.75rem);
+  font-weight: 900;
+}
+
+.gv-reservation__form-head p {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 1rem;
+}
+
+.gv-reservation__form label {
+  display: grid;
+  gap: 7px;
+  color: #fff;
+  font-weight: 900;
+}
+
+.gv-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 56px;
   gap: 8px;
-  padding: 16px;
-  overflow: hidden;
+}
+
+.gv-field .icon {
+  width: 56px;
+  height: 56px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  color: #f1cb72;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.gv-reservation__form input {
+  min-height: 56px;
+  width: 100%;
+  padding: 0 18px;
+  border: 1px solid rgba(214, 166, 67, 0.32);
+  border-radius: 12px;
+  background: #111c23;
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  outline: none;
+}
+
+.gv-reservation__form input::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.gv-reservation__form input:focus {
+  border-color: #e0ad49;
+  box-shadow: 0 0 0 3px rgba(224, 173, 73, 0.12);
+}
+
+.gv-reservation__form label em,
+.gv-upload-error {
+  color: #e76565;
+  font-style: normal;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.gv-smart-extract,
+.gv-confirm-booking {
+  min-height: 62px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 14px;
+  font-size: 1.25rem;
+  font-weight: 900;
+  transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease;
+}
+
+.gv-smart-extract {
+  margin-top: 4px;
+  border: 0;
+  background: linear-gradient(135deg, #f1cc75, #d99e31);
+  color: #080b0e;
+}
+
+.gv-smart-extract:not(:disabled):hover,
+.gv-confirm-booking:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(213, 158, 48, 0.25);
+}
+
+.gv-smart-extract:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.25);
+  opacity: 0.62;
+}
+
+.gv-confirm-booking {
+  border: 2px solid #d9a23d;
+  background: rgba(217, 162, 61, 0.03);
+  color: #e6b24c;
+}
+
+.gv-confirm-booking:hover {
+  background: rgba(217, 162, 61, 0.08);
+}
+
+.gv-reservation__form small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: auto;
+  color: rgba(255, 255, 255, 0.62);
+  font-weight: 800;
+}
+
+.gv-upload-card__head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.gv-upload-card__head > span {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f1cb72, #d9a23d);
+  color: #071015;
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.gv-upload-card__head strong {
+  display: block;
+  color: #071015;
+  font-size: clamp(1.25rem, 1.45vw, 1.7rem);
+  font-weight: 900;
+}
+
+.gv-upload-card__head p {
+  margin: 4px 0 0;
+  color: #575757;
+  font-weight: 700;
+}
+
+.gv-dropzone {
+  position: relative;
+  flex: 1;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 22px;
+  border: 1px solid rgba(217, 162, 61, 0.22);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(217, 162, 61, 0.1), transparent 32%),
+    #fcf8f0;
   text-align: center;
   cursor: pointer;
 }
 
-.gv-upload-card input {
+.gv-dropzone input {
   position: absolute;
-  inset: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
   opacity: 0;
-  cursor: pointer;
 }
 
-.gv-upload-card > .icon {
-  width: 42px;
-  height: 42px;
-  color: #e4b866;
+.gv-dropzone:hover .gv-document-preview {
+  transform: scale(1.015);
 }
 
-.gv-upload-card strong {
-  font-size: 18px;
+.gv-document-preview {
+  width: min(78%, 285px);
+  min-height: 170px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 8px;
+  border-radius: 18px;
+  border: 1px solid rgba(217, 162, 61, 0.14);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(248, 235, 215, 0.6));
+  transition: transform 220ms ease;
 }
 
-.gv-upload-card span {
-  color: #cbbda6;
-  font-size: 13px;
+.gv-document-preview--passport {
+  width: 185px;
+  min-height: 240px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #073326, #14533c);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.18);
 }
 
-.gv-upload-card img {
+.gv-document-preview--id {
+  width: min(78%, 300px);
+  min-height: 180px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #dbeaf4, #f8fbff);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.14);
+}
+
+.gv-document-preview > .icon {
+  width: 64px;
+  height: 64px;
+  color: #d9a23d;
+}
+
+.gv-document-preview--passport > .icon {
+  color: #f1cb72;
+}
+
+.gv-document-preview img {
   width: 100%;
-  max-height: 112px;
+  height: 100%;
+  max-height: 260px;
   object-fit: cover;
-  border-radius: 10px;
-  border: 1px solid rgba(228, 184, 102, 0.34);
+  border-radius: inherit;
 }
 
-.gv-smart-extract {
-  position: relative;
-  z-index: 2;
-  min-height: 36px;
-  margin-top: 4px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 9px;
-  background: linear-gradient(135deg, #f3d27b, #c99331);
-  color: #0d0b08;
+.gv-upload-cloud {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  margin-top: -28px;
+  border-radius: 50%;
+  border: 1px solid rgba(217, 162, 61, 0.34);
+  background: #fff8eb;
+  color: #d9a23d;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+.gv-dropzone b {
+  color: #101820;
+  font-size: 1.05rem;
   font-weight: 900;
 }
 
-.gv-ocr-status {
-  margin-top: 14px;
-  padding: 12px 14px;
-  border: 1px solid rgba(201, 155, 72, 0.28);
+.gv-dropzone p,
+.gv-dropzone small,
+.gv-upload-note {
+  margin: 0;
+  color: #575757;
+  font-weight: 700;
+}
+
+.gv-file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(217, 162, 61, 0.1);
+  color: #4f3a16;
+  font-weight: 900;
+}
+
+.gv-file-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gv-file-row button {
+  border: 0;
   border-radius: 10px;
-  background: rgba(7, 16, 24, 0.08);
+  padding: 7px 12px;
+  background: #071015;
+  color: #f1cb72;
+  font-weight: 900;
+}
+
+.gv-upload-note {
+  text-align: center;
+  font-size: 0.92rem;
+}
+
+.gv-ocr-status {
+  max-width: 980px;
+  margin: 18px auto 0;
+  padding: 13px 16px;
+  border: 1px solid rgba(201, 155, 72, 0.32);
+  border-radius: 14px;
+  background: rgba(251, 245, 234, 0.88);
   color: #6f4d18;
   text-align: center;
   font-weight: 900;
 }
 
+.gv-reservation__foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 24px;
+  color: #6a5640;
+  font-weight: 900;
+}
+
+.gv-reservation__foot .icon {
+  color: #bd842a;
+}
+
+@media (max-width: 1279px) {
+  .gv-reservation__layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gv-reservation__form {
+    grid-column: 1 / -1;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .gv-reservation-modal {
+    padding: 0;
+  }
+
+  .gv-reservation {
+    min-height: 100vh;
+    border-radius: 0;
+    padding: 56px 16px 28px;
+  }
+
+  .gv-reservation__close {
+    top: 12px;
+    left: 14px;
+  }
+
+  .gv-reservation__header h2 {
+    gap: 12px;
+    font-size: 2.5rem;
+  }
+
+  .gv-reservation__header h2::before,
+  .gv-reservation__header h2::after,
+  .gv-reservation__foot::before,
+  .gv-reservation__foot::after {
+    width: 42px;
+  }
+
+  .gv-reservation__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .gv-upload-card,
+  .gv-reservation__form {
+    min-height: 0;
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .gv-field {
+    grid-template-columns: minmax(0, 1fr) 52px;
+  }
+
+  .gv-field .icon,
+  .gv-reservation__form input {
+    min-height: 54px;
+  }
+
+  .gv-dropzone {
+    min-height: 300px;
+  }
+}
+
+.gv-reservation {
+  width: min(92vw, 1560px);
+  min-height: auto;
+  padding: clamp(20px, 2.1vw, 34px) clamp(18px, 2.4vw, 42px) clamp(18px, 2vw, 28px);
+}
+
+.gv-reservation__header {
+  margin-bottom: clamp(16px, 1.7vw, 24px);
+}
+
+.gv-reservation__header > .icon {
+  width: clamp(22px, 2vw, 32px);
+  height: clamp(22px, 2vw, 32px);
+}
+
+.gv-reservation__header h2 {
+  font-size: clamp(2rem, 3.1vw, 3.4rem);
+}
+
+.gv-reservation__header p {
+  font-size: clamp(0.95rem, 1.1vw, 1.25rem);
+}
+
+.gv-reservation__layout {
+  max-width: min(100%, 1400px);
+  gap: clamp(14px, 1.35vw, 22px);
+}
+
+.gv-upload-card,
 .gv-reservation__form {
-  display: grid;
-  gap: 12px;
-  padding: 18px;
+  min-height: clamp(430px, 39vw, 520px);
+  border-radius: clamp(18px, 1.5vw, 24px);
+}
+
+.gv-reservation__form,
+.gv-upload-card {
+  padding: clamp(18px, 1.6vw, 24px);
+}
+
+.gv-reservation__form {
+  gap: clamp(9px, 0.9vw, 13px);
+}
+
+.gv-reservation__form-head > span {
+  width: clamp(52px, 4vw, 68px);
+  height: clamp(52px, 4vw, 68px);
+}
+
+.gv-reservation__form-head strong {
+  font-size: clamp(1.15rem, 1.25vw, 1.55rem);
+}
+
+.gv-reservation__form-head p,
+.gv-upload-card__head p {
+  font-size: clamp(0.82rem, 0.9vw, 1rem);
 }
 
 .gv-reservation__form label {
-  display: grid;
-  gap: 6px;
-  color: #e9dcc6;
-  font-weight: 800;
+  gap: 5px;
+  font-size: clamp(0.92rem, 0.95vw, 1.05rem);
+}
+
+.gv-field {
+  grid-template-columns: minmax(0, 1fr) clamp(44px, 3vw, 52px);
+}
+
+.gv-field .icon {
+  width: clamp(44px, 3vw, 52px);
+  height: clamp(44px, 3vw, 52px);
+  padding: clamp(10px, 0.85vw, 13px);
 }
 
 .gv-reservation__form input {
-  min-height: 42px;
-  padding: 0 12px;
-  border: 1px solid rgba(228, 184, 102, 0.28);
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.04);
-  color: #fff;
-  font: inherit;
+  min-height: clamp(46px, 3.4vw, 54px);
+  padding-inline: clamp(12px, 1vw, 16px);
+  font-size: clamp(0.92rem, 0.95vw, 1.05rem);
 }
 
-.gv-reservation__form button {
-  min-height: 46px;
-  border: 0;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #f3d27b, #c99331);
-  color: #0d0b08;
-  font-size: 18px;
-  font-weight: 900;
+.gv-smart-extract,
+.gv-confirm-booking {
+  min-height: clamp(48px, 3.5vw, 58px);
+  font-size: clamp(1rem, 1.1vw, 1.22rem);
+}
+
+.gv-upload-card {
+  gap: clamp(12px, 1vw, 16px);
+}
+
+.gv-upload-card__head > span {
+  width: clamp(48px, 3.6vw, 58px);
+  height: clamp(48px, 3.6vw, 58px);
+  font-size: clamp(1.08rem, 1.2vw, 1.35rem);
+}
+
+.gv-upload-card__head strong {
+  font-size: clamp(1.08rem, 1.25vw, 1.55rem);
+}
+
+.gv-dropzone {
+  min-height: clamp(250px, 25vw, 330px);
+  padding: clamp(14px, 1.3vw, 20px);
+  gap: 6px;
+}
+
+.gv-document-preview {
+  width: min(70%, 230px);
+  min-height: clamp(120px, 12vw, 158px);
+}
+
+.gv-document-preview--passport {
+  width: clamp(120px, 10vw, 160px);
+  min-height: clamp(155px, 15vw, 215px);
+}
+
+.gv-document-preview--id {
+  width: min(72%, 250px);
+  min-height: clamp(118px, 12vw, 158px);
+}
+
+.gv-document-preview img {
+  max-height: clamp(155px, 17vw, 230px);
+}
+
+.gv-upload-cloud {
+  width: clamp(48px, 3.8vw, 58px);
+  height: clamp(48px, 3.8vw, 58px);
+  margin-top: clamp(-26px, -1.8vw, -18px);
+}
+
+.gv-dropzone b {
+  font-size: clamp(0.92rem, 0.95vw, 1.02rem);
+}
+
+.gv-dropzone p,
+.gv-dropzone small,
+.gv-upload-note,
+.gv-file-row {
+  font-size: clamp(0.78rem, 0.82vw, 0.95rem);
+}
+
+.gv-ocr-status {
+  max-width: min(62vw, 980px);
+}
+
+@media (max-width: 980px) {
+  .gv-reservation {
+    width: min(96vw, 760px);
+  }
+
+  .gv-ocr-status {
+    max-width: 100%;
+  }
+}
+
+.gv-reservation-modal {
+  padding: clamp(8px, 1vw, 16px);
+}
+
+.gv-reservation {
+  width: min(94vw, 1500px);
+  padding: clamp(12px, 1.4vw, 24px);
+  border-radius: clamp(18px, 1.5vw, 24px);
+}
+
+.gv-reservation__header {
+  margin-bottom: clamp(8px, 1vw, 16px);
+}
+
+.gv-reservation__header > .icon {
+  width: clamp(18px, 1.6vw, 26px);
+  height: clamp(18px, 1.6vw, 26px);
+}
+
+.gv-reservation__header h2 {
+  margin: 2px 0 3px;
+  font-size: clamp(1.8rem, 2.5vw, 2.85rem);
+}
+
+.gv-reservation__header p {
+  font-size: clamp(0.86rem, 0.95vw, 1.1rem);
+}
+
+.gv-reservation__layout {
+  max-width: min(100%, 1320px);
+  gap: clamp(10px, 1.15vw, 18px);
+}
+
+.gv-reservation__form {
+  order: 1;
+}
+
+.gv-upload-card:nth-of-type(1) {
+  order: 2;
+}
+
+.gv-upload-card:nth-of-type(2) {
+  order: 3;
+}
+
+.gv-upload-card,
+.gv-reservation__form {
+  min-height: clamp(335px, 32vw, 430px);
+}
+
+.gv-reservation__form,
+.gv-upload-card {
+  padding: clamp(12px, 1.15vw, 18px);
+}
+
+.gv-reservation__form {
+  gap: clamp(6px, 0.65vw, 10px);
+}
+
+.gv-reservation__form-head {
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.gv-reservation__form-head > span {
+  width: clamp(42px, 3.2vw, 56px);
+  height: clamp(42px, 3.2vw, 56px);
+}
+
+.gv-reservation__form-head strong {
+  font-size: clamp(1rem, 1.1vw, 1.35rem);
+}
+
+.gv-reservation__form-head p,
+.gv-upload-card__head p {
+  margin-top: 1px;
+  font-size: clamp(0.74rem, 0.78vw, 0.9rem);
+}
+
+.gv-reservation__form label {
+  gap: 3px;
+  font-size: clamp(0.84rem, 0.85vw, 0.98rem);
+}
+
+.gv-field {
+  grid-template-columns: minmax(0, 1fr) clamp(38px, 2.7vw, 46px);
+  gap: 6px;
+}
+
+.gv-field .icon {
+  width: clamp(38px, 2.7vw, 46px);
+  height: clamp(38px, 2.7vw, 46px);
+  padding: clamp(8px, 0.7vw, 11px);
+}
+
+.gv-reservation__form input {
+  min-height: clamp(38px, 2.85vw, 46px);
+  padding-inline: clamp(10px, 0.8vw, 14px);
+  font-size: clamp(0.82rem, 0.85vw, 0.98rem);
+}
+
+.gv-smart-extract,
+.gv-confirm-booking {
+  min-height: clamp(42px, 3vw, 50px);
+  border-radius: 12px;
+  font-size: clamp(0.95rem, 1vw, 1.12rem);
+}
+
+.gv-reservation__form small {
+  font-size: clamp(0.72rem, 0.75vw, 0.86rem);
+}
+
+.gv-upload-card {
+  gap: clamp(8px, 0.8vw, 12px);
+}
+
+.gv-upload-card__head {
+  gap: 10px;
+}
+
+.gv-upload-card__head > span {
+  width: clamp(40px, 3vw, 50px);
+  height: clamp(40px, 3vw, 50px);
+  font-size: clamp(0.98rem, 1.05vw, 1.2rem);
+}
+
+.gv-upload-card__head strong {
+  font-size: clamp(1rem, 1.1vw, 1.35rem);
+}
+
+.gv-dropzone {
+  min-height: clamp(205px, 20vw, 280px);
+  padding: clamp(10px, 0.95vw, 16px);
+  gap: 4px;
+}
+
+.gv-document-preview {
+  width: min(64%, 205px);
+  min-height: clamp(92px, 9vw, 128px);
+  margin-bottom: 3px;
+}
+
+.gv-document-preview--passport {
+  width: clamp(92px, 8.2vw, 132px);
+  min-height: clamp(126px, 12vw, 178px);
+}
+
+.gv-document-preview--id {
+  width: min(66%, 220px);
+  min-height: clamp(92px, 9.5vw, 128px);
+}
+
+.gv-document-preview img {
+  max-height: clamp(118px, 13vw, 178px);
+  object-fit: contain;
+}
+
+.gv-document-preview > .icon {
+  width: clamp(38px, 3.4vw, 54px);
+  height: clamp(38px, 3.4vw, 54px);
+}
+
+.gv-upload-cloud {
+  width: clamp(38px, 3vw, 50px);
+  height: clamp(38px, 3vw, 50px);
+  margin-top: clamp(-22px, -1.6vw, -14px);
+}
+
+.gv-dropzone b {
+  font-size: clamp(0.8rem, 0.82vw, 0.94rem);
+}
+
+.gv-dropzone p,
+.gv-dropzone small,
+.gv-upload-note,
+.gv-file-row {
+  font-size: clamp(0.68rem, 0.72vw, 0.84rem);
+}
+
+.gv-file-row {
+  padding: 7px 10px;
+}
+
+.gv-upload-note {
+  line-height: 1.35;
+}
+
+.gv-ocr-status {
+  margin-top: 10px;
+  padding: 9px 12px;
+  font-size: clamp(0.78rem, 0.82vw, 0.94rem);
+}
+
+.gv-reservation__foot {
+  margin-top: 10px;
+  font-size: clamp(0.78rem, 0.85vw, 0.96rem);
+}
+
+@media (max-width: 767px) {
+  .gv-reservation {
+    width: 100%;
+    padding: 48px 12px 20px;
+  }
+
+  .gv-upload-card,
+  .gv-reservation__form {
+    min-height: 0;
+  }
+
+  .gv-dropzone {
+    min-height: 230px;
+  }
 }
 
 .gv-services {
@@ -2188,7 +3450,7 @@ main {
 }
 
 .program-card__detail::before {
-  content: "•";
+  content: "â€¢";
   color: var(--gold-light);
 }
 
@@ -2966,7 +4228,7 @@ main {
 }
 
 .booking-page .booking-program-card__facts span::before {
-  content: "•";
+  content: "â€¢";
   margin-left: 6px;
   color: var(--gold-light);
 }
@@ -4349,7 +5611,7 @@ main {
 }
 
 .corporate-page .corporate-program-card__facts span::before {
-  content: "•";
+  content: "â€¢";
   margin-left: 6px;
   color: var(--gold-light);
 }
@@ -5662,5 +6924,1491 @@ main {
 
   .services-page .services-page__features {
     grid-template-columns: 1fr;
+  }
+}
+
+
+@media (min-width: 981px) {
+  .gv-reservation-modal {
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    padding: 8px;
+  }
+
+  .gv-reservation {
+    width: min(95vw, 1480px);
+    max-height: calc(100vh - 16px);
+    height: min(760px, calc(100vh - 16px));
+    display: flex;
+    flex-direction: column;
+    padding: clamp(10px, 1vw, 18px);
+    overflow: hidden;
+  }
+
+  .gv-reservation__close {
+    top: 14px;
+    left: 16px;
+    width: 40px;
+    height: 40px;
+    font-size: 26px;
+  }
+
+  .gv-reservation__header {
+    flex: 0 0 auto;
+    margin-bottom: 8px;
+  }
+
+  .gv-reservation__header > .icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .gv-reservation__header h2 {
+    margin: 0;
+    font-size: clamp(1.65rem, 2.1vw, 2.45rem);
+  }
+
+  .gv-reservation__header p {
+    font-size: clamp(0.78rem, 0.8vw, 0.95rem);
+  }
+
+  .gv-reservation__layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-width: 1360px;
+    gap: clamp(8px, 0.9vw, 14px);
+    align-items: stretch;
+  }
+
+  .gv-upload-card,
+  .gv-reservation__form {
+    min-height: 0;
+    height: 100%;
+    padding: clamp(10px, 0.9vw, 14px);
+    border-radius: 18px;
+  }
+
+  .gv-reservation__form {
+    gap: 5px;
+  }
+
+  .gv-reservation__form-head {
+    margin-bottom: 0;
+  }
+
+  .gv-reservation__form-head > span {
+    width: 44px;
+    height: 44px;
+  }
+
+  .gv-reservation__form-head strong {
+    font-size: clamp(1rem, 1vw, 1.2rem);
+  }
+
+  .gv-reservation__form-head p,
+  .gv-upload-card__head p {
+    font-size: 0.76rem;
+  }
+
+  .gv-reservation__form label {
+    gap: 2px;
+    font-size: 0.86rem;
+  }
+
+  .gv-field {
+    grid-template-columns: minmax(0, 1fr) 38px;
+    gap: 6px;
+  }
+
+  .gv-field .icon {
+    width: 38px;
+    height: 38px;
+    padding: 8px;
+  }
+
+  .gv-reservation__form input {
+    min-height: 38px;
+    font-size: 0.86rem;
+    border-radius: 10px;
+  }
+
+  .gv-smart-extract,
+  .gv-confirm-booking {
+    min-height: 40px;
+    font-size: 0.96rem;
+    border-radius: 10px;
+  }
+
+  .gv-reservation__form small {
+    font-size: 0.72rem;
+  }
+
+  .gv-upload-card {
+    gap: 8px;
+  }
+
+  .gv-upload-card__head {
+    gap: 8px;
+  }
+
+  .gv-upload-card__head > span {
+    width: 42px;
+    height: 42px;
+    font-size: 1rem;
+  }
+
+  .gv-upload-card__head strong {
+    font-size: clamp(1rem, 1.05vw, 1.22rem);
+  }
+
+  .gv-dropzone {
+    min-height: 0;
+    flex: 1 1 auto;
+    padding: 10px;
+    gap: 3px;
+    border-radius: 14px;
+  }
+
+  .gv-document-preview--passport {
+    width: clamp(74px, 6.6vw, 112px);
+    min-height: clamp(102px, 9.3vw, 150px);
+  }
+
+  .gv-document-preview--id {
+    width: min(58%, 190px);
+    min-height: clamp(76px, 7.2vw, 112px);
+  }
+
+  .gv-document-preview img {
+    max-height: clamp(102px, 10vw, 150px);
+  }
+
+  .gv-document-preview > .icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .gv-upload-cloud {
+    width: 34px;
+    height: 34px;
+    margin-top: -17px;
+  }
+
+  .gv-dropzone b {
+    font-size: 0.84rem;
+  }
+
+  .gv-dropzone p,
+  .gv-dropzone small,
+  .gv-upload-note,
+  .gv-file-row {
+    font-size: 0.7rem;
+  }
+
+  .gv-file-row {
+    padding: 5px 8px;
+  }
+
+  .gv-ocr-status {
+    flex: 0 0 auto;
+    margin-top: 7px;
+    padding: 7px 10px;
+    font-size: 0.74rem;
+  }
+
+  .gv-reservation__foot {
+    flex: 0 0 auto;
+    margin-top: 7px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Compact globalview landing scale */
+@media (min-width: 981px) {
+  .gv-header {
+    min-height: clamp(76px, 7vw, 104px);
+  }
+
+  .gv-topbar {
+    width: min(94vw, 1500px);
+    min-height: clamp(72px, 6.5vw, 96px);
+    grid-template-columns: minmax(210px, 0.75fr) minmax(420px, 1.25fr) minmax(390px, 1fr);
+    gap: clamp(16px, 1.8vw, 32px);
+  }
+
+  .gv-brand {
+    gap: clamp(10px, 1vw, 16px);
+  }
+
+  .gv-brand > .icon {
+    width: clamp(44px, 3.4vw, 62px);
+    height: clamp(44px, 3.4vw, 62px);
+  }
+
+  .gv-brand strong {
+    font-size: clamp(1.25rem, 1.65vw, 2rem);
+  }
+
+  .gv-brand span {
+    font-size: clamp(0.78rem, 0.85vw, 1rem);
+  }
+
+  .gv-nav {
+    gap: clamp(16px, 2vw, 34px);
+    font-size: clamp(0.98rem, 1.15vw, 1.35rem);
+  }
+
+  .gv-nav a {
+    padding: clamp(22px, 2.4vw, 30px) 0 clamp(18px, 2vw, 24px);
+  }
+
+  .gv-contact {
+    gap: clamp(14px, 1.4vw, 22px);
+    font-size: clamp(0.78rem, 0.82vw, 0.95rem);
+  }
+
+  .gv-book {
+    min-height: clamp(44px, 4vw, 58px);
+    padding: 0 clamp(18px, 1.7vw, 28px);
+    font-size: clamp(1rem, 1.2vw, 1.35rem);
+    border-radius: 12px;
+  }
+
+  .gv-hero {
+    min-height: clamp(560px, 62vh, 680px);
+  }
+
+  .gv-hero::after {
+    bottom: -98px;
+    height: 130px;
+  }
+
+  .gv-hero__content {
+    width: min(94vw, 1500px);
+    padding: clamp(36px, 5vh, 62px) 0 clamp(120px, 14vh, 150px);
+  }
+
+  .gv-hero__content p,
+  .gv-hero__content h1,
+  .gv-hero__content > span,
+  .gv-hero-features,
+  .gv-actions {
+    width: min(590px, 45vw);
+  }
+
+  .gv-hero__content p {
+    font-size: clamp(2.45rem, 4vw, 4.25rem);
+    margin-bottom: 2px;
+  }
+
+  .gv-hero__content h1 {
+    font-size: clamp(2.15rem, 3.35vw, 3.75rem);
+    margin-bottom: clamp(10px, 1.2vw, 16px);
+  }
+
+  .gv-hero__content > span {
+    max-width: 580px;
+    font-size: clamp(0.94rem, 1.08vw, 1.25rem);
+    line-height: 1.75;
+  }
+
+  .gv-hero-features {
+    margin-top: clamp(22px, 2.1vw, 30px);
+  }
+
+  .gv-hero-features article {
+    min-height: clamp(64px, 5.8vw, 82px);
+    padding: 0 clamp(10px, 1vw, 16px);
+  }
+
+  .gv-hero-features .icon {
+    width: clamp(22px, 1.9vw, 28px);
+    height: clamp(22px, 1.9vw, 28px);
+  }
+
+  .gv-hero-features strong {
+    font-size: clamp(0.78rem, 0.88vw, 0.98rem);
+    line-height: 1.45;
+  }
+
+  .gv-actions {
+    margin-top: clamp(20px, 2vw, 26px);
+    gap: clamp(12px, 1.2vw, 18px);
+  }
+
+  .gv-hero button {
+    min-height: clamp(46px, 4vw, 56px);
+    padding: 0 clamp(20px, 2vw, 30px);
+    font-size: clamp(0.95rem, 1vw, 1.15rem);
+    border-radius: 12px;
+  }
+
+  .gv-support {
+    top: clamp(150px, 16vw, 205px);
+    right: max(42px, calc((100% - 1500px) / 2 + 18px));
+    width: clamp(190px, 14vw, 230px);
+    min-height: clamp(235px, 22vw, 295px);
+    padding: clamp(22px, 2vw, 30px) clamp(16px, 1.5vw, 22px);
+    border-radius: 24px;
+  }
+
+  .gv-support .icon {
+    width: clamp(34px, 3vw, 44px);
+    height: clamp(34px, 3vw, 44px);
+  }
+
+  .gv-support b {
+    font-size: clamp(2.25rem, 3.2vw, 3.65rem);
+  }
+
+  .gv-support span {
+    font-size: clamp(0.76rem, 0.82vw, 0.95rem);
+  }
+
+  .gv-spiritual {
+    top: clamp(230px, 20vw, 280px);
+    right: max(300px, calc((100% - 1500px) / 2 + 330px));
+    width: clamp(190px, 16vw, 240px);
+  }
+
+  .gv-spiritual strong {
+    font-size: clamp(1.7rem, 2.35vw, 2.35rem);
+  }
+
+  .gv-spiritual p {
+    font-size: clamp(0.8rem, 0.9vw, 1rem);
+  }
+
+  .gv-search {
+    width: min(90vw, 1320px);
+    min-height: clamp(72px, 6.3vw, 96px);
+    margin-top: clamp(-58px, -4.6vw, -42px);
+    grid-template-columns: clamp(140px, 12vw, 180px) repeat(4, minmax(0, 1fr));
+    border-radius: 18px;
+  }
+
+  .gv-search button {
+    min-height: clamp(52px, 4.5vw, 72px);
+    margin-left: clamp(8px, 1vw, 14px);
+    font-size: clamp(0.9rem, 0.95vw, 1.08rem);
+    border-radius: 13px;
+  }
+
+  .gv-search label {
+    padding: 0 clamp(14px, 1.5vw, 24px);
+  }
+
+  .gv-search span {
+    font-size: clamp(0.8rem, 0.85vw, 0.98rem);
+  }
+
+  .gv-search select,
+  .gv-search input {
+    min-height: 30px;
+    font-size: clamp(0.8rem, 0.85vw, 0.98rem);
+  }
+}
+
+@media (max-width: 980px) {
+  .gv-hero {
+    min-height: 690px;
+  }
+
+  .gv-hero__content p {
+    font-size: clamp(2.4rem, 8vw, 3.4rem);
+  }
+
+  .gv-hero__content h1 {
+    font-size: clamp(2rem, 7vw, 3rem);
+  }
+}
+
+@media (min-width: 981px) {
+  .gv-packages {
+    padding: clamp(44px, 4.6vw, 64px) max(28px, calc((100% - 1560px) / 2)) clamp(48px, 5vw, 70px);
+  }
+
+  .gv-packages__header {
+    margin-bottom: clamp(20px, 2vw, 28px);
+  }
+
+  .gv-packages h2,
+  .gv-services h2,
+  .gv-travel-packages h2 {
+    font-size: clamp(1.75rem, 2.55vw, 2.75rem);
+  }
+
+  .gv-packages__header p {
+    font-size: clamp(0.9rem, 1vw, 1.15rem);
+  }
+
+  .gv-package-grid {
+    gap: clamp(16px, 1.35vw, 24px);
+  }
+
+  .gv-card {
+    min-height: clamp(360px, 31vw, 430px);
+    border-radius: 18px;
+  }
+
+  .gv-card__media {
+    min-height: clamp(150px, 13vw, 190px);
+  }
+
+  .gv-card__badge {
+    top: clamp(16px, 1.4vw, 22px);
+    right: clamp(16px, 1.5vw, 24px);
+    min-width: clamp(118px, 10vw, 145px);
+    min-height: clamp(42px, 3.6vw, 54px);
+    padding: 0 clamp(14px, 1.2vw, 20px);
+    font-size: clamp(0.9rem, 0.95vw, 1.15rem);
+    border-radius: 12px;
+  }
+
+  .gv-card__image-text {
+    right: clamp(18px, 1.6vw, 26px);
+    bottom: clamp(22px, 2vw, 32px);
+    font-size: clamp(0.78rem, 0.82vw, 0.98rem);
+  }
+
+  .gv-card__body {
+    padding: clamp(16px, 1.5vw, 22px);
+  }
+
+  .gv-card__features {
+    font-size: clamp(0.78rem, 0.82vw, 0.94rem);
+  }
+
+  .gv-card__features span {
+    min-height: clamp(56px, 5vw, 72px);
+    gap: 6px;
+  }
+
+  .gv-card__features .icon {
+    width: clamp(20px, 1.7vw, 26px);
+    height: clamp(20px, 1.7vw, 26px);
+  }
+
+  .gv-card__divider {
+    margin: clamp(14px, 1.3vw, 18px) 0 clamp(12px, 1.2vw, 16px);
+  }
+
+  .gv-card__footer b {
+    font-size: clamp(2rem, 2.5vw, 2.9rem);
+  }
+
+  .gv-card__footer p {
+    font-size: clamp(0.78rem, 0.85vw, 0.95rem);
+  }
+
+  .gv-card__footer button {
+    min-width: clamp(160px, 14vw, 205px);
+    min-height: clamp(44px, 3.8vw, 54px);
+    font-size: clamp(0.92rem, 0.95vw, 1.12rem);
+    border-radius: 12px;
+  }
+
+  .gv-travel-packages {
+    padding: clamp(38px, 4vw, 54px) max(32px, calc((100% - 1320px) / 2)) clamp(44px, 4.4vw, 62px);
+  }
+
+  .gv-travel-grid {
+    max-width: 1180px;
+  }
+
+  .gv-travel-card__media {
+    min-height: clamp(170px, 15vw, 225px);
+  }
+
+  .gv-services {
+    padding: clamp(18px, 2vw, 26px) max(18px, calc((100% - 1180px) / 2)) clamp(20px, 2vw, 28px);
+  }
+
+  .gv-service-grid article {
+    min-height: clamp(78px, 7vw, 100px);
+    padding: clamp(12px, 1.2vw, 18px) 10px;
+  }
+
+  .gv-footer {
+    min-height: 96px;
+    padding: 16px max(18px, calc((100% - 1180px) / 2));
+  }
+}
+
+.gv-success-popup {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(7, 16, 21, 0.34);
+  backdrop-filter: blur(4px);
+}
+
+.gv-success-popup > div {
+  width: min(520px, 92vw);
+  padding: clamp(22px, 2.4vw, 34px);
+  border: 1px solid rgba(217, 162, 61, 0.62);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 250, 241, 0.98), rgba(248, 235, 215, 0.98));
+  color: #071015;
+  text-align: center;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.26);
+}
+
+.gv-success-popup span {
+  width: 60px;
+  height: 60px;
+  display: inline-grid;
+  place-items: center;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f1cb72, #d9a23d);
+  color: #071015;
+}
+
+.gv-success-popup strong {
+  display: block;
+  font-size: clamp(1.25rem, 1.5vw, 1.65rem);
+  font-weight: 900;
+}
+
+.gv-success-popup p {
+  margin: 12px 0 20px;
+  color: #5b5144;
+  font-size: clamp(0.96rem, 1vw, 1.08rem);
+  font-weight: 800;
+  line-height: 1.8;
+}
+
+.gv-success-popup button {
+  min-width: 150px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f1cc75, #d99e31);
+  color: #080b0e;
+  font: inherit;
+  font-weight: 900;
+}
+
+/* Compact package cards at browser zoom 100% */
+@media (min-width: 981px) {
+  .gv-packages {
+    padding: clamp(28px, 3vw, 46px) max(22px, calc((100% - 1320px) / 2)) clamp(34px, 3.4vw, 50px);
+  }
+
+  .gv-packages__header {
+    margin-bottom: clamp(16px, 1.5vw, 24px);
+  }
+
+  .gv-section-kicker {
+    width: clamp(26px, 2vw, 34px);
+    height: clamp(20px, 1.6vw, 24px);
+    margin-bottom: 2px;
+  }
+
+  .gv-section-kicker .icon {
+    width: clamp(18px, 1.6vw, 24px);
+    height: clamp(18px, 1.6vw, 24px);
+  }
+
+  .gv-packages h2,
+  .gv-services h2,
+  .gv-travel-packages h2 {
+    gap: clamp(12px, 1.8vw, 22px);
+    font-size: clamp(1.45rem, 2.05vw, 2.25rem);
+  }
+
+  .gv-packages h2::before,
+  .gv-packages h2::after,
+  .gv-services h2::before,
+  .gv-services h2::after,
+  .gv-travel-packages h2::before,
+  .gv-travel-packages h2::after {
+    width: clamp(46px, 6vw, 100px);
+  }
+
+  .gv-packages__header p {
+    margin-top: 6px;
+    font-size: clamp(0.78rem, 0.88vw, 1rem);
+  }
+
+  .gv-package-grid {
+    max-width: min(91vw, 1320px);
+    margin-inline: auto;
+    gap: clamp(14px, 1.4vw, 22px);
+  }
+
+  .gv-card {
+    min-height: clamp(300px, 22.5vw, 360px);
+    border-radius: clamp(12px, 1.2vw, 16px);
+  }
+
+  .gv-card__media {
+    min-height: clamp(112px, 10.2vw, 150px);
+  }
+
+  .gv-card__media::after {
+    bottom: -13px;
+    height: 30px;
+  }
+
+  .gv-card__badge {
+    top: clamp(12px, 1vw, 16px);
+    right: clamp(12px, 1vw, 16px);
+    min-width: clamp(96px, 8vw, 122px);
+    min-height: clamp(34px, 2.8vw, 42px);
+    padding: 0 clamp(10px, 0.9vw, 14px);
+    gap: 6px;
+    border-radius: 10px;
+    font-size: clamp(0.76rem, 0.82vw, 0.96rem);
+  }
+
+  .gv-card__badge .icon {
+    width: clamp(15px, 1.25vw, 19px);
+    height: clamp(15px, 1.25vw, 19px);
+  }
+
+  .gv-card__image-text {
+    right: clamp(14px, 1.1vw, 18px);
+    bottom: clamp(17px, 1.4vw, 24px);
+    font-size: clamp(0.68rem, 0.7vw, 0.82rem);
+    line-height: 1.3;
+  }
+
+  .gv-card__image-text::after {
+    width: 30px;
+    margin-top: 5px;
+  }
+
+  .gv-card__body {
+    padding: clamp(12px, 1.05vw, 16px);
+  }
+
+  .gv-card__features {
+    font-size: clamp(0.66rem, 0.72vw, 0.82rem);
+  }
+
+  .gv-card__features span {
+    min-height: clamp(42px, 3.8vw, 54px);
+    gap: 4px;
+    padding: 0 clamp(4px, 0.55vw, 8px);
+  }
+
+  .gv-card__features .icon {
+    width: clamp(16px, 1.35vw, 20px);
+    height: clamp(16px, 1.35vw, 20px);
+  }
+
+  .gv-card__divider {
+    margin: clamp(10px, 0.9vw, 14px) 0 clamp(9px, 0.8vw, 12px);
+  }
+
+  .gv-card__footer {
+    gap: clamp(10px, 1vw, 16px);
+  }
+
+  .gv-card__footer p {
+    font-size: clamp(0.68rem, 0.72vw, 0.82rem);
+  }
+
+  .gv-card__footer b {
+    font-size: clamp(1.65rem, 2vw, 2.35rem);
+  }
+
+  .gv-card__footer button {
+    min-width: clamp(122px, 10.5vw, 166px);
+    min-height: clamp(36px, 3vw, 44px);
+    padding: 0 clamp(12px, 1vw, 18px);
+    gap: 8px;
+    border-radius: 10px;
+    font-size: clamp(0.76rem, 0.82vw, 0.95rem);
+  }
+
+  .gv-travel-packages {
+    padding: clamp(28px, 3vw, 42px) max(22px, calc((100% - 1180px) / 2)) clamp(34px, 3.4vw, 48px);
+  }
+
+  .gv-travel-packages h2 {
+    margin-bottom: clamp(16px, 1.7vw, 24px);
+  }
+
+  .gv-travel-grid {
+    max-width: min(88vw, 1120px);
+    gap: clamp(16px, 1.6vw, 26px);
+  }
+
+  .gv-travel-card {
+    border-radius: clamp(12px, 1.2vw, 16px);
+  }
+
+  .gv-travel-card__media {
+    min-height: clamp(125px, 11.5vw, 165px);
+  }
+
+  .gv-travel-card__media span {
+    top: clamp(12px, 1vw, 16px);
+    right: clamp(12px, 1vw, 16px);
+    min-width: clamp(88px, 7.2vw, 112px);
+    min-height: clamp(34px, 2.8vw, 42px);
+    font-size: clamp(0.78rem, 0.9vw, 1rem);
+    border-radius: 10px;
+  }
+
+  .gv-travel-card__body {
+    padding: clamp(12px, 1.1vw, 18px);
+  }
+
+  .gv-travel-card__features {
+    font-size: clamp(0.68rem, 0.75vw, 0.86rem);
+  }
+
+  .gv-travel-card__features span {
+    min-height: clamp(44px, 4.2vw, 60px);
+    gap: 5px;
+    padding: 0 clamp(5px, 0.65vw, 9px);
+  }
+
+  .gv-travel-card__features .icon {
+    width: clamp(17px, 1.4vw, 22px);
+    height: clamp(17px, 1.4vw, 22px);
+  }
+
+  .gv-travel-card__divider {
+    margin: clamp(10px, 0.95vw, 15px) 0 clamp(10px, 0.9vw, 14px);
+  }
+
+  .gv-travel-card__footer b {
+    font-size: clamp(1.8rem, 2.25vw, 2.65rem);
+  }
+
+  .gv-travel-card__footer p {
+    font-size: clamp(0.72rem, 0.78vw, 0.88rem);
+  }
+
+  .gv-travel-card__footer button {
+    min-width: clamp(135px, 11.5vw, 180px);
+    min-height: clamp(38px, 3.2vw, 46px);
+    font-size: clamp(0.78rem, 0.86vw, 1rem);
+    border-radius: 10px;
+  }
+}
+
+@media (min-width: 981px) and (max-height: 820px) {
+  .gv-packages {
+    padding-top: 26px;
+    padding-bottom: 34px;
+  }
+
+  .gv-card {
+    min-height: 310px;
+  }
+
+  .gv-card__media {
+    min-height: 118px;
+  }
+
+  .gv-travel-card__media {
+    min-height: 128px;
+  }
+}
+
+/* Extra compact scale for small laptop screens */
+@media (min-width: 981px) {
+  .globalview-page {
+    --gv-scale: clamp(0.68, calc(100vw / 1920), 0.9);
+  }
+
+  .gv-header {
+    min-height: clamp(56px, 8.5vh, 84px);
+  }
+
+  .gv-topbar {
+    width: min(96vw, 1360px);
+    min-height: clamp(56px, 8.5vh, 82px);
+    grid-template-columns: minmax(180px, 0.75fr) minmax(340px, 1.2fr) minmax(330px, 0.9fr);
+    gap: clamp(10px, 1.2vw, 22px);
+  }
+
+  .gv-brand > .icon {
+    width: clamp(34px, 3.4vw, 52px);
+    height: clamp(34px, 3.4vw, 52px);
+  }
+
+  .gv-brand strong {
+    font-size: clamp(1rem, 1.5vw, 1.55rem);
+  }
+
+  .gv-brand span,
+  .gv-contact,
+  .gv-search span,
+  .gv-search select,
+  .gv-search input {
+    font-size: clamp(0.68rem, 0.78vw, 0.88rem);
+  }
+
+  .gv-nav {
+    gap: clamp(12px, 1.55vw, 26px);
+    font-size: clamp(0.82rem, 1vw, 1.05rem);
+  }
+
+  .gv-nav a {
+    padding: clamp(14px, 2vh, 22px) 0 clamp(12px, 1.7vh, 18px);
+  }
+
+  .gv-book {
+    min-height: clamp(38px, 5.2vh, 50px);
+    padding: 0 clamp(14px, 1.5vw, 22px);
+    font-size: clamp(0.82rem, 1vw, 1.05rem);
+  }
+
+  .gv-hero {
+    min-height: clamp(470px, 74vh, 610px);
+    background-position: center 44%;
+  }
+
+  .gv-hero::after {
+    bottom: -106px;
+    height: 120px;
+  }
+
+  .gv-hero__content {
+    width: min(96vw, 1360px);
+    padding: clamp(24px, 4.8vh, 42px) 0 clamp(84px, 13vh, 118px);
+  }
+
+  .gv-hero__content p,
+  .gv-hero__content h1,
+  .gv-hero__content > span,
+  .gv-hero-features,
+  .gv-actions {
+    width: min(520px, 42vw);
+  }
+
+  .gv-hero__content p {
+    font-size: clamp(2rem, 3.25vw, 3.2rem);
+    line-height: 1.02;
+  }
+
+  .gv-hero__content h1 {
+    font-size: clamp(1.75rem, 2.8vw, 2.95rem);
+    margin-bottom: clamp(6px, 1vh, 12px);
+  }
+
+  .gv-hero__content > span {
+    max-width: 510px;
+    font-size: clamp(0.78rem, 0.95vw, 1.02rem);
+    line-height: 1.6;
+  }
+
+  .gv-hero-features {
+    margin-top: clamp(14px, 2vh, 22px);
+  }
+
+  .gv-hero-features article {
+    min-height: clamp(48px, 7vh, 66px);
+    padding: 0 clamp(7px, 0.9vw, 12px);
+    gap: 5px;
+  }
+
+  .gv-hero-features .icon {
+    width: clamp(18px, 1.6vw, 23px);
+    height: clamp(18px, 1.6vw, 23px);
+  }
+
+  .gv-hero-features strong {
+    font-size: clamp(0.66rem, 0.78vw, 0.86rem);
+  }
+
+  .gv-actions {
+    margin-top: clamp(14px, 2vh, 22px);
+    gap: clamp(10px, 1vw, 14px);
+  }
+
+  .gv-hero button {
+    min-height: clamp(38px, 5.4vh, 48px);
+    padding: 0 clamp(16px, 1.7vw, 24px);
+    font-size: clamp(0.78rem, 0.9vw, 1rem);
+  }
+
+  .gv-support {
+    top: clamp(128px, 22vh, 170px);
+    right: max(34px, calc((100% - 1360px) / 2 + 14px));
+    width: clamp(160px, 13vw, 205px);
+    min-height: clamp(190px, 31vh, 250px);
+    padding: clamp(16px, 2.4vh, 24px) clamp(12px, 1.2vw, 18px);
+    border-radius: 20px;
+  }
+
+  .gv-support .icon {
+    width: clamp(28px, 2.6vw, 38px);
+    height: clamp(28px, 2.6vw, 38px);
+  }
+
+  .gv-support b {
+    font-size: clamp(1.75rem, 2.8vw, 3rem);
+  }
+
+  .gv-support span,
+  .gv-support em {
+    font-size: clamp(0.68rem, 0.76vw, 0.85rem);
+  }
+
+  .gv-spiritual {
+    top: clamp(190px, 31vh, 245px);
+    right: max(245px, calc((100% - 1360px) / 2 + 285px));
+    width: clamp(155px, 13vw, 205px);
+  }
+
+  .gv-spiritual strong {
+    font-size: clamp(1.25rem, 1.9vw, 1.95rem);
+  }
+
+  .gv-spiritual span {
+    margin: clamp(8px, 1.4vh, 14px) auto;
+  }
+
+  .gv-spiritual p {
+    font-size: clamp(0.66rem, 0.78vw, 0.86rem);
+    line-height: 1.55;
+  }
+
+  .gv-search {
+    width: min(92vw, 1180px);
+    min-height: clamp(58px, 8vh, 78px);
+    margin-top: clamp(-48px, -6vh, -34px);
+    grid-template-columns: clamp(112px, 10vw, 150px) repeat(4, minmax(0, 1fr));
+    border-radius: 15px;
+  }
+
+  .gv-search button {
+    min-height: clamp(42px, 5.8vh, 58px);
+    font-size: clamp(0.72rem, 0.82vw, 0.92rem);
+  }
+
+  .gv-search label {
+    padding: 0 clamp(10px, 1.1vw, 18px);
+  }
+}
+
+@media (min-width: 981px) and (max-height: 820px) {
+  .gv-hero {
+    min-height: 610px;
+  }
+
+  .gv-header {
+    min-height: 70px;
+  }
+
+  .gv-topbar {
+    min-height: 70px;
+  }
+
+  .gv-hero__content {
+    padding-top: 26px;
+    padding-bottom: 94px;
+  }
+
+  .gv-hero__content p {
+    font-size: clamp(1.9rem, 3vw, 2.9rem);
+  }
+
+  .gv-hero__content h1 {
+    font-size: clamp(1.65rem, 2.55vw, 2.55rem);
+  }
+
+  .gv-support {
+    top: 132px;
+    min-height: 210px;
+  }
+
+  .gv-spiritual {
+    top: 210px;
+  }
+}
+
+/* Final responsive tightening for compact laptop screens */
+@media (min-width: 981px) {
+  .globalview-page {
+    --gv-page-max: min(94vw, 1280px);
+  }
+
+  .gv-header {
+    min-height: clamp(54px, 7.2vh, 72px);
+  }
+
+  .gv-topbar {
+    width: var(--gv-page-max);
+    min-height: clamp(54px, 7.2vh, 72px);
+    grid-template-columns: minmax(175px, 0.68fr) minmax(300px, 1fr) minmax(285px, 0.78fr);
+    gap: clamp(8px, 1vw, 18px);
+  }
+
+  .gv-brand > .icon {
+    width: clamp(32px, 2.8vw, 46px);
+    height: clamp(32px, 2.8vw, 46px);
+  }
+
+  .gv-brand strong {
+    font-size: clamp(0.95rem, 1.25vw, 1.32rem);
+  }
+
+  .gv-brand span,
+  .gv-contact {
+    font-size: clamp(0.66rem, 0.74vw, 0.82rem);
+  }
+
+  .gv-nav {
+    gap: clamp(10px, 1.25vw, 22px);
+    font-size: clamp(0.8rem, 0.88vw, 0.96rem);
+  }
+
+  .gv-nav a {
+    padding: clamp(12px, 1.65vh, 18px) 0 clamp(10px, 1.35vh, 15px);
+  }
+
+  .gv-book {
+    min-height: clamp(36px, 4.8vh, 46px);
+    padding: 0 clamp(12px, 1.25vw, 19px);
+    border-radius: 12px;
+    font-size: clamp(0.78rem, 0.88vw, 0.96rem);
+  }
+
+  .gv-hero {
+    min-height: clamp(430px, 68vh, 560px);
+    background-size: cover;
+    background-position: center 48%;
+  }
+
+  .gv-hero__content {
+    width: var(--gv-page-max);
+    padding-top: clamp(20px, 3.2vh, 34px);
+    padding-bottom: clamp(78px, 10vh, 104px);
+  }
+
+  .gv-hero__content p,
+  .gv-hero__content h1,
+  .gv-hero__content > span,
+  .gv-hero-features,
+  .gv-actions {
+    width: min(470px, 39vw);
+  }
+
+  .gv-hero__content p {
+    font-size: clamp(1.78rem, 2.75vw, 2.72rem);
+    line-height: 1;
+  }
+
+  .gv-hero__content h1 {
+    font-size: clamp(1.5rem, 2.25vw, 2.32rem);
+    line-height: 1.08;
+  }
+
+  .gv-hero__content > span {
+    font-size: clamp(0.72rem, 0.82vw, 0.92rem);
+    line-height: 1.55;
+  }
+
+  .gv-hero-features {
+    margin-top: clamp(12px, 1.6vh, 19px);
+    gap: clamp(4px, 0.55vw, 8px);
+  }
+
+  .gv-hero-features article {
+    min-height: clamp(42px, 5.8vh, 56px);
+    padding: 0 clamp(5px, 0.7vw, 10px);
+  }
+
+  .gv-hero-features .icon {
+    width: clamp(16px, 1.35vw, 20px);
+    height: clamp(16px, 1.35vw, 20px);
+  }
+
+  .gv-hero-features strong {
+    font-size: clamp(0.6rem, 0.68vw, 0.78rem);
+    line-height: 1.35;
+  }
+
+  .gv-actions {
+    margin-top: clamp(12px, 1.7vh, 19px);
+  }
+
+  .gv-hero button {
+    min-height: clamp(36px, 4.9vh, 44px);
+    padding: 0 clamp(14px, 1.35vw, 22px);
+    border-radius: 12px;
+    font-size: clamp(0.72rem, 0.82vw, 0.9rem);
+  }
+
+  .gv-support {
+    top: clamp(112px, 18vh, 148px);
+    right: max(28px, calc((100% - 1280px) / 2 + 10px));
+    width: clamp(138px, 11.5vw, 178px);
+    min-height: clamp(162px, 25vh, 210px);
+    padding: clamp(13px, 1.8vh, 20px) clamp(10px, 1vw, 16px);
+    border-radius: 18px;
+  }
+
+  .gv-support .icon {
+    width: clamp(24px, 2.1vw, 32px);
+    height: clamp(24px, 2.1vw, 32px);
+  }
+
+  .gv-support b {
+    font-size: clamp(1.48rem, 2.35vw, 2.45rem);
+  }
+
+  .gv-support span,
+  .gv-support em {
+    font-size: clamp(0.6rem, 0.68vw, 0.76rem);
+    line-height: 1.55;
+  }
+
+  .gv-spiritual {
+    top: clamp(172px, 28vh, 220px);
+    right: max(208px, calc((100% - 1280px) / 2 + 230px));
+    width: clamp(130px, 11vw, 178px);
+  }
+
+  .gv-spiritual strong {
+    font-size: clamp(1.05rem, 1.55vw, 1.55rem);
+  }
+
+  .gv-spiritual p {
+    font-size: clamp(0.6rem, 0.7vw, 0.78rem);
+  }
+
+  .gv-search {
+    width: min(90vw, 1080px);
+    min-height: clamp(52px, 6.8vh, 68px);
+    margin-top: clamp(-42px, -5.2vh, -28px);
+    grid-template-columns: clamp(100px, 9vw, 132px) repeat(4, minmax(0, 1fr));
+  }
+
+  .gv-search button {
+    min-height: clamp(38px, 5vh, 50px);
+    font-size: clamp(0.68rem, 0.76vw, 0.84rem);
+  }
+
+  .gv-search label {
+    padding: 0 clamp(8px, 0.9vw, 14px);
+  }
+
+  .gv-search span,
+  .gv-search select,
+  .gv-search input {
+    font-size: clamp(0.62rem, 0.7vw, 0.78rem);
+  }
+}
+
+@media (min-width: 981px) and (max-height: 820px) {
+  .gv-header,
+  .gv-topbar {
+    min-height: 60px;
+  }
+
+  .gv-hero {
+    min-height: min(560px, calc(100vh - 70px));
+  }
+
+  .gv-hero__content {
+    padding-top: 18px;
+    padding-bottom: 74px;
+  }
+
+  .gv-hero__content p {
+    font-size: clamp(1.62rem, 2.55vw, 2.45rem);
+  }
+
+  .gv-hero__content h1 {
+    font-size: clamp(1.34rem, 2.05vw, 2.1rem);
+  }
+
+  .gv-support {
+    top: 98px;
+    min-height: 172px;
+  }
+
+  .gv-spiritual {
+    top: 178px;
+  }
+
+  .gv-search {
+    min-height: 56px;
+    margin-top: -34px;
+  }
+}
+
+/* Reference hero composition: compact banner with bottom search overlay */
+@media (min-width: 981px) {
+  .gv-header {
+    position: relative;
+    min-height: clamp(50px, 6.4vh, 64px);
+    background: rgba(7, 9, 12, 0.72);
+  }
+
+  .gv-topbar {
+    width: min(94vw, 1320px);
+    min-height: clamp(50px, 6.4vh, 64px);
+    grid-template-columns: minmax(230px, 0.76fr) minmax(430px, 1fr) minmax(440px, 0.95fr);
+  }
+
+  .gv-brand > .icon {
+    width: clamp(30px, 2.35vw, 40px);
+    height: clamp(30px, 2.35vw, 40px);
+  }
+
+  .gv-brand strong {
+    font-size: clamp(1rem, 1.3vw, 1.38rem);
+  }
+
+  .gv-nav {
+    gap: clamp(18px, 2.1vw, 34px);
+    font-size: clamp(0.78rem, 0.86vw, 0.95rem);
+  }
+
+  .gv-contact {
+    gap: clamp(13px, 1.35vw, 22px);
+  }
+
+  .gv-book {
+    min-height: clamp(34px, 4.6vh, 44px);
+    padding: 0 clamp(12px, 1.25vw, 20px);
+  }
+
+  .gv-hero {
+    min-height: clamp(430px, 56vw, 505px);
+    align-items: start;
+    background-position: center 43%;
+  }
+
+  .gv-hero::after {
+    bottom: -78px;
+    height: 118px;
+    border-top-width: 4px;
+  }
+
+  .gv-hero__content {
+    width: min(94vw, 1320px);
+    padding-top: clamp(18px, 3.2vh, 30px);
+    padding-bottom: clamp(82px, 11vh, 104px);
+  }
+
+  .gv-hero__content p,
+  .gv-hero__content h1,
+  .gv-hero__content > span,
+  .gv-hero-features,
+  .gv-actions {
+    width: min(520px, 43vw);
+  }
+
+  .gv-hero__content p {
+    font-size: clamp(2.15rem, 3.65vw, 3.75rem);
+    margin-bottom: 0;
+  }
+
+  .gv-hero__content h1 {
+    font-size: clamp(1.72rem, 2.9vw, 3rem);
+    margin-bottom: clamp(7px, 1.2vh, 12px);
+  }
+
+  .gv-hero__content > span {
+    max-width: 520px;
+    font-size: clamp(0.76rem, 0.94vw, 1rem);
+    line-height: 1.65;
+  }
+
+  .gv-hero-features {
+    margin-top: clamp(13px, 2vh, 20px);
+  }
+
+  .gv-hero-features article {
+    min-height: clamp(48px, 6.5vh, 62px);
+  }
+
+  .gv-actions {
+    margin-top: clamp(13px, 2vh, 20px);
+  }
+
+  .gv-hero button {
+    min-height: clamp(36px, 4.8vh, 44px);
+    min-width: clamp(145px, 14vw, 210px);
+  }
+
+  .gv-support {
+    top: clamp(106px, 17vh, 140px);
+    right: max(34px, calc((100% - 1320px) / 2 + 16px));
+    width: clamp(145px, 11.2vw, 176px);
+    min-height: clamp(165px, 24vh, 205px);
+    border-radius: 22px;
+  }
+
+  .gv-support b {
+    font-size: clamp(1.65rem, 2.45vw, 2.55rem);
+  }
+
+  .gv-spiritual {
+    top: clamp(162px, 25vh, 205px);
+    right: max(205px, calc((100% - 1320px) / 2 + 225px));
+    width: clamp(135px, 11vw, 180px);
+  }
+
+  .gv-spiritual strong {
+    font-size: clamp(1.12rem, 1.7vw, 1.72rem);
+  }
+
+  .gv-search {
+    direction: ltr;
+    width: min(73vw, 1030px);
+    min-height: clamp(62px, 8vh, 78px);
+    margin-top: clamp(-76px, -9vh, -58px);
+    padding: clamp(9px, 1.15vw, 15px) clamp(14px, 1.55vw, 22px);
+    grid-template-columns: clamp(118px, 10.4vw, 150px) repeat(4, minmax(0, 1fr));
+    border-radius: 18px;
+  }
+
+  .gv-search > * {
+    direction: rtl;
+  }
+
+  .gv-search button {
+    min-height: clamp(42px, 5.7vh, 54px);
+    margin-left: 0;
+    margin-right: clamp(8px, 0.9vw, 14px);
+    border-radius: 12px;
+  }
+
+  .gv-search label {
+    gap: 4px;
+    padding: 0 clamp(12px, 1.25vw, 22px);
+    border-inline-start: 0;
+    border-left: 1px solid #eadfce;
+  }
+
+  .gv-search label:last-child {
+    border-left: 0;
+  }
+
+  .gv-search span {
+    font-size: clamp(0.72rem, 0.86vw, 0.92rem);
+  }
+
+  .gv-search select,
+  .gv-search input {
+    min-height: 25px;
+    font-size: clamp(0.66rem, 0.76vw, 0.82rem);
+  }
+}
+
+@media (min-width: 981px) and (max-height: 820px) {
+  .gv-hero {
+    min-height: 485px;
+  }
+
+  .gv-hero__content {
+    padding-top: 18px;
+    padding-bottom: 88px;
+  }
+
+  .gv-search {
+    margin-top: -70px;
+  }
+}
+
+/* Right hero devotional block and 24/7 card tuned to the reference */
+@media (min-width: 981px) {
+  .gv-spiritual {
+    top: clamp(145px, 23vh, 188px);
+    right: max(190px, calc((100% - 1320px) / 2 + 218px));
+    width: clamp(150px, 12vw, 205px);
+    text-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
+  }
+
+  .gv-spiritual strong {
+    color: #e8c06d;
+    font-size: clamp(1.55rem, 2.25vw, 2.35rem);
+    font-weight: 800;
+    line-height: 1.08;
+  }
+
+  .gv-spiritual span {
+    width: clamp(42px, 4.2vw, 64px);
+    height: 2px;
+    margin: clamp(10px, 1.45vh, 15px) auto;
+    background: linear-gradient(90deg, transparent, #e8c06d 15%, #e8c06d 85%, transparent);
+  }
+
+  .gv-spiritual p {
+    color: rgba(255, 255, 255, 0.84);
+    font-size: clamp(0.72rem, 0.86vw, 0.95rem);
+    font-weight: 600;
+    line-height: 1.75;
+  }
+
+  .gv-support {
+    top: clamp(112px, 18vh, 148px);
+    right: max(24px, calc((100% - 1320px) / 2 + 12px));
+    width: clamp(150px, 12.4vw, 188px);
+    min-height: clamp(178px, 27vh, 232px);
+    padding: clamp(17px, 2.25vh, 24px) clamp(12px, 1vw, 16px);
+    gap: clamp(5px, 0.75vh, 8px);
+    border: 2px solid rgba(235, 194, 105, 0.86);
+    border-radius: clamp(24px, 2.2vw, 32px);
+    background:
+      linear-gradient(180deg, rgba(12, 13, 15, 0.9), rgba(10, 9, 9, 0.8)),
+      radial-gradient(circle at 48% 8%, rgba(232, 192, 109, 0.18), transparent 38%);
+    box-shadow:
+      0 16px 40px rgba(0, 0, 0, 0.36),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+
+  .gv-support .gv-support__mark {
+    width: clamp(32px, 2.75vw, 45px);
+    height: clamp(32px, 2.75vw, 45px);
+    color: #f3d385;
+    margin-bottom: clamp(5px, 0.8vh, 9px);
+  }
+
+  .gv-support strong {
+    color: rgba(255, 255, 255, 0.92);
+    font-size: clamp(0.76rem, 0.9vw, 0.98rem);
+    font-weight: 800;
+  }
+
+  .gv-support b {
+    color: #f1cb72;
+    font-size: clamp(2.2rem, 3.25vw, 3.1rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0;
+  }
+
+  .gv-support .gv-support__line {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: clamp(0.66rem, 0.78vw, 0.86rem);
+    line-height: 1.5;
+  }
+
+  .gv-support .gv-support__line .icon {
+    width: clamp(15px, 1.25vw, 20px);
+    height: clamp(15px, 1.25vw, 20px);
+    color: #f4d48a;
+  }
+
+  .gv-support em {
+    width: 82%;
+    margin-top: clamp(10px, 1.4vh, 15px);
+    padding-top: clamp(10px, 1.4vh, 15px);
+    border-top: 1px solid rgba(232, 192, 109, 0.55);
+    color: #f2d083;
+    font-size: clamp(0.68rem, 0.82vw, 0.9rem);
+    font-weight: 900;
   }
 }
