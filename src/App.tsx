@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { getCurrentUser, login, logout, type AuthUser } from "./api/auth";
 import LandingPage from "./components/landingpage/LandingPage";
 import { LoginPanel } from "./components/Auth/LoginPanel";
+import { DashboardPanel } from "./components/Dashboard/DashboardPanel";
 import { TravelersPanel } from "./components/Travelers/TravelersPanel";
 import { TravelersCreatePanel } from "./components/Travelers/TravelersCreatePanel";
 import { TravelersDeletedPanel } from "./components/Travelers/TravelersDeletedPanel";
@@ -175,7 +176,8 @@ export default function App() {
     onLogout: handleLogout
   };
 
-  if (path === "/admin" || path === "/travelers") return <TravelersPanel {...commonProps} />;
+  if (path === "/admin") return <DashboardPanel {...commonProps} />;
+  if (path === "/travelers") return <TravelersPanel {...commonProps} />;
   if (path === "/travelers/create") return <TravelersCreatePanel {...commonProps} />;
   if (path === "/travelers/deleted") return <TravelersDeletedPanel {...commonProps} />;
   if (path === "/travelers/blocked") return <TravelersBlockedPanel {...commonProps} />;
@@ -238,5 +240,5 @@ export default function App() {
   if (path === "/receipt-vouchers") return <ReceiptVouchersPanel {...commonProps} />;
   if (path === "/payment-vouchers") return <PaymentVouchersPanel {...commonProps} />;
 
-  return <TravelersPanel {...commonProps} />;
+  return <DashboardPanel {...commonProps} />;
 }

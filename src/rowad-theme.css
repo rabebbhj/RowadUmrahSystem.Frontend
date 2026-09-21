@@ -2629,6 +2629,46 @@ body {
         padding: 0 clamp(10px, 0.9vw, 14px);
         font-size: clamp(0.78rem, 0.84vw, 0.92rem);
     }
+
+    .dashboard-activity-list {
+        display: grid;
+        gap: clamp(8px, 0.8vw, 12px);
+    }
+
+    .dashboard-activity-list button {
+        width: 100%;
+        min-height: clamp(54px, 4.8vw, 68px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: clamp(10px, 1vw, 14px);
+        padding: clamp(9px, 0.9vw, 13px) clamp(11px, 1vw, 15px);
+        border: 1px solid var(--rowad-border);
+        border-radius: clamp(12px, 1vw, 15px);
+        background: #fffaf1;
+        color: var(--rowad-text);
+        text-align: right;
+        box-shadow: none;
+    }
+
+    .dashboard-activity-list strong,
+    .dashboard-activity-list small,
+    .dashboard-activity-list em {
+        display: block;
+    }
+
+    .dashboard-activity-list strong {
+        font-size: clamp(0.82rem, 0.9vw, 1rem);
+        color: var(--rowad-brown);
+    }
+
+    .dashboard-activity-list small,
+    .dashboard-activity-list em {
+        color: var(--rowad-muted);
+        font-size: clamp(0.68rem, 0.75vw, 0.82rem);
+        font-style: normal;
+        font-weight: 800;
+    }
 }
 
 @media (min-width: 981px) and (max-height: 820px) {

@@ -196,7 +196,16 @@ async function requestJson<T>(response: Response): Promise<T> {
     throw new Error(await readErrorMessage(response));
   }
 
-  return response.json() as Promise<T>;
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  const text = await response.text();
+  if (!text.trim()) {
+    return undefined as T;
+  }
+
+  return JSON.parse(text) as T;
 }
 
 export async function getTravelers(

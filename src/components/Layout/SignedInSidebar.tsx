@@ -149,7 +149,8 @@ function ListChecksIcon({ className }: IconProps) {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { label: "المسافرون", path: "/admin", activePaths: ["/admin", "/travelers"], icon: UsersRoundIcon },
+  { label: "لوحة التحكم", path: "/admin", icon: ListChecksIcon },
+  { label: "المسافرون", path: "/travelers", icon: UsersRoundIcon },
   { label: "الرحلات", path: "/trips", icon: BusFrontIcon },
   { label: "المحاسبة", path: "/accounting", icon: CalculatorIcon },
   { label: "دليل الحسابات", path: "/accounts", icon: BookOpenIcon },
