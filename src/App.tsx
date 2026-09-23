@@ -35,6 +35,11 @@ import { ExpensesPanel } from "./components/Expenses/ExpensesPanel";
 import { JournalEntriesPanel } from "./components/JournalEntries/JournalEntriesPanel";
 import { ReceiptVouchersPanel } from "./components/ReceiptVouchers/ReceiptVouchersPanel";
 import { PaymentVouchersPanel } from "./components/PaymentVouchers/PaymentVouchersPanel";
+import { PackageSettingsPanel } from "./components/Settings/PackageSettingsPanel";
+import { NationalityGroupsPage } from "./components/NationalityGroups/NationalityGroupsPage";
+import { PricingRuleBuilderPage } from "./components/Pricing/PricingRuleBuilderPage";
+import { PricingExceptionsPage } from "./components/Pricing/PricingExceptionsPage";
+import { ServicesAddonsPage } from "./components/Pricing/ServicesAddonsPage";
 import { SignedInSidebar } from "./components/Layout/SignedInSidebar";
 import { AdminPlaceholderPanel } from "./components/Layout/AdminPlaceholderPanel";
 
@@ -52,6 +57,7 @@ const adminRoutePrefixes = [
   "/audit-logs",
   "/auditlogs",
   "/notifications",
+  "/settings",
   "/financial-reports",
   "/accounts",
   "/bank-accounts",
@@ -60,7 +66,11 @@ const adminRoutePrefixes = [
   "/expenses",
   "/journal-entries",
   "/receipt-vouchers",
-  "/payment-vouchers"
+  "/payment-vouchers",
+  "/nationality-groups",
+  "/pricing-rules",
+  "/pricing-exceptions",
+  "/services-addons"
 ];
 
 function currentPath() {
@@ -241,6 +251,7 @@ export default function App() {
   if (path.startsWith("/trips/deleted") && !can(user, "canRestoreTrips")) return forbiddenPanel;
   if (segments[0] === "trips" && !can(user, "canViewTrips")) return forbiddenPanel;
   if (segments[0] === "users" && !hasRole(user, "Admin")) return forbiddenPanel;
+  if (segments[0] === "settings" && !hasRole(user, "Admin")) return forbiddenPanel;
   if (path === "/accounting" && !can(user, "canViewAccounting")) return forbiddenPanel;
   if (path === "/documents" && !can(user, "canViewDocuments")) return forbiddenPanel;
   if ((path === "/audit-logs" || path === "/auditlogs") && !can(user, "canViewAuditLogs")) return forbiddenPanel;
@@ -253,6 +264,10 @@ export default function App() {
   if (segments[0] === "journal-entries" && !can(user, "canManageJournalEntries")) return forbiddenPanel;
   if (segments[0] === "receipt-vouchers" && !can(user, "canManageReceiptVouchers")) return forbiddenPanel;
   if (segments[0] === "payment-vouchers" && !can(user, "canManagePaymentVouchers")) return forbiddenPanel;
+  if (segments[0] === "nationality-groups" && !hasRole(user, "Admin")) return forbiddenPanel;
+  if (segments[0] === "pricing-rules" && !hasRole(user, "Admin")) return forbiddenPanel;
+  if (segments[0] === "pricing-exceptions" && !hasRole(user, "Admin")) return forbiddenPanel;
+  if (segments[0] === "services-addons" && !hasRole(user, "Admin")) return forbiddenPanel;
 
   if (path === "/admin") return <DashboardPanel {...commonProps} />;
   if (path === "/booking/login") return <TravelersCreatePanel {...commonProps} />;
@@ -283,6 +298,17 @@ export default function App() {
   if (path === "/users/create") return <UsersCreatePanel {...commonProps} />;
   if (segments[0] === "users" && segments[2] === "permissions") {
     return <UsersPermissionsPanel {...commonProps} userId={segments[1] ?? ""} />;
+  }
+  if (path === "/settings") return <PackageSettingsPanel {...commonProps} />;
+  if (path === "/settings/general") {
+    return (
+      <AdminPlaceholderPanel
+        {...commonProps}
+        eyebrow="Settings"
+        title="الإعدادات"
+        description="إعدادات النظام العامة ستظهر هنا. أقسام التسعير والخدمات أصبحت متاحة من القائمة الجانبية."
+      />
+    );
   }
 
   if (path === "/accounting") return <AccountingPanel {...commonProps} />;
@@ -350,6 +376,10 @@ export default function App() {
   if (path === "/journal-entries") return <JournalEntriesPanel {...commonProps} />;
   if (path === "/receipt-vouchers") return <ReceiptVouchersPanel {...commonProps} />;
   if (path === "/payment-vouchers") return <PaymentVouchersPanel {...commonProps} />;
+  if (path === "/nationality-groups") return <NationalityGroupsPage {...commonProps} />;
+  if (path === "/pricing-rules") return <PricingRuleBuilderPage {...commonProps} />;
+  if (path === "/pricing-exceptions") return <PricingExceptionsPage {...commonProps} />;
+  if (path === "/services-addons") return <ServicesAddonsPage {...commonProps} />;
 
   return <DashboardPanel {...commonProps} />;
 }

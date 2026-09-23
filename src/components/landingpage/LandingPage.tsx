@@ -1,7 +1,15 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { getCurrentUser, login as loginUser, logout as logoutUser, type AuthUser } from "../../api/auth";
-import type { FormEvent } from "react";
+import type { CSSProperties, FormEvent } from "react";
+import { findPackagePrice, getPackagePricing, type PackagePricing } from "../../api/packagePricing";
 import { createTraveler, readCivilIdOcr, readPassportOcr } from "../../api/travelers";
+import {
+  calculatePackagePrice,
+  getPackageFromPrice,
+  getPublishedPackages,
+  resolvePackageImageUrl,
+  type TravelPackage
+} from "../../api/travelPackages";
 import {
   ArrowRightIcon,
   BusIcon,
@@ -61,21 +69,6 @@ const packageFeatureIcons = [
   <HeadsetIcon className="icon icon-sm" />
 ];
 
-const travelPackages = [
-  {
-    days: "10 أيام",
-    image: "/landingpage/avion.png",
-    price: "95",
-    startDay: 3
-  },
-  {
-    days: "6 أيام",
-    image: "/landingpage/paysage.png",
-    price: "75",
-    startDay: 4
-  }
-];
-
 const services = [
   { icon: <ShieldIcon className="icon icon-md" />, title: "تأمين شامل", text: "لحماية رحلتك وراحة بالك" },
   { icon: <HeadsetIcon className="icon icon-md" />, title: "دعم على مدار الساعة", text: "نحن معك في كل خطوة" },
@@ -121,9 +114,9 @@ const hotelOptions = [
 ];
 
 const paymentPlans = [
-  { months: "3 أشهر", amount: "1,084 د.ك شهرياً" },
-  { months: "6 أشهر", amount: "2,167 د.ك شهرياً" },
-  { months: "12 شهر", amount: "4,334 د.ك شهرياً" }
+  { months: 3, label: "3 أشهر" },
+  { months: 6, label: "6 أشهر" },
+  { months: 12, label: "12 شهر" }
 ];
 
 const emptyFilters = {
@@ -155,7 +148,22 @@ type ReservationForm = typeof emptyReservationForm;
 type ReservationField = keyof ReservationForm;
 type UploadKind = "passport" | "id";
 type AuthPopupView = "login" | "register" | "forgot" | "reset" | "verify" | "twoFactor";
-type TravelPackageOptions = Record<string, { bookingDate: string; roomType: string; transportType: string; dateError: string }>;
+type TravelPackageOptionState = {
+  bookingDate: string;
+  travelers: string;
+  roomType: string;
+  transportType: string;
+  dateError: string;
+};
+type TravelPackageOptions = Record<string, TravelPackageOptionState>;
+const defaultTravelPackageOptions: TravelPackageOptionState = {
+  bookingDate: "",
+  travelers: "1",
+  roomType: "",
+  transportType: "",
+  dateError: ""
+};
+const travelerCountOptions = ["1", "2", "3", "4"];
 type LandingPageProps = {
   initialAuthView?: AuthPopupView | null;
 };
@@ -208,21 +216,11 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [submittedFilters, setSubmittedFilters] = useState<Filters>(emptyFilters);
   const [activePackageView, setActivePackageView] = useState<"travel" | null>(null);
-  const [travelOptions, setTravelOptions] = useState<TravelPackageOptions>(() =>
-    Object.fromEntries(
-      travelPackages.map((program) => [
-        program.days,
-        {
-          bookingDate: "",
-          roomType: "غرفة مزدوجة",
-          transportType: "باص",
-          dateError: ""
-        }
-      ])
-    )
-  );
+  const [publishedTravelPackages, setPublishedTravelPackages] = useState<TravelPackage[]>([]);
+  const [travelOptions, setTravelOptions] = useState<TravelPackageOptions>({});
   const [bookingSectionOpen, setBookingSectionOpen] = useState(false);
   const [selectedBookingTitle, setSelectedBookingTitle] = useState("");
+  const [selectedPackageId, setSelectedPackageId] = useState("");
   const [passportPreview, setPassportPreview] = useState<string | null>(null);
   const [idPreview, setIdPreview] = useState<string | null>(null);
   const [passportFile, setPassportFile] = useState<File | null>(null);
@@ -242,6 +240,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const [authPopupOpen, setAuthPopupOpen] = useState(Boolean(initialAuthView));
   const [authView, setAuthView] = useState<AuthPopupView>(initialAuthView ?? "login");
   const [authContextTitle, setAuthContextTitle] = useState("");
+  const [authContextPackageId, setAuthContextPackageId] = useState("");
   const [authEmail, setAuthEmail] = useState("traveler@rowad.local");
   const [authPassword, setAuthPassword] = useState("Traveler@12345");
   const [authRemember, setAuthRemember] = useState(true);
@@ -249,6 +248,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const [authMessage, setAuthMessage] = useState("");
   const [authErrors, setAuthErrors] = useState<{ email?: string; password?: string }>({});
   const [travelerUser, setTravelerUser] = useState<AuthUser | null>(null);
+  const [packagePricing, setPackagePricing] = useState<PackagePricing | null>(null);
   const [showAuthPassword, setShowAuthPassword] = useState(false);
   const [registerForm, setRegisterForm] = useState({
     fullName: "",
@@ -263,8 +263,9 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const [twoFactorMethod, setTwoFactorMethod] = useState<"app" | "sms">("app");
   const [twoFactorCode, setTwoFactorCode] = useState("");
 
-  const openReservationSection = (title: string) => {
+  const openReservationSection = (title: string, packageId = "") => {
     setSelectedBookingTitle(title);
+    setSelectedPackageId(packageId);
     setReservationStatus("");
     setOcrStatus("");
     setFormErrors({});
@@ -314,6 +315,62 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   }, []);
 
   useEffect(() => {
+    let active = true;
+
+    getPackagePricing()
+      .then((pricing) => {
+        if (active) {
+          setPackagePricing(pricing);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setPackagePricing(null);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    getPublishedPackages()
+      .then((items) => {
+        if (!active) return;
+
+        setPublishedTravelPackages(items);
+        setTravelOptions((current) => {
+          const next = { ...current };
+
+          items.forEach((packageItem) => {
+            const firstRoomType = packageItem.roomTypes.find((item) => item.active)?.label ?? "";
+            const firstTransport = packageItem.transportOptions.find((item) => item.active)?.label ?? "";
+
+            next[packageItem.id] = next[packageItem.id] ?? {
+              ...defaultTravelPackageOptions,
+              roomType: firstRoomType,
+              transportType: firstTransport
+            };
+          });
+
+          return next;
+        });
+      })
+      .catch(() => {
+        if (active) {
+          setPublishedTravelPackages([]);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
     if (!initialAuthView) return;
 
     const params = new URLSearchParams(window.location.search);
@@ -323,14 +380,14 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
     if (travelerUser?.isAuthenticated) {
       setAuthPopupOpen(false);
-      openReservationSection(bookingTitle);
+      openReservationSection(bookingTitle, authContextPackageId);
       return;
     }
 
     setAuthView(initialAuthView);
     setAuthMessage("يرجى تسجيل الدخول لإتمام الحجز.");
     setAuthPopupOpen(true);
-  }, [initialAuthView, travelerUser?.isAuthenticated]);
+  }, [authContextPackageId, initialAuthView, travelerUser?.isAuthenticated]);
 
   const filteredPackages = useMemo(() => {
     return packages.filter((program) => {
@@ -347,11 +404,39 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   );
 
   const selectedHotelInfo = hotelOptions.find((hotel) => hotel.name === selectedHotel) ?? hotelOptions[0];
-  const selectedTravelOptions = travelOptions[selectedBookingTitle] ?? travelOptions["10 أيام"];
-  const bookingDays = selectedBookingTitle.includes("6") ? "6 أيام" : "10 أيام";
-  const hotelTotal = selectedHotelInfo.price * (bookingDays === "6 أيام" ? 6 : 10);
-  const servicesTotal = selectedTravelOptions?.transportType === "سيارة فردية" ? 500 : 0;
+  const selectedPackage = publishedTravelPackages.find((packageItem) => packageItem.id === selectedPackageId) ?? null;
+  const selectedTravelOptions = travelOptions[selectedPackageId] ?? {
+    ...defaultTravelPackageOptions,
+    roomType: selectedPackage?.roomTypes.find((item) => item.active)?.label ?? "",
+    transportType: selectedPackage?.transportOptions.find((item) => item.active)?.label ?? ""
+  };
+  const selectedTravelerCount = Math.max(1, Number(selectedTravelOptions.travelers) || 1);
+  const bookingDays = selectedPackage?.durationLabel ?? (selectedBookingTitle.includes("6") ? "6 أيام" : "10 أيام");
+  const bookingNights = selectedPackage?.durationDays ?? (bookingDays === "6 أيام" ? 6 : 10);
+  const availableNationalities = packagePricing?.nationalities?.length ? packagePricing.nationalities : nationalityOptions;
+  const getHotelNightPrice = (hotelName: string, fallbackPrice: number) =>
+    findPackagePrice(packagePricing, bookingDays, hotelName, reservationForm.nationality, fallbackPrice);
+  const selectedHotelNightPrice = getHotelNightPrice(selectedHotelInfo.name, selectedHotelInfo.price);
+  const getReservationPackagePrice = (hotelName: string, fallbackPrice: number) =>
+    selectedPackage
+      ? calculatePackagePrice(selectedPackage, {
+          packageId: selectedPackage.id,
+          nationality: reservationForm.nationality,
+          roomType: selectedTravelOptions.roomType,
+          transport: selectedTravelOptions.transportType,
+          travelers: selectedTravelerCount,
+          departureDate: selectedTravelOptions.bookingDate,
+          durationDays: selectedPackage.durationDays,
+          hotel: hotelName
+        })
+      : getHotelNightPrice(hotelName, fallbackPrice);
+  const selectedPackagePrice = getReservationPackagePrice(selectedHotelInfo.name, selectedHotelInfo.price);
+  const selectedTransportSupplement =
+    selectedPackage?.transportOptions.find((item) => item.label === selectedTravelOptions.transportType)?.supplement ?? 0;
+  const hotelTotal = selectedPackage ? selectedPackagePrice * selectedTravelerCount : selectedHotelNightPrice * bookingNights;
+  const servicesTotal = selectedTransportSupplement;
   const reservationTotal = hotelTotal + servicesTotal;
+  const reservationBaseLabel = selectedPackage ? "سعر الباقة" : "سعر الفندق";
 
   const validateReservationData = () => {
     const nextErrors: Partial<Record<ReservationField | "passportFile" | "idFile", string>> = {};
@@ -421,51 +506,63 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     }, 0);
   };
 
-  const openAuthPopup = (view: AuthPopupView, title = "") => {
+  const openAuthPopup = (view: AuthPopupView, title = "", packageId = "") => {
     setAuthContextTitle(title);
+    setAuthContextPackageId(packageId);
     setAuthView(view);
     setAuthMessage("");
     setAuthPopupOpen(true);
   };
 
-  const openBookingSection = (title: string) => {
+  const openBookingSection = (title: string, packageId = "") => {
     const bookingTitle = title || "حجز جديد";
+    const packageItem = publishedTravelPackages.find((item) => item.id === packageId);
+    const options = packageId ? travelOptions[packageId] : null;
+
+    if (packageItem && packageItem.departureDates.length > 0 && !options?.bookingDate) {
+      setTravelOptions((current) => ({
+        ...current,
+        [packageId]: {
+          ...(current[packageId] ?? defaultTravelPackageOptions),
+          dateError: "اختر تاريخ الحجز قبل المتابعة."
+        }
+      }));
+      return;
+    }
 
     if (!travelerUser?.isAuthenticated) {
-      openAuthPopup("login", bookingTitle);
+      openAuthPopup("login", bookingTitle, packageId);
       setAuthMessage("يرجى تسجيل الدخول لإتمام الحجز.");
       return;
     }
 
-    openReservationSection(bookingTitle);
+    openReservationSection(bookingTitle, packageId);
   };
 
   const updateTravelOption = (
-    days: string,
-    name: "bookingDate" | "roomType" | "transportType",
+    packageId: string,
+    name: "bookingDate" | "travelers" | "roomType" | "transportType",
     value: string
   ) => {
     setTravelOptions((current) => ({
       ...current,
-      [days]: {
-        ...current[days],
-        [name]: value
+      [packageId]: {
+        ...(current[packageId] ?? defaultTravelPackageOptions),
+        [name]: value,
+        dateError: name === "bookingDate" ? "" : (current[packageId]?.dateError ?? "")
       }
     }));
   };
 
-  const updateTravelBookingDate = (days: string, expectedDay: number, value: string) => {
-    const selectedDay = value ? new Date(`${value}T12:00:00`).getDay() : -1;
-    const expectedDayLabel = expectedDay === 3 ? "الأربعاء" : "الخميس";
+  const updateTravelBookingDate = (packageId: string, departureDates: string[], value: string) => {
+    const validDate = !value || departureDates.length === 0 || departureDates.includes(value);
 
     setTravelOptions((current) => ({
       ...current,
-      [days]: {
-        ...current[days],
-        bookingDate: selectedDay === expectedDay ? value : "",
-        dateError: value && selectedDay !== expectedDay
-          ? `برنامج ${days} يبدأ فقط يوم ${expectedDayLabel}.`
-          : ""
+      [packageId]: {
+        ...(current[packageId] ?? defaultTravelPackageOptions),
+        bookingDate: validDate ? value : "",
+        dateError: value && !validDate ? "هذا التاريخ غير متاح لهذه الباقة." : ""
       }
     }));
   };
@@ -520,7 +617,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       setAuthPopupOpen(false);
 
       if (authContextTitle) {
-        openReservationSection(authContextTitle);
+        openReservationSection(authContextTitle, authContextPackageId);
       }
 
       if (window.location.pathname === "/booking/login") {
@@ -744,7 +841,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const submitReservation = async () => {
     if (!travelerUser?.isAuthenticated) {
       setBookingSectionOpen(false);
-      openAuthPopup("login", selectedBookingTitle || "حجز جديد");
+      openAuthPopup("login", selectedBookingTitle || "حجز جديد", selectedPackageId);
       setAuthMessage("يرجى تسجيل الدخول قبل تأكيد طلب الحجز.");
       return;
     }
@@ -775,9 +872,27 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       formData.append("PhoneNumber", reservationForm.phoneNumber.trim());
       formData.append("Email", reservationForm.email.trim());
       formData.append("ResidenceNumber", reservationForm.civilId.trim());
-      formData.append("Notes", `طلب حجز عمرة من الصفحة العامة - محال إلى خدمة العملاء - قيد التأكيد: ${selectedBookingTitle || "حجز جديد"}`);
+      formData.append(
+        "Notes",
+        [
+          `طلب حجز عمرة من الصفحة العامة - محال إلى خدمة العملاء - قيد التأكيد: ${selectedBookingTitle || "حجز جديد"}`,
+          selectedPackage ? `الباقة: ${selectedPackage.name}` : "",
+          selectedTravelOptions.bookingDate ? `تاريخ الحجز: ${selectedTravelOptions.bookingDate}` : "",
+          selectedTravelOptions.travelers ? `عدد الأشخاص: ${selectedTravelOptions.travelers}` : "",
+          selectedTravelOptions.roomType ? `نوع الغرفة: ${selectedTravelOptions.roomType}` : "",
+          selectedTravelOptions.transportType ? `وسيلة النقل: ${selectedTravelOptions.transportType}` : "",
+          `المبلغ المحسوب: ${reservationTotal.toLocaleString("en-US")} د.ك`
+        ].filter(Boolean).join(" | ")
+      );
       formData.append("PassportImagePath", "");
       formData.append("IsBlocked", "false");
+      formData.append("PackageId", selectedPackage?.id ?? "");
+      formData.append("PackageName", selectedPackage?.name ?? selectedBookingTitle ?? "");
+      formData.append("BookingDate", selectedTravelOptions.bookingDate || "");
+      formData.append("TravelersCount", String(selectedTravelerCount));
+      formData.append("RoomType", selectedTravelOptions.roomType || "");
+      formData.append("TransportType", selectedTravelOptions.transportType || "");
+      formData.append("ReservationTotal", String(reservationTotal));
       if (passportFile) {
         formData.append("passportImage", passportFile);
       }
@@ -793,6 +908,112 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     } finally {
       setReservationSubmitting(false);
     }
+  };
+
+  const rowadTravelPackages = publishedTravelPackages.filter((program) => program.id.startsWith("rowad-company-"));
+  const regularTravelPackages = publishedTravelPackages.filter((program) => !program.id.startsWith("rowad-company-"));
+  const rowadTravelBackground = resolvePackageImageUrl(rowadTravelPackages[1]?.imageUrl ?? rowadTravelPackages[0]?.imageUrl ?? "/landingpage/hero-kaaba-premium.png");
+  const rowadTravelStyle = { "--rowad-travel-bg": `url(${rowadTravelBackground})` } as CSSProperties;
+
+  const renderTravelPackageCard = (program: TravelPackage, variant: "rowad" | "regular" = "regular") => {
+    const options = travelOptions[program.id] ?? {
+      bookingDate: "",
+      travelers: "1",
+      roomType: program.roomTypes.find((item) => item.active)?.label ?? "",
+      transportType: program.transportOptions.find((item) => item.active)?.label ?? "",
+      dateError: ""
+    };
+    const activeRoomTypes = program.roomTypes.filter((item) => item.active);
+    const activeTransportOptions = program.transportOptions.filter((item) => item.active);
+    const dynamicPrice = calculatePackagePrice(program, {
+      packageId: program.id,
+      travelers: Number(options.travelers) || 1,
+      roomType: options.roomType,
+      transport: options.transportType,
+      departureDate: options.bookingDate,
+      durationDays: program.durationDays
+    });
+    const displayPrice = dynamicPrice || getPackageFromPrice(program);
+
+    return (
+      <article className={`gv-travel-card ${variant === "rowad" ? "gv-travel-card--rowad" : ""}`} key={program.id}>
+        <div className="gv-travel-card__media" style={{ backgroundImage: `url(${resolvePackageImageUrl(program.imageUrl)})` }}>
+          <span>{program.durationLabel}</span>
+          {variant === "rowad" ? <em className="gv-travel-card__brand">رواد</em> : null}
+        </div>
+        <div className="gv-travel-card__body">
+          <div className="gv-travel-card__features gv-travel-card__features--controls">
+            <label>
+              <CalendarIcon className="icon icon-sm" />
+              <strong>تاريخ الحجز</strong>
+              {program.departureDates.length > 0 ? (
+                <select
+                  value={options.bookingDate}
+                  onChange={(event) => updateTravelOption(program.id, "bookingDate", event.target.value)}
+                >
+                  <option value="">اختر التاريخ</option>
+                  {program.departureDates.map((date) => (
+                    <option key={date} value={date}>{date}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="date"
+                  value={options.bookingDate}
+                  onChange={(event) => updateTravelBookingDate(program.id, program.departureDates, event.target.value)}
+                />
+              )}
+            </label>
+            <label>
+              <UsersIcon className="icon icon-sm" />
+              <strong>عدد الأشخاص</strong>
+              <select
+                value={options.travelers}
+                onChange={(event) => updateTravelOption(program.id, "travelers", event.target.value)}
+              >
+                {travelerCountOptions.map((count) => (
+                  <option key={count} value={count}>{count}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <MosqueIcon className="icon icon-sm" />
+              <strong>نوع الغرفة</strong>
+              <select
+                value={options.roomType}
+                onChange={(event) => updateTravelOption(program.id, "roomType", event.target.value)}
+              >
+                {activeRoomTypes.map((roomType) => (
+                  <option key={roomType.id} value={roomType.label}>{roomType.label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <BusIcon className="icon icon-sm" />
+              <strong>وسيلة النقل</strong>
+              <select
+                value={options.transportType}
+                onChange={(event) => updateTravelOption(program.id, "transportType", event.target.value)}
+              >
+                {activeTransportOptions.map((transport) => (
+                  <option key={transport.id} value={transport.label}>{transport.label}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {options.dateError ? (
+            <p className="gv-travel-card__date-error">{options.dateError}</p>
+          ) : null}
+          <div className="gv-travel-card__divider" />
+          <div className="gv-travel-card__footer">
+            <p>تبدأ من <b>{displayPrice.toLocaleString("en-US")}</b> {program.currency}</p>
+            <button type="button" onClick={() => openBookingSection(program.durationLabel, program.id)}>
+              حجز
+            </button>
+          </div>
+        </div>
+      </article>
+    );
   };
 
   return (
@@ -995,63 +1216,31 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
       {activePackageView === "travel" && (
         <section className="gv-travel-packages" id="gv-travel-packages">
-          <h2>باقات الرحلات</h2>
-          <div className="gv-travel-grid">
-            {travelPackages.map((program) => (
-              <article className="gv-travel-card" key={program.days}>
-                <div className="gv-travel-card__media" style={{ backgroundImage: `url(${program.image})` }}>
-                  <span>{program.days}</span>
+          {rowadTravelPackages.length > 0 ? (
+            <div className="gv-rowad-travel" style={rowadTravelStyle}>
+              <div className="gv-rowad-travel__content">
+                <header className="gv-rowad-travel__header">
+                  <span>باقات رواد الأصلية</span>
+                  <h2>رحلاتنا</h2>
+                  <p>رحلات مختارة من دليل شركة رواد، بأسعار واضحة وقواعد حجز قابلة للإدارة.</p>
+                </header>
+                <div className="gv-travel-grid gv-travel-grid--rowad">
+                  {rowadTravelPackages.map((program) => renderTravelPackageCard(program, "rowad"))}
                 </div>
-                <div className="gv-travel-card__body">
-                  <div className="gv-travel-card__features gv-travel-card__features--controls">
-                    <label>
-                      <CalendarIcon className="icon icon-sm" />
-                      <strong>تاريخ الحجز</strong>
-                      <input
-                        type="date"
-                        value={travelOptions[program.days]?.bookingDate ?? ""}
-                        onChange={(event) => updateTravelBookingDate(program.days, program.startDay, event.target.value)}
-                      />
-                    </label>
-                    <label>
-                      <MosqueIcon className="icon icon-sm" />
-                      <strong>نوع الغرفة</strong>
-                      <select
-                        value={travelOptions[program.days]?.roomType ?? "غرفة مزدوجة"}
-                        onChange={(event) => updateTravelOption(program.days, "roomType", event.target.value)}
-                      >
-                        <option>غرفة فردية</option>
-                        <option>غرفة مزدوجة</option>
-                        <option>غرفة ثلاثية</option>
-                        <option>غرفة رباعية</option>
-                      </select>
-                    </label>
-                    <label>
-                      <BusIcon className="icon icon-sm" />
-                      <strong>وسيلة النقل</strong>
-                      <select
-                        value={travelOptions[program.days]?.transportType ?? "باص"}
-                        onChange={(event) => updateTravelOption(program.days, "transportType", event.target.value)}
-                      >
-                        <option>باص</option>
-                        <option>سيارة فردية</option>
-                      </select>
-                    </label>
-                  </div>
-                  {travelOptions[program.days]?.dateError ? (
-                    <p className="gv-travel-card__date-error">{travelOptions[program.days]?.dateError}</p>
-                  ) : null}
-                  <div className="gv-travel-card__divider" />
-                  <div className="gv-travel-card__footer">
-                    <p>تبدأ من <b>{program.price}</b> د.ك</p>
-                    <button type="button" onClick={() => openBookingSection(program.days)}>
-                      حجز
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+              </div>
+            </div>
+          ) : null}
+          {regularTravelPackages.length > 0 ? (
+            <div className="gv-travel-packages__standard">
+              <h2 className="gv-travel-packages__title">باقات الرحلات</h2>
+              <div className="gv-travel-grid">
+                {regularTravelPackages.map((program) => renderTravelPackageCard(program))}
+              </div>
+            </div>
+          ) : null}
+          {publishedTravelPackages.length === 0 ? (
+            <div className="gv-empty">لا توجد باقات منشورة حالياً.</div>
+          ) : null}
         </section>
       )}
 
@@ -1270,7 +1459,6 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
             <div className="gv-reservation__header">
               <MosqueIcon className="icon icon-md" />
               <h2 id="gv-reservation-title">{bookingDays}</h2>
-              <p>أكمل بياناتك لرحلة مريحة وآمنة</p>
             </div>
 
             <div className="gv-reservation-steps" aria-label="خطوات الحجز">
@@ -1339,7 +1527,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                   <span className="gv-field">
                     <select id="gv-nationality" value={reservationForm.nationality} onChange={(event) => updateReservationField("nationality", event.target.value)}>
                       <option value="">اختر الجنسية</option>
-                      {nationalityOptions.map((nationality) => (
+                      {availableNationalities.map((nationality) => (
                         <option key={nationality} value={nationality}>{nationality}</option>
                       ))}
                     </select>
@@ -1357,77 +1545,73 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                 <small><ShieldIcon className="icon icon-sm" /> جميع بياناتك محمية وآمنة</small>
               </div>
 
-              <article className="gv-upload-card">
-                <div className="gv-upload-card__head">
-                  <span>02</span>
-                  <div>
-                    <strong>إضافة جواز السفر</strong>
-                    <p>ارفع صورة جواز السفر بوضوح</p>
+              <div className="gv-upload-stack">
+                <article className="gv-upload-card">
+                  <div className="gv-upload-card__head">
+                    <span>02</span>
+                    <div>
+                      <strong>إضافة جواز السفر</strong>
+                      <p>ارفع صورة جواز السفر بوضوح</p>
+                    </div>
                   </div>
-                </div>
-                <label
-                  className="gv-dropzone"
-                  htmlFor="gv-passport-upload"
-                  onDragOver={(event) => event.preventDefault()}
-                  onDrop={(event) => {
-                    event.preventDefault();
-                    handleDocumentDrop("passport", event.dataTransfer.files);
-                  }}
-                >
-                  <input id="gv-passport-upload" type="file" accept="image/jpeg,image/png,application/pdf" onChange={(event) => updatePassportFile(event.target.files?.[0])} />
-                  <div className="gv-document-preview gv-document-preview--passport">
-                    {passportPreview ? <img src={passportPreview} alt="معاينة جواز السفر" /> : <DocumentIcon className="icon" />}
-                  </div>
-                  <span className="gv-upload-cloud"><DocumentIcon className="icon icon-sm" /></span>
-                  <b>اسحب وأفلت صورة جواز السفر هنا</b>
-                  <p>أو اضغط لاختيار الملف</p>
-                  <small>JPG, PNG, PDF الحد الأقصى (5MB)</small>
-                </label>
-                {passportFile ? (
-                  <div className="gv-file-row">
-                    <span>{passportFile.name}</span>
-                    <button type="button" onClick={() => removeDocumentFile("passport")}>حذف</button>
-                  </div>
-                ) : null}
-                {(uploadErrors.passport || formErrors.passportFile) ? <em className="gv-upload-error">{uploadErrors.passport || formErrors.passportFile}</em> : null}
-                <p className="gv-upload-note">تأكد من أن جميع البيانات واضحة في الصورة</p>
-              </article>
+                  <label
+                    className="gv-dropzone"
+                    htmlFor="gv-passport-upload"
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      handleDocumentDrop("passport", event.dataTransfer.files);
+                    }}
+                  >
+                    <input id="gv-passport-upload" type="file" accept="image/jpeg,image/png,application/pdf" onChange={(event) => updatePassportFile(event.target.files?.[0])} />
+                    <div className="gv-document-preview gv-document-preview--passport">
+                      {passportPreview ? <img src={passportPreview} alt="معاينة جواز السفر" /> : <DocumentIcon className="icon" />}
+                    </div>
+                    <span className="gv-upload-cloud"><DocumentIcon className="icon icon-sm" /></span>
+                    <b>اسحب وأفلت صورة جواز السفر هنا</b>
+                  </label>
+                  {passportFile ? (
+                    <div className="gv-file-row">
+                      <span>{passportFile.name}</span>
+                      <button type="button" onClick={() => removeDocumentFile("passport")}>حذف</button>
+                    </div>
+                  ) : null}
+                  {(uploadErrors.passport || formErrors.passportFile) ? <em className="gv-upload-error">{uploadErrors.passport || formErrors.passportFile}</em> : null}
+                </article>
 
-              <article className="gv-upload-card">
-                <div className="gv-upload-card__head">
-                  <span>01</span>
-                  <div>
-                    <strong>إضافة بطاقة الهوية</strong>
-                    <p>ارفع صورة بطاقة الهوية الوطنية</p>
+                <article className="gv-upload-card">
+                  <div className="gv-upload-card__head">
+                    <span>01</span>
+                    <div>
+                      <strong>إضافة بطاقة الهوية</strong>
+                      <p>ارفع صورة بطاقة الهوية الوطنية</p>
+                    </div>
                   </div>
-                </div>
-                <label
-                  className="gv-dropzone"
-                  htmlFor="gv-id-upload"
-                  onDragOver={(event) => event.preventDefault()}
-                  onDrop={(event) => {
-                    event.preventDefault();
-                    handleDocumentDrop("id", event.dataTransfer.files);
-                  }}
-                >
-                  <input id="gv-id-upload" type="file" accept="image/jpeg,image/png,application/pdf" onChange={(event) => updateIdFile(event.target.files?.[0])} />
-                  <div className="gv-document-preview gv-document-preview--id">
-                    {idPreview ? <img src={idPreview} alt="معاينة بطاقة الهوية" /> : <DocumentIcon className="icon" />}
-                  </div>
-                  <span className="gv-upload-cloud"><DocumentIcon className="icon icon-sm" /></span>
-                  <b>اسحب وأفلت صورة بطاقة الهوية هنا</b>
-                  <p>أو اضغط لاختيار الملف</p>
-                  <small>JPG, PNG, PDF الحد الأقصى (5MB)</small>
-                </label>
-                {idFile ? (
-                  <div className="gv-file-row">
-                    <span>{idFile.name}</span>
-                    <button type="button" onClick={() => removeDocumentFile("id")}>حذف</button>
-                  </div>
-                ) : null}
-                {(uploadErrors.id || formErrors.idFile) ? <em className="gv-upload-error">{uploadErrors.id || formErrors.idFile}</em> : null}
-                <p className="gv-upload-note">تأكد من أن جميع البيانات واضحة في الصورة</p>
-              </article>
+                  <label
+                    className="gv-dropzone"
+                    htmlFor="gv-id-upload"
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      handleDocumentDrop("id", event.dataTransfer.files);
+                    }}
+                  >
+                    <input id="gv-id-upload" type="file" accept="image/jpeg,image/png,application/pdf" onChange={(event) => updateIdFile(event.target.files?.[0])} />
+                    <div className="gv-document-preview gv-document-preview--id">
+                      {idPreview ? <img src={idPreview} alt="معاينة بطاقة الهوية" /> : <DocumentIcon className="icon" />}
+                    </div>
+                    <span className="gv-upload-cloud"><DocumentIcon className="icon icon-sm" /></span>
+                    <b>اسحب وأفلت صورة بطاقة الهوية هنا</b>
+                  </label>
+                  {idFile ? (
+                    <div className="gv-file-row">
+                      <span>{idFile.name}</span>
+                      <button type="button" onClick={() => removeDocumentFile("id")}>حذف</button>
+                    </div>
+                  ) : null}
+                  {(uploadErrors.id || formErrors.idFile) ? <em className="gv-upload-error">{uploadErrors.id || formErrors.idFile}</em> : null}
+                </article>
+              </div>
             </div>
             ) : null}
 
@@ -1436,39 +1620,43 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                 <aside className="gv-booking-summary">
                   <strong>ملخص رحلتك</strong>
                   <span><CalendarIcon className="icon icon-sm" /> {bookingDays}</span>
-                  <span><UsersIcon className="icon icon-sm" /> 1 مسافر</span>
+                  <span><UsersIcon className="icon icon-sm" /> {selectedTravelerCount} {selectedTravelerCount === 1 ? "مسافر" : "مسافرين"}</span>
                   <span><DocumentIcon className="icon icon-sm" /> الوثائق مكتملة</span>
                   <span><SearchIcon className="icon icon-sm" /> تم الاستخراج بنجاح</span>
                   <button type="button" onClick={() => goToReservationStep(3)}>تعديل البيانات</button>
                   <p>لأن رحلتك تستحق الأفضل، اختر الفندق الأنسب قبل الدفع.</p>
                 </aside>
                 <section className="gv-hotel-stage">
-                  <h3>الخطوة الرابعة</h3>
                   <p>اختر فندقك في مكة والمدينة</p>
                   <div className="gv-hotel-tabs">
                     <button className="is-active" type="button">مكة المكرمة</button>
                     <button type="button">المدينة المنورة</button>
                   </div>
                   <div className="gv-hotel-list">
-                    {hotelOptions.map((hotel) => (
-                      <article className={selectedHotel === hotel.name ? "is-selected" : ""} key={hotel.name}>
-                        <div className="gv-hotel-image" style={{ backgroundImage: `url(${hotel.image})` }} />
-                        <div className="gv-hotel-copy">
-                          <h4>{hotel.name}</h4>
-                          <b>★★★★★</b>
-                          <p><LocationIcon className="icon icon-sm" /> {hotel.distance}</p>
-                          <div>
-                            {hotel.perks.map((perk) => <span key={perk}>{perk}</span>)}
+                    {hotelOptions.map((hotel) => {
+                      const hotelNightPrice = getHotelNightPrice(hotel.name, hotel.price);
+                      const packageHotelPrice = getReservationPackagePrice(hotel.name, hotel.price);
+
+                      return (
+                        <article className={selectedHotel === hotel.name ? "is-selected" : ""} key={hotel.name}>
+                          <div className="gv-hotel-image" style={{ backgroundImage: `url(${hotel.image})` }} />
+                          <div className="gv-hotel-copy">
+                            <h4>{hotel.name}</h4>
+                            <b>★★★★★</b>
+                            <p><LocationIcon className="icon icon-sm" /> {hotel.distance}</p>
+                            <div>
+                              {hotel.perks.map((perk) => <span key={perk}>{perk}</span>)}
+                            </div>
                           </div>
-                        </div>
-                        <div className="gv-hotel-price">
-                          <small>ابتداءً من</small>
-                          <strong>{hotel.price.toLocaleString("en-US")} د.ك</strong>
-                          <span>لليلة الواحدة</span>
-                          <button type="button" onClick={() => setSelectedHotel(hotel.name)}>اختيار هذا الفندق</button>
-                        </div>
-                      </article>
-                    ))}
+                          <div className="gv-hotel-price">
+                            <small>{reservationForm.nationality ? `سعر ${reservationForm.nationality}` : "ابتداءً من"}</small>
+                            <strong>{(selectedPackage ? packageHotelPrice : hotelNightPrice).toLocaleString("en-US")} د.ك</strong>
+                            <span>{selectedPackage ? "للشخص الواحد" : "لليلة الواحدة"}</span>
+                            <button type="button" onClick={() => setSelectedHotel(hotel.name)}>اختيار هذا الفندق</button>
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
                   <div className="gv-stage-actions">
                     <button type="button" className="gv-stage-back" onClick={() => goToReservationStep(3)}>العودة</button>
@@ -1491,15 +1679,14 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                     </div>
                   </div>
                   <span><CalendarIcon className="icon icon-sm" /> {bookingDays}</span>
-                  <span><UsersIcon className="icon icon-sm" /> 1 مسافر</span>
+                  <span><UsersIcon className="icon icon-sm" /> {selectedTravelerCount} {selectedTravelerCount === 1 ? "مسافر" : "مسافرين"}</span>
                   <span><MosqueIcon className="icon icon-sm" /> {selectedTravelOptions?.roomType ?? "غرفة مزدوجة"}</span>
                   <hr />
-                  <p><small>سعر الفندق</small><b>{hotelTotal.toLocaleString("en-US")} د.ك</b></p>
+                  <p><small>{reservationBaseLabel}</small><b>{hotelTotal.toLocaleString("en-US")} د.ك</b></p>
                   <p><small>الخدمات الإضافية</small><b>{servicesTotal.toLocaleString("en-US")} د.ك</b></p>
                   <strong className="gv-booking-total">{reservationTotal.toLocaleString("en-US")} د.ك</strong>
                 </aside>
                 <section className="gv-payment-stage">
-                  <h3>الخطوة الخامسة</h3>
                   <p>إتمام الدفع وتأكيد الحجز</p>
                   <div className="gv-payment-tabs">
                     <button className={paymentMethod === "myfatoorah" ? "is-active" : ""} type="button" onClick={() => setPaymentMethod("myfatoorah")}>الدفع عبر فاتورة</button>
@@ -1519,9 +1706,9 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                   </div>
                   <div className="gv-payment-plans">
                     {paymentPlans.map((plan) => (
-                      <span key={plan.months}>
-                        <strong>{plan.months}</strong>
-                        <small>{plan.amount}</small>
+                      <span key={plan.label}>
+                        <strong>{plan.label}</strong>
+                        <small>{Math.ceil(reservationTotal / plan.months).toLocaleString("en-US")} د.ك شهرياً</small>
                       </span>
                     ))}
                   </div>
