@@ -1,8 +1,43 @@
+export interface AuthPermissions {
+  canAccessDashboard: boolean;
+  canManageUsers: boolean;
+  canViewTravelers: boolean;
+  canCreateTravelers: boolean;
+  canEditTravelers: boolean;
+  canArchiveTravelers: boolean;
+  canRestoreTravelers: boolean;
+  canViewTrips: boolean;
+  canCreateTrips: boolean;
+  canArchiveTrips: boolean;
+  canRestoreTrips: boolean;
+  canViewDocuments: boolean;
+  canUploadDocuments: boolean;
+  canArchiveDocuments: boolean;
+  canRestoreDocuments: boolean;
+  canViewBlocks: boolean;
+  canBlockTravelers: boolean;
+  canUnblockTravelers: boolean;
+  canViewReports: boolean;
+  canExportReports: boolean;
+  canViewAuditLogs: boolean;
+  canViewAccounting: boolean;
+  canManageAccounting: boolean;
+  canManageChartOfAccounts: boolean;
+  canManageJournalEntries: boolean;
+  canManageInvoices: boolean;
+  canManageReceiptVouchers: boolean;
+  canManagePaymentVouchers: boolean;
+  canManageExpenses: boolean;
+  canManageBanks: boolean;
+  canViewFinancialReports: boolean;
+}
+
 export interface AuthUser {
   isAuthenticated: boolean;
   email: string | null;
   fullName: string | null;
   roles: string[];
+  permissions: AuthPermissions | null;
 }
 
 export interface LoginResult {

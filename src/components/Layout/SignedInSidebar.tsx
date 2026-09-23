@@ -15,6 +15,7 @@ type SidebarItem = {
   label: string;
   path: string;
   activePaths?: string[];
+  canShow: (user: AuthUser) => boolean;
   icon: (props: IconProps) => JSX.Element;
 };
 
@@ -72,16 +73,6 @@ function CalculatorIcon({ className }: IconProps) {
   );
 }
 
-function BookOpenIcon({ className }: IconProps) {
-  return (
-    <svg className={className} {...iconProps}>
-      <path d="M12 7v14" />
-      <path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H12v18H5.5A2.5 2.5 0 0 1 3 18.5Z" />
-      <path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H12v18h6.5a2.5 2.5 0 0 0 2.5-2.5Z" />
-    </svg>
-  );
-}
-
 function LandmarkIcon({ className }: IconProps) {
   return (
     <svg className={className} {...iconProps}>
@@ -97,15 +88,6 @@ function LandmarkIcon({ className }: IconProps) {
   );
 }
 
-function UserRoundIcon({ className }: IconProps) {
-  return (
-    <svg className={className} {...iconProps}>
-      <circle cx="12" cy="8" r="4" />
-      <path d="M20 21a8 8 0 0 0-16 0" />
-    </svg>
-  );
-}
-
 function FileTextIcon({ className }: IconProps) {
   return (
     <svg className={className} {...iconProps}>
@@ -117,22 +99,20 @@ function FileTextIcon({ className }: IconProps) {
   );
 }
 
-function ArrowDownToLineIcon({ className }: IconProps) {
+function BellIcon({ className }: IconProps) {
   return (
     <svg className={className} {...iconProps}>
-      <path d="M12 3v12" />
-      <path d="m7 10 5 5 5-5" />
-      <path d="M5 21h14" />
+      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9" />
+      <path d="M10.3 21a2 2 0 0 0 3.4 0" />
     </svg>
   );
 }
 
-function ArrowUpFromLineIcon({ className }: IconProps) {
+function ClockIcon({ className }: IconProps) {
   return (
     <svg className={className} {...iconProps}>
-      <path d="M12 15V3" />
-      <path d="m7 8 5-5 5 5" />
-      <path d="M5 21h14" />
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
     </svg>
   );
 }
@@ -149,17 +129,21 @@ function ListChecksIcon({ className }: IconProps) {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { label: "لوحة التحكم", path: "/admin", icon: ListChecksIcon },
-  { label: "المسافرون", path: "/travelers", icon: UsersRoundIcon },
-  { label: "الرحلات", path: "/trips", icon: BusFrontIcon },
-  { label: "المحاسبة", path: "/accounting", icon: CalculatorIcon },
-  { label: "دليل الحسابات", path: "/accounts", icon: BookOpenIcon },
-  { label: "البنوك", path: "/bank-accounts", icon: LandmarkIcon },
-  { label: "العملاء", path: "/customers", icon: UserRoundIcon },
-  { label: "الفواتير", path: "/invoices", icon: FileTextIcon },
-  { label: "سندات القبض", path: "/receipt-vouchers", icon: ArrowDownToLineIcon },
-  { label: "سندات الصرف", path: "/payment-vouchers", icon: ArrowUpFromLineIcon },
-  { label: "القيود اليومية", path: "/journal-entries", icon: ListChecksIcon }
+  { label: "لوحة التحكم", path: "/admin", canShow: (user) => Boolean(user.permissions?.canAccessDashboard), icon: ListChecksIcon },
+  { label: "المسافرون", path: "/travelers", canShow: (user) => Boolean(user.permissions?.canViewTravelers), icon: UsersRoundIcon },
+  { label: "الرحلات", path: "/trips", canShow: (user) => Boolean(user.permissions?.canViewTrips), icon: BusFrontIcon },
+  { label: "المحاسبة", path: "/accounting", canShow: (user) => Boolean(user.permissions?.canViewAccounting), icon: CalculatorIcon },
+  { label: "الوثائق", path: "/documents", canShow: (user) => Boolean(user.permissions?.canViewDocuments), icon: FileTextIcon },
+  {
+    label: "الشكاوى والحظر",
+    path: "/travelers/blocked",
+    activePaths: ["/travelers/blocked"],
+    canShow: (user) => Boolean(user.permissions?.canViewBlocks),
+    icon: LandmarkIcon
+  },
+  { label: "سجل العمليات", path: "/audit-logs", canShow: (user) => Boolean(user.permissions?.canViewAuditLogs), icon: ClockIcon },
+  { label: "المستخدمون", path: "/users", canShow: (user) => user.roles.some((role) => role.toLowerCase() === "admin"), icon: UsersRoundIcon },
+  { label: "الإشعارات", path: "/notifications", canShow: () => true, icon: BellIcon }
 ];
 
 function isItemActive(item: SidebarItem, activePath: string) {
@@ -182,7 +166,7 @@ export function SignedInSidebar({ user, activePath, onNavigate, onLogout }: Sign
       </div>
 
       <nav className="rowad-nav">
-        {sidebarItems.map((item) => {
+        {sidebarItems.filter((item) => item.canShow(user)).map((item) => {
           const Icon = item.icon;
           const active = isItemActive(item, activePath);
 

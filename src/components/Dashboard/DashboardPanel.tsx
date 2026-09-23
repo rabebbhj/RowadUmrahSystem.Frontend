@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { AuthUser } from "../../api/auth";
-import { getTravelers, type TravelerListItem } from "../../api/travelers";
-import { getTrips, type TripListItem } from "../../api/trips";
+import { getDashboard, type DashboardData } from "../../api/dashboard";
 import { formatDate, formatDateTime } from "../../utils/dates";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
 
@@ -12,12 +11,22 @@ type DashboardPanelProps = {
   onLogout: () => void;
 };
 
+function formatDashboardDate() {
+  return new Intl.DateTimeFormat("ar", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date());
+}
+
 function normalizeDisplayText(value: string | null | undefined) {
   if (!value) {
     return "";
   }
 
-  if (!/[ØÙÃÂ]/.test(value)) {
+  if (!/[Ã˜Ã™ÃƒÃ‚]/.test(value)) {
     return value;
   }
 
@@ -29,19 +38,8 @@ function normalizeDisplayText(value: string | null | undefined) {
   }
 }
 
-function isPendingReservationRequest(traveler: TravelerListItem) {
-  const notes = normalizeDisplayText(traveler.notes);
-
-  return Boolean(
-    notes.includes("قيد التأكيد") ||
-    notes.includes("محال إلى خدمة العملاء") ||
-    notes.includes("طلب حجز عمرة من الصفحة العامة")
-  );
-}
-
 export function DashboardPanel({ user, activePath, onNavigate, onLogout }: DashboardPanelProps) {
-  const [travelers, setTravelers] = useState<TravelerListItem[]>([]);
-  const [trips, setTrips] = useState<TripListItem[]>([]);
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,14 +51,9 @@ export function DashboardPanel({ user, activePath, onNavigate, onLogout }: Dashb
       setError(null);
 
       try {
-        const [travelerItems, tripItems] = await Promise.all([
-          getTravelers("", false, false),
-          getTrips("", false)
-        ]);
-
+        const data = await getDashboard();
         if (!cancelled) {
-          setTravelers(travelerItems);
-          setTrips(tripItems);
+          setDashboard(data);
         }
       } catch (error) {
         if (cancelled) {
@@ -87,184 +80,354 @@ export function DashboardPanel({ user, activePath, onNavigate, onLogout }: Dashb
     };
   }, [onLogout]);
 
-  const stats = useMemo(() => {
-    const pendingReservations = travelers.filter(isPendingReservationRequest).length;
-    const blockedTravelers = travelers.filter((item) => item.isBlocked).length;
-    const activeTravelers = travelers.filter((item) => !item.isBlocked && !isPendingReservationRequest(item)).length;
-    const lastTrip = trips.slice().sort((left, right) => right.tripDate.localeCompare(left.tripDate))[0]?.tripDate ?? null;
-
-    return {
-      travelers: travelers.length,
-      activeTravelers,
-      pendingReservations,
-      blockedTravelers,
-      trips: trips.length,
-      tripTravelers: new Set(trips.map((trip) => trip.travelerId)).size,
-      lastTrip
-    };
-  }, [travelers, trips]);
-
-  const recentActivities = useMemo(() => {
-    const travelerActivities = travelers.map((traveler) => ({
-      id: `traveler-${traveler.id}`,
-      title: isPendingReservationRequest(traveler) ? "طلب حجز جديد قيد التأكيد" : "تسجيل مسافر",
-      description: `${normalizeDisplayText(traveler.fullName)} - ${traveler.passportNumber}`,
-      date: traveler.createdAt,
-      target: `/travelers/${traveler.id}`
-    }));
-
-    const tripActivities = trips.map((trip) => ({
-      id: `trip-${trip.id}`,
-      title: "إضافة رحلة عمرة",
-      description: `${normalizeDisplayText(trip.travelerName)} - ${formatDate(trip.tripDate)}`,
-      date: trip.createdAt,
-      target: `/travelers/${trip.travelerId}`
-    }));
-
-    return [...travelerActivities, ...tripActivities]
-      .sort((left, right) => right.date.localeCompare(left.date))
-      .slice(0, 8);
-  }, [travelers, trips]);
-
-  const latestTravelers = useMemo(() => {
-    return travelers
-      .slice()
-      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
-      .slice(0, 6);
-  }, [travelers]);
+  const todayText = useMemo(() => formatDashboardDate(), []);
+  const permissions = dashboard?.permissions;
 
   return (
     <div className="app-shell">
       <SignedInSidebar user={user} activePath={activePath} onNavigate={onNavigate} onLogout={onLogout} />
 
       <main className="main-panel">
-        <section className="hero">
-          <div>
-            <span className="eyebrow">لوحة الإدارة</span>
-            <h1>نظرة عامة على النظام</h1>
-            <p>متابعة المسافرين، طلبات الحجز، الرحلات، وآخر النشاطات من مكان واحد.</p>
-          </div>
-
-          <div className="action-bar mt-3">
-            <button type="button" className="btn btn-gold" onClick={() => onNavigate("/travelers")}>
-              إدارة المسافرين
-            </button>
-            <button type="button" className="btn btn-outline-gold" onClick={() => onNavigate("/trips")}>
-              سجل الرحلات
-            </button>
-          </div>
-        </section>
-
         {error && <div className="state-box error">{error}</div>}
         {loading && <div className="state-box">جاري تحميل لوحة التحكم...</div>}
 
-        {!loading && !error && (
-          <>
-            <section className="stats-grid">
-              <article className="stat-card">
-                <span>إجمالي المسافرين</span>
-                <strong>{stats.travelers}</strong>
-              </article>
-              <article className="stat-card">
-                <span>طلبات قيد التأكيد</span>
-                <strong>{stats.pendingReservations}</strong>
-              </article>
-              <article className="stat-card">
-                <span>إجمالي الرحلات</span>
-                <strong>{stats.trips}</strong>
-              </article>
-              <article className="stat-card">
-                <span>آخر رحلة</span>
-                <strong>{stats.lastTrip ? formatDate(stats.lastTrip) : "-"}</strong>
-              </article>
-            </section>
-
-            <section className="stats-grid">
-              <article className="stat-card">
-                <span>مسافرون نشطون</span>
-                <strong>{stats.activeTravelers}</strong>
-              </article>
-              <article className="stat-card">
-                <span>مسافرون محظورون</span>
-                <strong>{stats.blockedTravelers}</strong>
-              </article>
-              <article className="stat-card">
-                <span>مسافرون لديهم رحلات</span>
-                <strong>{stats.tripTravelers}</strong>
-              </article>
-              <article className="stat-card">
-                <span>متوسط الرحلات</span>
-                <strong>{stats.travelers ? (stats.trips / stats.travelers).toFixed(1) : "0"}</strong>
-              </article>
-            </section>
-
-            <section className="mini-grid">
-              <div className="content-card">
-                <div className="content-card-header">
-                  <h3>آخر النشاطات</h3>
-                  <span>{recentActivities.length} عملية حديثة</span>
-                </div>
-
-                {recentActivities.length === 0 ? (
-                  <div className="state-box">لا توجد نشاطات حديثة.</div>
-                ) : (
-                  <div className="dashboard-activity-list">
-                    {recentActivities.map((activity) => (
-                      <button type="button" key={activity.id} onClick={() => onNavigate(activity.target)}>
-                        <span>
-                          <strong>{activity.title}</strong>
-                          <small>{activity.description}</small>
-                        </span>
-                        <em>{formatDateTime(activity.date)}</em>
-                      </button>
-                    ))}
-                  </div>
-                )}
+        {dashboard && permissions && (
+          <div className="dashboard-clean">
+            <section className="dash-header">
+              <div>
+                <span className="dash-label">لوحة الإدارة</span>
+                <h1>لوحة تحكم رواد العمرة</h1>
+                <p>نظرة منظمة على أهم مؤشرات النظام والتنبيهات التشغيلية.</p>
               </div>
 
-              <div className="content-card">
-                <div className="content-card-header">
-                  <h3>آخر المسافرين</h3>
-                  <button type="button" className="btn btn-sm btn-outline-gold" onClick={() => onNavigate("/travelers")}>
+              <div className="dash-header-actions">
+                <span className="dash-date">{todayText}</span>
+
+                {permissions.canViewTravelers && (
+                  <button type="button" className="btn btn-gold" onClick={() => onNavigate("/travelers/create")}>
+                    تسجيل مسافر
+                  </button>
+                )}
+
+                {permissions.canViewReports && (
+                  <button type="button" className="btn btn-outline-gold" onClick={() => window.location.assign("/Travelers/ExportExpiringPassportsPdf")}>
+                    التقارير
+                  </button>
+                )}
+              </div>
+            </section>
+
+            <section className="dash-kpi-grid">
+              {permissions.canViewTravelers && (
+                <button type="button" className="dash-kpi-card" onClick={() => onNavigate("/travelers")}>
+                  <div className="dash-kpi-icon">M</div>
+                  <div>
+                    <span>إجمالي المسافرين</span>
+                    <strong>{dashboard.travelersCount}</strong>
+                    <small>{dashboard.recentTravelersCount} مسافر جديد هذا الشهر</small>
+                  </div>
+                </button>
+              )}
+
+              {permissions.canViewTrips && (
+                <button type="button" className="dash-kpi-card" onClick={() => onNavigate("/trips")}>
+                  <div className="dash-kpi-icon">T</div>
+                  <div>
+                    <span>إجمالي الرحلات</span>
+                    <strong>{dashboard.tripsCount}</strong>
+                    <small>سجل رحلات العمرة</small>
+                  </div>
+                </button>
+              )}
+
+              {permissions.canViewDocuments && (
+                <div className="dash-kpi-card">
+                  <div className="dash-kpi-icon">D</div>
+                  <div>
+                    <span>الوثائق النشطة</span>
+                    <strong>{dashboard.documentsCount}</strong>
+                    <small>{dashboard.uploadedDocumentsThisMonth} وثيقة هذا الشهر</small>
+                  </div>
+                </div>
+              )}
+
+              {permissions.canViewBlocks && (
+                <button type="button" className="dash-kpi-card" onClick={() => onNavigate("/travelers/blocked")}>
+                  <div className="dash-kpi-icon danger">B</div>
+                  <div>
+                    <span>المحظورون</span>
+                    <strong>{dashboard.blockedCount}</strong>
+                    <small>قائمة الحظر والمتابعة</small>
+                  </div>
+                </button>
+              )}
+
+              {permissions.canViewTravelers && (
+                <a href="#passport-section" className="dash-kpi-card">
+                  <div className="dash-kpi-icon warning">P</div>
+                  <div>
+                    <span>جوازات قريبة الانتهاء</span>
+                    <strong>{dashboard.expiringPassportsCount}</strong>
+                    <small>خلال 6 أشهر</small>
+                  </div>
+                </a>
+              )}
+
+              {permissions.canViewAuditLogs && (
+                <button type="button" className="dash-kpi-card" onClick={() => onNavigate("/audit-logs")}>
+                  <div className="dash-kpi-icon info">A</div>
+                  <div>
+                    <span>عمليات اليوم</span>
+                    <strong>{dashboard.todayAuditCount}</strong>
+                    <small>{dashboard.monthAuditCount} عملية هذا الشهر</small>
+                  </div>
+                </button>
+              )}
+            </section>
+
+            <section className="dash-layout">
+              <div className="dash-panel dash-panel-main">
+                <div className="dash-panel-header">
+                  <div>
+                    <h3>الإجراءات السريعة</h3>
+                    <p>اختصارات لأهم العمليات اليومية</p>
+                  </div>
+                </div>
+
+                <div className="dash-actions-grid">
+                  {permissions.canViewTravelers && (
+                    <>
+                      <button type="button" className="dash-action primary" onClick={() => onNavigate("/travelers/create")}>
+                        <strong>تسجيل مسافر</strong>
+                        <small>إنشاء ملف جديد</small>
+                      </button>
+
+                      <button type="button" className="dash-action" onClick={() => onNavigate("/travelers")}>
+                        <strong>المسافرون</strong>
+                        <small>عرض وإدارة الملفات</small>
+                      </button>
+
+                      <button type="button" className="dash-action" onClick={() => onNavigate("/travelers/deleted")}>
+                        <strong>أرشيف المسافرين</strong>
+                        <small>استرجاع الملفات</small>
+                      </button>
+                    </>
+                  )}
+
+                  {permissions.canViewTrips && (
+                    <button type="button" className="dash-action" onClick={() => onNavigate("/trips")}>
+                      <strong>الرحلات</strong>
+                      <small>سجل رحلات العمرة</small>
+                    </button>
+                  )}
+
+                  {permissions.canViewDocuments && (
+                    <button type="button" className="dash-action" onClick={() => onNavigate("/documents")}>
+                      <strong>أرشيف الوثائق</strong>
+                      <small>إدارة الوثائق المؤرشفة</small>
+                    </button>
+                  )}
+
+                  {permissions.canViewBlocks && (
+                    <button type="button" className="dash-action" onClick={() => onNavigate("/travelers/blocked")}>
+                      <strong>الحظر والشكاوى</strong>
+                      <small>متابعة الحالات الحساسة</small>
+                    </button>
+                  )}
+
+                  {permissions.canViewAuditLogs && (
+                    <button type="button" className="dash-action" onClick={() => onNavigate("/audit-logs")}>
+                      <strong>سجل العمليات</strong>
+                      <small>تدقيق ومراقبة النظام</small>
+                    </button>
+                  )}
+
+                  <button type="button" className="dash-action" onClick={() => onNavigate("/notifications")}>
+                    <strong>الإشعارات</strong>
+                    <small>مركز التنبيهات</small>
+                  </button>
+                </div>
+              </div>
+
+              {permissions.canViewAuditLogs && (
+                <div className="dash-panel">
+                  <div className="dash-panel-header">
+                    <div>
+                      <h3>نشاط النظام</h3>
+                      <p>ملخص سريع</p>
+                    </div>
+                  </div>
+
+                  <div className="dash-mini-stats">
+                    <div>
+                      <span>اليوم</span>
+                      <strong>{dashboard.todayAuditCount}</strong>
+                    </div>
+
+                    <div>
+                      <span>الأسبوع</span>
+                      <strong>{dashboard.weekAuditCount}</strong>
+                    </div>
+
+                    <div>
+                      <span>الشهر</span>
+                      <strong>{dashboard.monthAuditCount}</strong>
+                    </div>
+                  </div>
+
+                  <div className="dash-highlight">
+                    <span>أكثر موظف نشاطاً</span>
+
+                    {dashboard.topEmployee ? (
+                      <>
+                        <strong>{normalizeDisplayText(dashboard.topEmployee.employeeName)}</strong>
+                        <small>{dashboard.topEmployee.count} عملية</small>
+                      </>
+                    ) : (
+                      <>
+                        <strong>لا يوجد بيانات</strong>
+                        <small>لم يتم تسجيل نشاط بعد</small>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </section>
+
+            {(permissions.canViewTravelers || permissions.canViewBlocks) && (
+              <section className="dash-layout" id="passport-section">
+                {permissions.canViewTravelers && (
+                  <div className="dash-panel dash-panel-main">
+                    <div className="dash-panel-header">
+                      <div>
+                        <h3>أقرب الجوازات انتهاءً</h3>
+                        <p>أول 10 جوازات تحتاج متابعة</p>
+                      </div>
+
+                      {permissions.canViewReports && (
+                        <button type="button" className="btn btn-sm btn-outline-gold" onClick={() => window.location.assign("/Travelers/ExportExpiringPassportsPdf")}>
+                          PDF
+                        </button>
+                      )}
+                    </div>
+
+                    {dashboard.expiringPassports.length > 0 ? (
+                      <div className="table-responsive clean-table-wrap">
+                        <table className="table clean-table align-middle">
+                          <thead>
+                            <tr>
+                              <th>الاسم</th>
+                              <th>رقم الجواز</th>
+                              <th>الجنسية</th>
+                              <th>تاريخ الانتهاء</th>
+                              <th>الإجراء</th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {dashboard.expiringPassports.map((traveler) => (
+                              <tr key={traveler.id}>
+                                <td>{normalizeDisplayText(traveler.fullName)}</td>
+                                <td>{traveler.passportNumber}</td>
+                                <td>{normalizeDisplayText(traveler.nationality)}</td>
+                                <td>{traveler.passportExpiryDate ? formatDate(traveler.passportExpiryDate) : "-"}</td>
+                                <td>
+                                  <button type="button" className="btn btn-sm btn-outline-gold" onClick={() => onNavigate(`/travelers/${traveler.id}`)}>
+                                    عرض الملف
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="dash-empty">
+                        <strong>لا يوجد جوازات قريبة الانتهاء</strong>
+                        <small>الوضع الحالي آمن</small>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="dash-panel">
+                  <div className="dash-panel-header">
+                    <div>
+                      <h3>التنبيهات المهمة</h3>
+                      <p>ملخص الحالات التي تحتاج متابعة</p>
+                    </div>
+                  </div>
+
+                  <div className="dash-alert-list">
+                    {permissions.canViewTravelers && (
+                      <>
+                        <div className="dash-alert danger">
+                          <strong>{dashboard.expiredPassportsCount} جواز منتهي</strong>
+                          <small>يحتاج متابعة فورية</small>
+                        </div>
+
+                        <div className="dash-alert warning">
+                          <strong>{dashboard.expiringPassportsCount} جواز قريب الانتهاء</strong>
+                          <small>خلال 6 أشهر القادمة</small>
+                        </div>
+                      </>
+                    )}
+
+                    {permissions.canViewBlocks && (
+                      <div className="dash-alert">
+                        <strong>{dashboard.blockedCount} مسافر محظور</strong>
+                        <small>ضمن قائمة الحظر والمتابعة</small>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {permissions.canViewAuditLogs && (
+              <section className="dash-panel">
+                <div className="dash-panel-header">
+                  <div>
+                    <h3>آخر العمليات</h3>
+                    <p>آخر 10 عمليات تمت داخل النظام</p>
+                  </div>
+
+                  <button type="button" className="btn btn-sm btn-outline-gold" onClick={() => onNavigate("/audit-logs")}>
                     عرض الكل
                   </button>
                 </div>
 
-                {latestTravelers.length === 0 ? (
-                  <div className="state-box">لا توجد بيانات مسافرين.</div>
+                {dashboard.latestAuditLogs.length > 0 ? (
+                  <div className="dash-timeline">
+                    {dashboard.latestAuditLogs.map((log, index) => (
+                      <div className="dash-timeline-item" key={`${log.createdAt}-${index}`}>
+                        <div className="dash-timeline-mark"></div>
+
+                        <div className="dash-timeline-body">
+                          <div className="d-flex justify-content-between gap-3">
+                            <strong>{normalizeDisplayText(log.action)}</strong>
+                            <small>{formatDateTime(log.createdAt)}</small>
+                          </div>
+
+                          <p>
+                            {normalizeDisplayText(log.employeeName)}
+                            {log.travelerName ? <span> - {normalizeDisplayText(log.travelerName)}</span> : null}
+                          </p>
+
+                          <small>{normalizeDisplayText(log.details)}</small>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 ) : (
-                  <div className="table-responsive">
-                    <table className="table table-bordered align-middle">
-                      <thead>
-                        <tr>
-                          <th>الاسم</th>
-                          <th>رقم الجواز</th>
-                          <th>الحالة</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {latestTravelers.map((traveler) => (
-                          <tr key={traveler.id}>
-                            <td>{normalizeDisplayText(traveler.fullName)}</td>
-                            <td><strong>{traveler.passportNumber}</strong></td>
-                            <td>
-                              {isPendingReservationRequest(traveler) ? (
-                                <span className="badge badge-soft-warning">قيد التأكيد</span>
-                              ) : traveler.isBlocked ? (
-                                <span className="badge badge-soft-danger">محظور</span>
-                              ) : (
-                                <span className="badge badge-soft-success">مسموح</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="dash-empty">
+                    <strong>لا يوجد عمليات مسجلة</strong>
+                    <small>سيظهر النشاط هنا عند استخدام النظام</small>
                   </div>
                 )}
-              </div>
-            </section>
-          </>
+              </section>
+            )}
+          </div>
         )}
       </main>
     </div>

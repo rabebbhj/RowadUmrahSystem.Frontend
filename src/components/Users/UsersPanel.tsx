@@ -213,7 +213,7 @@ export function UsersPanel({ user, activePath, onNavigate, onLogout }: UsersPane
 
                             <ul className="dropdown-menu">
                               <li>
-                                <button type="button" className="dropdown-item" onClick={() => onNavigate(`/users/permissions/${item.id}`)}>
+                                <button type="button" className="dropdown-item" onClick={() => onNavigate(`/users/${item.id}/permissions`)}>
                                   إدارة الصلاحيات
                                 </button>
                               </li>

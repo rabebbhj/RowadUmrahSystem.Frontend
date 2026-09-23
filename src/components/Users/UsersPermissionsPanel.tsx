@@ -103,6 +103,22 @@ const PERMISSION_GROUPS: PermissionGroup[] = [
     ]
   },
   {
+    title: "المحاسبة والمالية",
+    description: "صلاحيات فريق المالية والمحاسبة: الحسابات، البنوك، الفواتير، السندات، المصاريف والتقارير المالية.",
+    fields: [
+      { key: "canViewAccounting", title: "مشاهدة المحاسبة", note: "إظهار واجهة المحاسبة والملخصات المالية." },
+      { key: "canManageAccounting", title: "إدارة المحاسبة بالكامل", note: "صلاحية شاملة على كل عمليات المحاسبة والمالية.", danger: true },
+      { key: "canManageChartOfAccounts", title: "دليل الحسابات", note: "عرض وإدارة شجرة الحسابات." },
+      { key: "canManageJournalEntries", title: "القيود اليومية", note: "إدارة القيود اليومية والترحيلات المحاسبية." },
+      { key: "canManageInvoices", title: "الفواتير", note: "إنشاء ومتابعة فواتير العملاء والمسافرين." },
+      { key: "canManageReceiptVouchers", title: "سندات القبض", note: "تسجيل سندات القبض وربطها بالفواتير والبنوك." },
+      { key: "canManagePaymentVouchers", title: "سندات الصرف", note: "تسجيل سندات الصرف والمدفوعات." },
+      { key: "canManageExpenses", title: "المصاريف", note: "إدارة مصاريف الرحلات والعمليات." },
+      { key: "canManageBanks", title: "البنوك", note: "إدارة الحسابات البنكية والحركات المرتبطة بها." },
+      { key: "canViewFinancialReports", title: "التقارير المالية", note: "عرض تقارير المالية والتحليلات." }
+    ]
+  },
+  {
     title: "إدارة النظام",
     description: "صلاحيات إدارية عالية يجب أن تمنح للمديرين فقط.",
     fields: [

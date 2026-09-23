@@ -35,16 +35,54 @@ import { ExpensesPanel } from "./components/Expenses/ExpensesPanel";
 import { JournalEntriesPanel } from "./components/JournalEntries/JournalEntriesPanel";
 import { ReceiptVouchersPanel } from "./components/ReceiptVouchers/ReceiptVouchersPanel";
 import { PaymentVouchersPanel } from "./components/PaymentVouchers/PaymentVouchersPanel";
+import { SignedInSidebar } from "./components/Layout/SignedInSidebar";
+import { AdminPlaceholderPanel } from "./components/Layout/AdminPlaceholderPanel";
 
-const publicPaths = new Set(["/", "/globalview"]);
+const publicPaths = new Set(["/", "/globalview", "/booking/login"]);
+const backendAdminOrigin = "http://localhost:5045";
+const frontendDevPorts = new Set(["5173"]);
+const adminRoutePrefixes = [
+  "/login",
+  "/admin",
+  "/travelers",
+  "/trips",
+  "/users",
+  "/accounting",
+  "/documents",
+  "/audit-logs",
+  "/auditlogs",
+  "/notifications",
+  "/financial-reports",
+  "/accounts",
+  "/bank-accounts",
+  "/customers",
+  "/invoices",
+  "/expenses",
+  "/journal-entries",
+  "/receipt-vouchers",
+  "/payment-vouchers"
+];
 
 function currentPath() {
-  return window.location.pathname || "/";
+  return (window.location.pathname || "/").toLowerCase();
+}
+
+function isAdminRoute(pathname: string) {
+  const normalizedPath = pathname.toLowerCase();
+  return adminRoutePrefixes.some((prefix) => normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`));
 }
 
 function parseId(value: string | undefined) {
   const id = Number(value);
   return Number.isFinite(id) && id > 0 ? id : 0;
+}
+
+function hasRole(user: AuthUser, role: string) {
+  return user.roles.some((item) => item.toLowerCase() === role.toLowerCase());
+}
+
+function can(user: AuthUser, permission: keyof NonNullable<AuthUser["permissions"]>) {
+  return hasRole(user, "Admin") || Boolean(user.permissions?.[permission]);
 }
 
 export default function App() {
@@ -147,10 +185,16 @@ export default function App() {
   }, []);
 
   const segments = useMemo(() => path.split("/").filter(Boolean), [path]);
-  const isPublicLanding = publicPaths.has(path) && !user?.isAuthenticated;
+
+  if (frontendDevPorts.has(window.location.port) && isAdminRoute(path)) {
+    window.location.replace(`${backendAdminOrigin}${path}${window.location.search}${window.location.hash}`);
+    return <div className="state-box">Redirection vers l'administration...</div>;
+  }
+
+  const isPublicLanding = publicPaths.has(path);
 
   if (isPublicLanding) {
-    return <LandingPage />;
+    return <LandingPage initialAuthView={path === "/booking/login" ? "login" : null} />;
   }
 
   if (path === "/login") {
@@ -176,7 +220,42 @@ export default function App() {
     onLogout: handleLogout
   };
 
+  const forbiddenPanel = (
+    <div className="app-shell">
+      <SignedInSidebar user={user} activePath={path} onNavigate={navigate} onLogout={handleLogout} />
+      <main className="main-panel">
+        <div className="state-box error">لا تملك صلاحية الدخول إلى هذه الصفحة.</div>
+      </main>
+    </div>
+  );
+
+  if (path === "/admin" && !can(user, "canAccessDashboard")) return forbiddenPanel;
+  if (path.startsWith("/travelers/create") && !can(user, "canCreateTravelers")) return forbiddenPanel;
+  if (path.startsWith("/travelers/deleted") && !can(user, "canRestoreTravelers")) return forbiddenPanel;
+  if (path.startsWith("/travelers/blocked") && !can(user, "canViewBlocks")) return forbiddenPanel;
+  if (segments[0] === "travelers" && segments[2] === "edit" && !can(user, "canEditTravelers")) return forbiddenPanel;
+  if (segments[0] === "travelers" && segments[2] === "delete" && !can(user, "canArchiveTravelers")) return forbiddenPanel;
+  if (segments[0] === "travelers" && segments[2] === "block" && !can(user, "canBlockTravelers")) return forbiddenPanel;
+  if (segments[0] === "travelers" && !can(user, "canViewTravelers")) return forbiddenPanel;
+  if (path.startsWith("/trips/create") && !can(user, "canCreateTrips")) return forbiddenPanel;
+  if (path.startsWith("/trips/deleted") && !can(user, "canRestoreTrips")) return forbiddenPanel;
+  if (segments[0] === "trips" && !can(user, "canViewTrips")) return forbiddenPanel;
+  if (segments[0] === "users" && !hasRole(user, "Admin")) return forbiddenPanel;
+  if (path === "/accounting" && !can(user, "canViewAccounting")) return forbiddenPanel;
+  if (path === "/documents" && !can(user, "canViewDocuments")) return forbiddenPanel;
+  if ((path === "/audit-logs" || path === "/auditlogs") && !can(user, "canViewAuditLogs")) return forbiddenPanel;
+  if (path === "/financial-reports" && !can(user, "canViewFinancialReports")) return forbiddenPanel;
+  if (segments[0] === "accounts" && !can(user, "canManageChartOfAccounts")) return forbiddenPanel;
+  if (segments[0] === "bank-accounts" && !can(user, "canManageBanks")) return forbiddenPanel;
+  if (segments[0] === "customers" && !can(user, "canViewAccounting")) return forbiddenPanel;
+  if (segments[0] === "invoices" && !can(user, "canManageInvoices")) return forbiddenPanel;
+  if (segments[0] === "expenses" && !can(user, "canManageExpenses")) return forbiddenPanel;
+  if (segments[0] === "journal-entries" && !can(user, "canManageJournalEntries")) return forbiddenPanel;
+  if (segments[0] === "receipt-vouchers" && !can(user, "canManageReceiptVouchers")) return forbiddenPanel;
+  if (segments[0] === "payment-vouchers" && !can(user, "canManagePaymentVouchers")) return forbiddenPanel;
+
   if (path === "/admin") return <DashboardPanel {...commonProps} />;
+  if (path === "/booking/login") return <TravelersCreatePanel {...commonProps} />;
   if (path === "/travelers") return <TravelersPanel {...commonProps} />;
   if (path === "/travelers/create") return <TravelersCreatePanel {...commonProps} />;
   if (path === "/travelers/deleted") return <TravelersDeletedPanel {...commonProps} />;
@@ -207,6 +286,38 @@ export default function App() {
   }
 
   if (path === "/accounting") return <AccountingPanel {...commonProps} />;
+  if (path === "/documents") {
+    return (
+      <AdminPlaceholderPanel
+        {...commonProps}
+        eyebrow="Documents"
+        title="الوثائق"
+        description="إدارة الوثائق تتم من ملف المسافر داخل شاشة المسافرين."
+        primaryActionLabel="فتح المسافرين"
+        primaryActionPath="/travelers"
+      />
+    );
+  }
+  if (path === "/audit-logs" || path === "/auditlogs") {
+    return (
+      <AdminPlaceholderPanel
+        {...commonProps}
+        eyebrow="Audit"
+        title="سجل العمليات"
+        description="واجهة سجل العمليات في React جاهزة كمدخل من القائمة الرئيسية، ويمكن ربط الجدول التفصيلي بها لاحقاً."
+      />
+    );
+  }
+  if (path === "/notifications") {
+    return (
+      <AdminPlaceholderPanel
+        {...commonProps}
+        eyebrow="Notifications"
+        title="الإشعارات"
+        description="هنا تظهر إشعارات النظام الخاصة بالمستخدم الحالي."
+      />
+    );
+  }
   if (path === "/financial-reports") return <FinancialReportsPanel {...commonProps} />;
 
   if (path === "/accounts") return <AccountsPanel {...commonProps} />;

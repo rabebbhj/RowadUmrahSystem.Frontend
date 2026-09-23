@@ -1,4 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
+import { getCurrentUser, login as loginUser, logout as logoutUser, type AuthUser } from "../../api/auth";
+import type { FormEvent } from "react";
 import { createTraveler, readCivilIdOcr, readPassportOcr } from "../../api/travelers";
 import {
   ArrowRightIcon,
@@ -13,7 +15,6 @@ import {
   PhoneIcon,
   SearchIcon,
   ShieldIcon,
-  StarIcon,
   UsersIcon
 } from "./landingShared";
 
@@ -65,13 +66,13 @@ const travelPackages = [
     days: "10 أيام",
     image: "/landingpage/avion.png",
     price: "95",
-    features: ["حجز طيران", "حجز فنادق", "تنظيم الجولات", "دعم مباشر"]
+    startDay: 3
   },
   {
     days: "6 أيام",
     image: "/landingpage/paysage.png",
     price: "75",
-    features: ["حجز طيران", "حجز فنادق", "تنظيم الجولات", "دعم مباشر"]
+    startDay: 4
   }
 ];
 
@@ -82,6 +83,47 @@ const services = [
   { icon: <CalendarIcon className="icon icon-md" />, title: "استخراج تأشيرات", text: "بإجراء واضح وسريع" },
   { icon: <MosqueIcon className="icon icon-md" />, title: "إرشادات دينية", text: "مع مرشدين مختصين" },
   { icon: <UsersIcon className="icon icon-md" />, title: "مجموعات صغيرة", text: "خدمة أفضل واهتمام أكبر" }
+];
+
+const reservationSteps = [
+  { id: 1, label: "بيانات المسافر" },
+  { id: 2, label: "الوثائق" },
+  { id: 3, label: "الاستخراج الذكي" },
+  { id: 4, label: "اختيار الفندق" },
+  { id: 5, label: "الدفع والتأكيد" }
+];
+
+const hotelOptions = [
+  {
+    name: "فندق ساعة مكة فيرمونت",
+    city: "مكة المكرمة",
+    distance: "250 متر من الحرم",
+    price: 1250,
+    image: "/landingpage/hero-kaaba-premium.png",
+    perks: ["إطلالة على الحرم", "مواصلات مجانية", "خدمة 24 ساعة"]
+  },
+  {
+    name: "فندق جبل عمر حياة ريجنسي",
+    city: "مكة المكرمة",
+    distance: "350 متر من الحرم",
+    price: 980,
+    image: "/landingpage/paysage.png",
+    perks: ["مطاعم متعددة", "مواصلات مجانية", "خدمة 24 ساعة"]
+  },
+  {
+    name: "فندق موفنبيك برج هاجر",
+    city: "مكة المكرمة",
+    distance: "450 متر من الحرم",
+    price: 750,
+    image: "/landingpage/avion.png",
+    perks: ["موقع مميز", "إفطار شامل", "خدمة 24 ساعة"]
+  }
+];
+
+const paymentPlans = [
+  { months: "3 أشهر", amount: "1,084 د.ك شهرياً" },
+  { months: "6 أشهر", amount: "2,167 د.ك شهرياً" },
+  { months: "12 شهر", amount: "4,334 د.ك شهرياً" }
 ];
 
 const emptyFilters = {
@@ -103,6 +145,7 @@ const emptyReservationForm = {
   civilId: ""
 };
 
+const nationalityOptions = ["هندي", "بنغلاديشي", "مصري", "سوري", "سوداني", "نيجيري", "افغاني", "فلسطيني", "كويتي", "سعودي"];
 const acceptedDocumentTypes = ["image/jpeg", "image/png", "application/pdf"];
 const maxDocumentSize = 5 * 1024 * 1024;
 
@@ -111,6 +154,11 @@ type FilterName = keyof Filters;
 type ReservationForm = typeof emptyReservationForm;
 type ReservationField = keyof ReservationForm;
 type UploadKind = "passport" | "id";
+type AuthPopupView = "login" | "register" | "forgot" | "reset" | "verify" | "twoFactor";
+type TravelPackageOptions = Record<string, { bookingDate: string; roomType: string; transportType: string; dateError: string }>;
+type LandingPageProps = {
+  initialAuthView?: AuthPopupView | null;
+};
 
 function toDateInputValue(value: string | null | undefined) {
   return value ? value.slice(0, 10) : "";
@@ -120,10 +168,59 @@ function isImageFile(file: File) {
   return file.type.startsWith("image/");
 }
 
-export default function LandingPage() {
+function normalizeNationality(value: string | null | undefined) {
+  const normalized = value?.trim().toLowerCase();
+
+  if (!normalized) return "";
+
+  const aliases: Record<string, string> = {
+    indian: "هندي",
+    india: "هندي",
+    "هندية": "هندي",
+    bangladeshi: "بنغلاديشي",
+    bangladesh: "بنغلاديشي",
+    "بنجلاديشي": "بنغلاديشي",
+    egyptian: "مصري",
+    egypt: "مصري",
+    "مصرية": "مصري",
+    syrian: "سوري",
+    syria: "سوري",
+    "سورية": "سوري",
+    sudanese: "سوداني",
+    sudan: "سوداني",
+    nigerian: "نيجيري",
+    nigeria: "نيجيري",
+    afghan: "افغاني",
+    afghanistan: "افغاني",
+    palestinian: "فلسطيني",
+    palestine: "فلسطيني",
+    kuwaiti: "كويتي",
+    kuwait: "كويتي",
+    saudi: "سعودي",
+    "saudi arabian": "سعودي",
+    "saudi arabia": "سعودي"
+  };
+
+  return aliases[normalized] ?? nationalityOptions.find((option) => option === value?.trim()) ?? "";
+}
+
+export default function LandingPage({ initialAuthView = null }: LandingPageProps) {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [submittedFilters, setSubmittedFilters] = useState<Filters>(emptyFilters);
   const [activePackageView, setActivePackageView] = useState<"travel" | null>(null);
+  const [travelOptions, setTravelOptions] = useState<TravelPackageOptions>(() =>
+    Object.fromEntries(
+      travelPackages.map((program) => [
+        program.days,
+        {
+          bookingDate: "",
+          roomType: "غرفة مزدوجة",
+          transportType: "باص",
+          dateError: ""
+        }
+      ])
+    )
+  );
   const [bookingSectionOpen, setBookingSectionOpen] = useState(false);
   const [selectedBookingTitle, setSelectedBookingTitle] = useState("");
   const [passportPreview, setPassportPreview] = useState<string | null>(null);
@@ -137,6 +234,49 @@ export default function LandingPage() {
   const [reservationStatus, setReservationStatus] = useState("");
   const [reservationSuccessOpen, setReservationSuccessOpen] = useState(false);
   const [reservationSubmitting, setReservationSubmitting] = useState(false);
+  const [reservationStep, setReservationStep] = useState(3);
+  const [selectedHotel, setSelectedHotel] = useState(hotelOptions[0].name);
+  const [paymentMethod, setPaymentMethod] = useState<"myfatoorah" | "card">("myfatoorah");
+  const [paymentMode, setPaymentMode] = useState<"full" | "installments">("full");
+  const [paymentTermsAccepted, setPaymentTermsAccepted] = useState(false);
+  const [authPopupOpen, setAuthPopupOpen] = useState(Boolean(initialAuthView));
+  const [authView, setAuthView] = useState<AuthPopupView>(initialAuthView ?? "login");
+  const [authContextTitle, setAuthContextTitle] = useState("");
+  const [authEmail, setAuthEmail] = useState("traveler@rowad.local");
+  const [authPassword, setAuthPassword] = useState("Traveler@12345");
+  const [authRemember, setAuthRemember] = useState(true);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authMessage, setAuthMessage] = useState("");
+  const [authErrors, setAuthErrors] = useState<{ email?: string; password?: string }>({});
+  const [travelerUser, setTravelerUser] = useState<AuthUser | null>(null);
+  const [showAuthPassword, setShowAuthPassword] = useState(false);
+  const [registerForm, setRegisterForm] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    acceptTerms: false
+  });
+  const [resetForm, setResetForm] = useState({ password: "", confirmPassword: "" });
+  const [verificationCode, setVerificationCode] = useState(["", "", "", "", "", ""]);
+  const [twoFactorMethod, setTwoFactorMethod] = useState<"app" | "sms">("app");
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+
+  const openReservationSection = (title: string) => {
+    setSelectedBookingTitle(title);
+    setReservationStatus("");
+    setOcrStatus("");
+    setFormErrors({});
+    setUploadErrors({});
+    setReservationSuccessOpen(false);
+    setReservationStep(3);
+    setSelectedHotel(hotelOptions[0].name);
+    setPaymentMethod("myfatoorah");
+    setPaymentMode("full");
+    setPaymentTermsAccepted(false);
+    setBookingSectionOpen(true);
+  };
 
   useEffect(() => {
     document.documentElement.lang = "ar";
@@ -155,6 +295,43 @@ export default function LandingPage() {
     };
   }, [passportPreview, idPreview]);
 
+  useEffect(() => {
+    let active = true;
+
+    getCurrentUser()
+      .then((currentUser) => {
+        if (!active) return;
+        setTravelerUser(currentUser.isAuthenticated ? currentUser : null);
+      })
+      .catch(() => {
+        if (!active) return;
+        setTravelerUser(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!initialAuthView) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const bookingTitle = params.get("booking") || "حجز جديد";
+
+    setAuthContextTitle(bookingTitle);
+
+    if (travelerUser?.isAuthenticated) {
+      setAuthPopupOpen(false);
+      openReservationSection(bookingTitle);
+      return;
+    }
+
+    setAuthView(initialAuthView);
+    setAuthMessage("يرجى تسجيل الدخول لإتمام الحجز.");
+    setAuthPopupOpen(true);
+  }, [initialAuthView, travelerUser?.isAuthenticated]);
+
   const filteredPackages = useMemo(() => {
     return packages.filter((program) => {
       return (
@@ -168,6 +345,56 @@ export default function LandingPage() {
   const hasActiveFilters = Boolean(
     submittedFilters.people || submittedFilters.city || submittedFilters.duration || submittedFilters.startDate
   );
+
+  const selectedHotelInfo = hotelOptions.find((hotel) => hotel.name === selectedHotel) ?? hotelOptions[0];
+  const selectedTravelOptions = travelOptions[selectedBookingTitle] ?? travelOptions["10 أيام"];
+  const bookingDays = selectedBookingTitle.includes("6") ? "6 أيام" : "10 أيام";
+  const hotelTotal = selectedHotelInfo.price * (bookingDays === "6 أيام" ? 6 : 10);
+  const servicesTotal = selectedTravelOptions?.transportType === "سيارة فردية" ? 500 : 0;
+  const reservationTotal = hotelTotal + servicesTotal;
+
+  const validateReservationData = () => {
+    const nextErrors: Partial<Record<ReservationField | "passportFile" | "idFile", string>> = {};
+
+    if (!reservationForm.fullName.trim()) {
+      nextErrors.fullName = "يرجى إدخال الاسم الكامل";
+    }
+
+    if (!reservationForm.phoneNumber.trim()) {
+      nextErrors.phoneNumber = "يرجى إدخال رقم الهاتف";
+    }
+
+    if (reservationForm.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reservationForm.email.trim())) {
+      nextErrors.email = "يرجى إدخال بريد إلكتروني صحيح";
+    }
+
+    if (!reservationForm.passportNumber.trim()) {
+      nextErrors.passportNumber = "يرجى إدخال رقم الجواز";
+    }
+
+    if (!passportFile) {
+      nextErrors.passportFile = "يرجى رفع صورة جواز السفر";
+    }
+
+    if (!idFile) {
+      nextErrors.idFile = "يرجى رفع صورة بطاقة الهوية";
+    }
+
+    setFormErrors(nextErrors);
+
+    return !Object.values(nextErrors).some(Boolean);
+  };
+
+  const goToReservationStep = (step: number) => {
+    if (step > 3 && !validateReservationData()) {
+      setReservationStatus("يرجى إكمال بيانات المسافر والوثائق قبل اختيار الفندق.");
+      setReservationStep(1);
+      return;
+    }
+
+    setReservationStatus("");
+    setReservationStep(Math.min(5, Math.max(1, step)));
+  };
 
   const updateFilter = (name: FilterName, value: string) => {
     setFilters((current) => ({ ...current, [name]: value }));
@@ -194,15 +421,210 @@ export default function LandingPage() {
     }, 0);
   };
 
-  const openBookingSection = (title: string) => {
-    setSelectedBookingTitle(title);
-    setReservationStatus("");
-    setOcrStatus("");
-    setFormErrors({});
-    setUploadErrors({});
-    setReservationSuccessOpen(false);
-    setBookingSectionOpen(true);
+  const openAuthPopup = (view: AuthPopupView, title = "") => {
+    setAuthContextTitle(title);
+    setAuthView(view);
+    setAuthMessage("");
+    setAuthPopupOpen(true);
   };
+
+  const openBookingSection = (title: string) => {
+    const bookingTitle = title || "حجز جديد";
+
+    if (!travelerUser?.isAuthenticated) {
+      openAuthPopup("login", bookingTitle);
+      setAuthMessage("يرجى تسجيل الدخول لإتمام الحجز.");
+      return;
+    }
+
+    openReservationSection(bookingTitle);
+  };
+
+  const updateTravelOption = (
+    days: string,
+    name: "bookingDate" | "roomType" | "transportType",
+    value: string
+  ) => {
+    setTravelOptions((current) => ({
+      ...current,
+      [days]: {
+        ...current[days],
+        [name]: value
+      }
+    }));
+  };
+
+  const updateTravelBookingDate = (days: string, expectedDay: number, value: string) => {
+    const selectedDay = value ? new Date(`${value}T12:00:00`).getDay() : -1;
+    const expectedDayLabel = expectedDay === 3 ? "الأربعاء" : "الخميس";
+
+    setTravelOptions((current) => ({
+      ...current,
+      [days]: {
+        ...current[days],
+        bookingDate: selectedDay === expectedDay ? value : "",
+        dateError: value && selectedDay !== expectedDay
+          ? `برنامج ${days} يبدأ فقط يوم ${expectedDayLabel}.`
+          : ""
+      }
+    }));
+  };
+
+  const handleAuthLogin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const nextErrors: { email?: string; password?: string } = {};
+    const trimmedEmail = authEmail.trim();
+
+    if (!trimmedEmail) {
+      nextErrors.email = "يرجى إدخال البريد الإلكتروني";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      nextErrors.email = "يرجى إدخال بريد إلكتروني صحيح";
+    }
+
+    if (!authPassword) {
+      nextErrors.password = "يرجى إدخال كلمة المرور";
+    }
+
+    setAuthErrors(nextErrors);
+
+    if (Object.values(nextErrors).some(Boolean)) {
+      setAuthMessage("");
+      return;
+    }
+
+    setAuthLoading(true);
+    setAuthMessage("");
+
+    try {
+      const result = await loginUser({
+        email: trimmedEmail,
+        password: authPassword,
+        rememberMe: authRemember
+      });
+
+      if (!result.succeeded || !result.user) {
+        setAuthMessage(result.message || "تعذر تسجيل الدخول. تحقق من البريد الإلكتروني وكلمة المرور.");
+        return;
+      }
+
+      const isAdminAccount = result.user.roles.some((role) => ["admin", "employee"].includes(role.toLowerCase()));
+
+      if (isAdminAccount) {
+        await logoutUser();
+        setTravelerUser(null);
+        setAuthMessage("هذا الحساب مخصص للإدارة. يرجى استخدام رابط الإدارة لتسجيل الدخول.");
+        return;
+      }
+
+      setTravelerUser(result.user);
+      setAuthPopupOpen(false);
+
+      if (authContextTitle) {
+        openReservationSection(authContextTitle);
+      }
+
+      if (window.location.pathname === "/booking/login") {
+        window.history.replaceState({}, "", "/");
+      }
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : "تعذر تسجيل الدخول حالياً.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleTravelerLogout = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // The traveler may already be logged out server-side.
+    }
+
+    setTravelerUser(null);
+    setBookingSectionOpen(false);
+    setAuthPopupOpen(false);
+    setAuthMessage("");
+  };
+
+  const handleRegisterSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!registerForm.acceptTerms) {
+      setAuthMessage("يجب الموافقة على الشروط والأحكام قبل إنشاء الحساب.");
+      return;
+    }
+
+    if (registerForm.password !== registerForm.confirmPassword) {
+      setAuthMessage("كلمتا المرور غير متطابقتين.");
+      return;
+    }
+
+    setAuthEmail(registerForm.email);
+    setAuthMessage("تم تجهيز الحساب. أكمل التحقق من الرمز.");
+    setAuthView("verify");
+  };
+
+  const handleForgotSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAuthMessage("تم إرسال رابط الاستعادة إلى بريدك الإلكتروني.");
+    setAuthView("reset");
+  };
+
+  const handleResetSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (resetForm.password !== resetForm.confirmPassword) {
+      setAuthMessage("كلمتا المرور غير متطابقتين.");
+      return;
+    }
+
+    setAuthMessage("تم حفظ كلمة المرور الجديدة. يمكنك تسجيل الدخول الآن.");
+    setAuthView("login");
+  };
+
+  const updateVerificationCode = (index: number, value: string) => {
+    const nextValue = value.replace(/\D/g, "").slice(-1);
+    setVerificationCode((current) => current.map((item, itemIndex) => (itemIndex === index ? nextValue : item)));
+  };
+
+  const authCopy = {
+    login: {
+      heroTitle: "رحلة إيمانية تبدأ من هنا ..",
+      heroText: "نعمل لأجل أن تكون رحلتك إلى بيت الله أسهل وأجمل",
+      title: "مرحباً بعودتك",
+      subtitle: "سجل الدخول إلى حسابك لمتابعة رحلتك الإيمانية"
+    },
+    register: {
+      heroTitle: "رحلة إيمانية تبدأ من هنا ..",
+      heroText: "ابدأ رحلتك المباركة إلى بيت الله الحرام بخطوات سهلة وآمنة",
+      title: "إنشاء حساب جديد",
+      subtitle: "سجل بياناتك وابدأ رحلتك الإيمانية معنا"
+    },
+    forgot: {
+      heroTitle: "استعد الوصول إلى حسابك ..",
+      heroText: "رحلتك الإيمانية دائماً قريبة، نساعدك على العودة بكل سهولة وأمان",
+      title: "نسيت كلمة المرور؟",
+      subtitle: "أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين"
+    },
+    reset: {
+      heroTitle: "رحلتك الإيمانية تكتمل بأمان ..",
+      heroText: "مع كل خطوة، أنت أقرب إلى بيت الله",
+      title: "إعادة تعيين كلمة المرور",
+      subtitle: "أدخل كلمة مرور جديدة لتأمين حسابك"
+    },
+    verify: {
+      heroTitle: "تحقق بأمان .. واستكمل رحلتك المباركة",
+      heroText: "خطوة واحدة تفصلك عن مواصلة رحلتك إلى بيت الله الحرام",
+      title: "التحقق من الرمز",
+      subtitle: "أدخل رمز التحقق المرسل إلى هاتفك أو بريدك الإلكتروني"
+    },
+    twoFactor: {
+      heroTitle: "أمان أكبر لرحلتك الإيمانية ..",
+      heroText: "نحمي حسابك اليوم لتبقى رحلتك إلى بيت الله آمنة دائماً",
+      title: "التحقق بخطوتين",
+      subtitle: "أضف طبقة حماية إضافية إلى حسابك"
+    }
+  }[authView];
 
   const updateReservationField = (name: ReservationField, value: string) => {
     setReservationForm((current) => ({ ...current, [name]: value }));
@@ -286,7 +708,7 @@ export default function LandingPage() {
           ...current,
           passportNumber: result.passportNumber || current.passportNumber,
           fullName: result.fullName || current.fullName,
-          nationality: result.nationality || current.nationality,
+          nationality: normalizeNationality(result.nationality) || current.nationality,
           gender: result.gender || current.gender,
           dateOfBirth: toDateInputValue(result.dateOfBirth) || current.dateOfBirth,
           passportExpiryDate: toDateInputValue(result.passportExpiryDate) || current.passportExpiryDate
@@ -305,7 +727,7 @@ export default function LandingPage() {
           civilId: result.civilId || current.civilId,
           passportNumber: result.passportNumber || current.passportNumber,
           fullName: result.fullName || current.fullName,
-          nationality: result.nationality || current.nationality,
+          nationality: normalizeNationality(result.nationality) || current.nationality,
           gender: result.gender || current.gender,
           dateOfBirth: toDateInputValue(result.dateOfBirth) || current.dateOfBirth,
           passportExpiryDate: toDateInputValue(result.passportExpiryDate) || current.passportExpiryDate
@@ -320,36 +742,22 @@ export default function LandingPage() {
   };
 
   const submitReservation = async () => {
-    const nextErrors: Partial<Record<ReservationField | "passportFile" | "idFile", string>> = {};
-
-    if (!reservationForm.fullName.trim()) {
-      nextErrors.fullName = "يرجى إدخال الاسم الكامل";
+    if (!travelerUser?.isAuthenticated) {
+      setBookingSectionOpen(false);
+      openAuthPopup("login", selectedBookingTitle || "حجز جديد");
+      setAuthMessage("يرجى تسجيل الدخول قبل تأكيد طلب الحجز.");
+      return;
     }
 
-    if (!reservationForm.phoneNumber.trim()) {
-      nextErrors.phoneNumber = "يرجى إدخال رقم الهاتف";
-    }
-
-    if (reservationForm.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reservationForm.email.trim())) {
-      nextErrors.email = "يرجى إدخال بريد إلكتروني صحيح";
-    }
-
-    if (!reservationForm.passportNumber.trim()) {
-      nextErrors.passportNumber = "يرجى إدخال رقم الجواز";
-    }
-
-    if (!passportFile) {
-      nextErrors.passportFile = "يرجى رفع صورة جواز السفر";
-    }
-
-    if (!idFile) {
-      nextErrors.idFile = "يرجى رفع صورة بطاقة الهوية";
-    }
-
-    setFormErrors(nextErrors);
-
-    if (Object.values(nextErrors).some(Boolean)) {
+    if (!validateReservationData()) {
       setReservationStatus("يرجى مراجعة البيانات المطلوبة.");
+      setReservationStep(1);
+      return;
+    }
+
+    if (!paymentTermsAccepted) {
+      setReservationStatus("يرجى الموافقة على الشروط والأحكام وسياسة الإلغاء.");
+      setReservationStep(5);
       return;
     }
 
@@ -411,6 +819,15 @@ export default function LandingPage() {
               <span><MailIcon className="icon icon-sm" /> info@umrah.com</span>
               <span><PhoneIcon className="icon icon-sm" /> +965 55 123 4567</span>
               <span><LocationIcon className="icon icon-sm" /> العربية</span>
+              {travelerUser?.isAuthenticated ? (
+                <button className="gv-auth-nav gv-auth-nav--logout" type="button" onClick={() => void handleTravelerLogout()}>
+                  تسجيل الخروج
+                </button>
+              ) : (
+                <button className="gv-auth-nav" type="button" onClick={() => openAuthPopup("login")}>
+                  تسجيل الدخول
+                </button>
+              )}
               <button className="gv-book" type="button" onClick={() => openBookingSection("حجز جديد")}>
                 احجز الآن
                 <ArrowRightIcon className="icon icon-sm" />
@@ -586,17 +1003,44 @@ export default function LandingPage() {
                   <span>{program.days}</span>
                 </div>
                 <div className="gv-travel-card__body">
-                  <div className="gv-travel-card__features">
-                    {program.features.map((feature, index) => (
-                      <span key={feature}>
-                        {index === 0 ? <StarIcon className="icon icon-sm" /> : null}
-                        {index === 1 ? <MosqueIcon className="icon icon-sm" /> : null}
-                        {index === 2 ? <LocationIcon className="icon icon-sm" /> : null}
-                        {index === 3 ? <HeadsetIcon className="icon icon-sm" /> : null}
-                        {feature}
-                      </span>
-                    ))}
+                  <div className="gv-travel-card__features gv-travel-card__features--controls">
+                    <label>
+                      <CalendarIcon className="icon icon-sm" />
+                      <strong>تاريخ الحجز</strong>
+                      <input
+                        type="date"
+                        value={travelOptions[program.days]?.bookingDate ?? ""}
+                        onChange={(event) => updateTravelBookingDate(program.days, program.startDay, event.target.value)}
+                      />
+                    </label>
+                    <label>
+                      <MosqueIcon className="icon icon-sm" />
+                      <strong>نوع الغرفة</strong>
+                      <select
+                        value={travelOptions[program.days]?.roomType ?? "غرفة مزدوجة"}
+                        onChange={(event) => updateTravelOption(program.days, "roomType", event.target.value)}
+                      >
+                        <option>غرفة فردية</option>
+                        <option>غرفة مزدوجة</option>
+                        <option>غرفة ثلاثية</option>
+                        <option>غرفة رباعية</option>
+                      </select>
+                    </label>
+                    <label>
+                      <BusIcon className="icon icon-sm" />
+                      <strong>وسيلة النقل</strong>
+                      <select
+                        value={travelOptions[program.days]?.transportType ?? "باص"}
+                        onChange={(event) => updateTravelOption(program.days, "transportType", event.target.value)}
+                      >
+                        <option>باص</option>
+                        <option>سيارة فردية</option>
+                      </select>
+                    </label>
                   </div>
+                  {travelOptions[program.days]?.dateError ? (
+                    <p className="gv-travel-card__date-error">{travelOptions[program.days]?.dateError}</p>
+                  ) : null}
                   <div className="gv-travel-card__divider" />
                   <div className="gv-travel-card__footer">
                     <p>تبدأ من <b>{program.price}</b> د.ك</p>
@@ -611,6 +1055,212 @@ export default function LandingPage() {
         </section>
       )}
 
+      {authPopupOpen && (
+        <div className="gv-auth-modal" role="dialog" aria-modal="true" aria-labelledby="gv-auth-title" onClick={() => setAuthPopupOpen(false)}>
+          <section className={`gv-auth-popup gv-auth-popup--${authView}`} onClick={(event) => event.stopPropagation()}>
+            <button className="gv-auth-popup__close" type="button" onClick={() => setAuthPopupOpen(false)} aria-label="إغلاق">
+              ×
+            </button>
+            <div className="gv-auth-popup__visual">
+            </div>
+
+            <div className="gv-auth-popup__side">
+              <header className="gv-auth-popup__top">
+                <button className="gv-auth-language" type="button">
+                  <span aria-hidden="true">⌄</span>
+                  العربية
+                  <span aria-hidden="true">◎</span>
+                </button>
+              </header>
+              <div className="gv-auth-company">
+                <div className="gv-auth-company__text">
+                  <strong><span>شركة</span> رواد</strong>
+                  <small>للسفر والسياحة وخدمات العمرة</small>
+                </div>
+                <span className="gv-auth-company__divider" />
+                <img src="/landingpage/company-logo.png" alt="رواد العمرة" />
+              </div>
+
+              <div className="gv-auth-card">
+                <div className="gv-auth-card__head">
+                  <div className="gv-auth-card__title-row">
+                    <h2 id="gv-auth-title">{authCopy.title}</h2>
+                  </div>
+                  <p>{authCopy.subtitle}</p>
+                </div>
+
+                {authMessage ? <div className="gv-auth-message" aria-live="polite">{authMessage}</div> : null}
+
+                {authView === "login" && (
+                  <form className="gv-auth-form" onSubmit={handleAuthLogin}>
+                    <label htmlFor="gv-auth-email">
+                      البريد الإلكتروني
+                      <span className="gv-auth-field">
+                        <input
+                          id="gv-auth-email"
+                          type="email"
+                          value={authEmail}
+                          onChange={(event) => {
+                            setAuthEmail(event.target.value);
+                            setAuthErrors((current) => ({ ...current, email: "" }));
+                          }}
+                          placeholder="أدخل بريدك الإلكتروني"
+                          autoComplete="email"
+                          aria-invalid={Boolean(authErrors.email)}
+                        />
+                        <MailIcon className="icon icon-sm" />
+                      </span>
+                      {authErrors.email ? <em className="gv-auth-error">{authErrors.email}</em> : null}
+                    </label>
+                    <label htmlFor="gv-auth-password">
+                      كلمة المرور
+                      <span className="gv-auth-field">
+                        <input
+                          id="gv-auth-password"
+                          type={showAuthPassword ? "text" : "password"}
+                          value={authPassword}
+                          onChange={(event) => {
+                            setAuthPassword(event.target.value);
+                            setAuthErrors((current) => ({ ...current, password: "" }));
+                          }}
+                          placeholder="أدخل كلمة المرور"
+                          autoComplete="current-password"
+                          aria-invalid={Boolean(authErrors.password)}
+                        />
+                        <button className="gv-auth-eye" type="button" onClick={() => setShowAuthPassword((current) => !current)} aria-label={showAuthPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}>
+                          {showAuthPassword ? "◉" : "◎"}
+                        </button>
+                      </span>
+                      {authErrors.password ? <em className="gv-auth-error">{authErrors.password}</em> : null}
+                    </label>
+                    <div className="gv-auth-row">
+                      <label className="gv-auth-check">
+                        <input type="checkbox" checked={authRemember} onChange={(event) => setAuthRemember(event.target.checked)} />
+                        تذكرني
+                      </label>
+                      <button type="button" onClick={() => openAuthPopup("forgot", authContextTitle)}>نسيت كلمة المرور؟</button>
+                    </div>
+                    <button className="gv-auth-primary" type="submit" disabled={authLoading}>
+                      <ArrowRightIcon className="icon icon-sm" />
+                      {authLoading ? <span className="gv-auth-spinner" aria-hidden="true" /> : null}
+                      {authLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+                    </button>
+                    <div className="gv-auth-divider"><span>أو</span></div>
+                    <button className="gv-auth-google" type="button">
+                      <b>G</b>
+                      متابعة باستخدام جوجل
+                    </button>
+                    <p className="gv-auth-switch">ليس لديك حساب؟ <button type="button" onClick={() => openAuthPopup("register", authContextTitle)}>إنشاء حساب جديد</button></p>
+                  </form>
+                )}
+
+                {authView === "register" && (
+                  <form className="gv-auth-form gv-auth-form--compact" onSubmit={handleRegisterSubmit}>
+                    <label>
+                      <span className="gv-auth-field"><input type="text" value={registerForm.fullName} onChange={(event) => setRegisterForm((current) => ({ ...current, fullName: event.target.value }))} placeholder="الاسم الكامل" required /><UsersIcon className="icon icon-sm" /></span>
+                    </label>
+                    <label>
+                      <span className="gv-auth-field"><input type="email" value={registerForm.email} onChange={(event) => setRegisterForm((current) => ({ ...current, email: event.target.value }))} placeholder="البريد الإلكتروني" required /><MailIcon className="icon icon-sm" /></span>
+                    </label>
+                    <label>
+                      <span className="gv-auth-field gv-auth-field--phone"><input type="tel" value={registerForm.phone} onChange={(event) => setRegisterForm((current) => ({ ...current, phone: event.target.value }))} placeholder="أدخل رقم هاتفك" required /><PhoneIcon className="icon icon-sm" /><em>966</em></span>
+                    </label>
+                    <label>
+                      <span className="gv-auth-field"><input type="password" value={registerForm.password} onChange={(event) => setRegisterForm((current) => ({ ...current, password: event.target.value }))} placeholder="أدخل كلمة المرور" required /><ShieldIcon className="icon icon-sm" /></span>
+                    </label>
+                    <label>
+                      <span className="gv-auth-field"><input type="password" value={registerForm.confirmPassword} onChange={(event) => setRegisterForm((current) => ({ ...current, confirmPassword: event.target.value }))} placeholder="أعد إدخال كلمة المرور" required /><ShieldIcon className="icon icon-sm" /></span>
+                    </label>
+                    <label className="gv-auth-check gv-auth-check--end">
+                      <input type="checkbox" checked={registerForm.acceptTerms} onChange={(event) => setRegisterForm((current) => ({ ...current, acceptTerms: event.target.checked }))} />
+                      أوافق على الشروط والأحكام
+                    </label>
+                    <button className="gv-auth-primary" type="submit"><ArrowRightIcon className="icon icon-sm" /> إنشاء الحساب</button>
+                    <div className="gv-auth-divider"><span>أو</span></div>
+                    <button className="gv-auth-google" type="button"><b>G</b> التسجيل باستخدام جوجل</button>
+                    <p className="gv-auth-switch">لديك حساب بالفعل؟ <button type="button" onClick={() => openAuthPopup("login", authContextTitle)}>تسجيل الدخول</button></p>
+                  </form>
+                )}
+
+                {authView === "forgot" && (
+                  <form className="gv-auth-form" onSubmit={handleForgotSubmit}>
+                    <label>
+                      البريد الإلكتروني
+                      <span className="gv-auth-field"><input type="email" value={authEmail} onChange={(event) => setAuthEmail(event.target.value)} placeholder="أدخل بريدك الإلكتروني" required /><MailIcon className="icon icon-sm" /></span>
+                    </label>
+                    <button className="gv-auth-primary" type="submit"><ArrowRightIcon className="icon icon-sm" /> إرسال رابط الاستعادة</button>
+                    <div className="gv-auth-divider"><span>أو</span></div>
+                    <button className="gv-auth-outline" type="button" onClick={() => openAuthPopup("login", authContextTitle)}>العودة إلى تسجيل الدخول</button>
+                    <p className="gv-auth-secure"><ShieldIcon className="icon icon-sm" /> حماية وأمان لبياناتك</p>
+                  </form>
+                )}
+
+                {authView === "reset" && (
+                  <form className="gv-auth-form" onSubmit={handleResetSubmit}>
+                    <label>
+                      كلمة المرور الجديدة
+                      <span className="gv-auth-field"><input type="password" value={resetForm.password} onChange={(event) => setResetForm((current) => ({ ...current, password: event.target.value }))} placeholder="أدخل كلمة المرور الجديدة" required /><ShieldIcon className="icon icon-sm" /></span>
+                    </label>
+                    <label>
+                      تأكيد كلمة المرور الجديدة
+                      <span className="gv-auth-field"><input type="password" value={resetForm.confirmPassword} onChange={(event) => setResetForm((current) => ({ ...current, confirmPassword: event.target.value }))} placeholder="أعد إدخال كلمة المرور الجديدة" required /><ShieldIcon className="icon icon-sm" /></span>
+                    </label>
+                    <p className="gv-auth-hint">يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل ويفضل استخدام مزيج من الحروف والأرقام.</p>
+                    <button className="gv-auth-primary" type="submit"><ArrowRightIcon className="icon icon-sm" /> حفظ كلمة المرور</button>
+                    <button className="gv-auth-linkline" type="button" onClick={() => openAuthPopup("login", authContextTitle)}>العودة إلى تسجيل الدخول</button>
+                    <p className="gv-auth-secure"><ShieldIcon className="icon icon-sm" /> معلوماتك محمية وآمنة دائماً</p>
+                  </form>
+                )}
+
+                {authView === "verify" && (
+                  <form className="gv-auth-form" onSubmit={(event) => { event.preventDefault(); setAuthView("twoFactor"); setAuthMessage(""); }}>
+                    <div className="gv-auth-code" dir="ltr">
+                      {verificationCode.map((digit, index) => (
+                        <input key={index} inputMode="numeric" maxLength={1} value={digit} onChange={(event) => updateVerificationCode(index, event.target.value)} aria-label={`رمز التحقق ${index + 1}`} />
+                      ))}
+                    </div>
+                    <p className="gv-auth-muted">تم إرسال الرمز إلى 55*******</p>
+                    <button className="gv-auth-primary" type="submit"><ArrowRightIcon className="icon icon-sm" /> تأكيد الرمز</button>
+                    <div className="gv-auth-resend"><span>إعادة الإرسال خلال 00:45</span><button type="button">إرسال الرمز مرة أخرى</button></div>
+                    <p className="gv-auth-safety"><ShieldIcon className="icon icon-sm" /> بياناتك في أمان</p>
+                  </form>
+                )}
+
+                {authView === "twoFactor" && (
+                  <form className="gv-auth-form" onSubmit={(event) => { event.preventDefault(); setAuthMessage("تم تفعيل التحقق بخطوتين. سجل الدخول لإتمام الحجز."); setAuthView("login"); }}>
+                    <div className="gv-auth-methods">
+                      <button className={twoFactorMethod === "app" ? "is-active" : ""} type="button" onClick={() => setTwoFactorMethod("app")}>تطبيق المصادقة<br /><span>Google Authenticator</span></button>
+                      <button className={twoFactorMethod === "sms" ? "is-active" : ""} type="button" onClick={() => setTwoFactorMethod("sms")}>رسالة نصية<br /><span>تلقي رمز التحقق عبر الجوال</span></button>
+                    </div>
+                    <div className="gv-auth-qr">
+                      <div className="gv-auth-qr__box" aria-hidden="true">
+                        {Array.from({ length: 64 }).map((_, index) => <span key={index} className={index % 3 === 0 || index % 7 === 0 ? "is-dark" : ""} />)}
+                      </div>
+                      <div>
+                        <strong>امسح الرمز عبر تطبيق المصادقة</strong>
+                        <p>استخدم تطبيق Google Authenticator أو أي تطبيق مصادقة آخر لمسح رمز الاستجابة السريعة.</p>
+                        <code>JBSW Y3DP KX7H M2Q9</code>
+                      </div>
+                    </div>
+                    <label>
+                      رمز التحقق
+                      <span className="gv-auth-field"><input type="text" value={twoFactorCode} onChange={(event) => setTwoFactorCode(event.target.value)} placeholder="أدخل الرمز المكون من 6 أرقام" required /><ShieldIcon className="icon icon-sm" /></span>
+                    </label>
+                    <button className="gv-auth-primary" type="submit"><ArrowRightIcon className="icon icon-sm" /> تأكيد التفعيل</button>
+                    <p className="gv-auth-safety"><ShieldIcon className="icon icon-sm" /> حسابك أكثر أماناً</p>
+                  </form>
+                )}
+              </div>
+
+              <footer className="gv-auth-popup__footer">لبيك اللهم لبيك، عمرة مباركة</footer>
+            </div>
+            <footer className="gv-auth-page-footer">
+              <span>« لبيك اللهم لبيك .. عمرة مباركة »</span>
+            </footer>
+          </section>
+        </div>
+      )}
+
       {bookingSectionOpen && (
         <div className="gv-reservation-modal" role="dialog" aria-modal="true" aria-labelledby="gv-reservation-title" onClick={() => setBookingSectionOpen(false)}>
           <section className="gv-reservation" id="gv-reservation" onClick={(event) => event.stopPropagation()}>
@@ -619,10 +1269,30 @@ export default function LandingPage() {
             </button>
             <div className="gv-reservation__header">
               <MosqueIcon className="icon icon-md" />
-              <h2 id="gv-reservation-title">{selectedBookingTitle || "حجز جديد"}</h2>
+              <h2 id="gv-reservation-title">{bookingDays}</h2>
               <p>أكمل بياناتك لرحلة مريحة وآمنة</p>
             </div>
 
+            <div className="gv-reservation-steps" aria-label="خطوات الحجز">
+              {reservationSteps.map((step) => {
+                const isDone = step.id < reservationStep;
+                const isActive = step.id === reservationStep;
+                return (
+                  <button
+                    key={step.id}
+                    type="button"
+                    className={`${isActive ? "is-active" : ""} ${isDone ? "is-done" : ""}`}
+                    onClick={() => goToReservationStep(step.id)}
+                  >
+                    <span>{isDone ? "✓" : step.id}</span>
+                    <small>الخطوة {step.id}</small>
+                    <strong>{step.label}</strong>
+                  </button>
+                );
+              })}
+            </div>
+
+            {reservationStep <= 3 ? (
             <div className="gv-reservation__layout">
               <div className="gv-reservation__form">
                 <div className="gv-reservation__form-head">
@@ -664,13 +1334,25 @@ export default function LandingPage() {
                   </span>
                   {formErrors.passportNumber ? <em>{formErrors.passportNumber}</em> : null}
                 </label>
+                <label>
+                  الجنسية
+                  <span className="gv-field">
+                    <select id="gv-nationality" value={reservationForm.nationality} onChange={(event) => updateReservationField("nationality", event.target.value)}>
+                      <option value="">اختر الجنسية</option>
+                      {nationalityOptions.map((nationality) => (
+                        <option key={nationality} value={nationality}>{nationality}</option>
+                      ))}
+                    </select>
+                    <LocationIcon className="icon icon-sm" />
+                  </span>
+                </label>
                 <button type="button" className="gv-smart-extract" onClick={() => void extractAllDocuments()} disabled={!passportFile && !idFile}>
                   <SearchIcon className="icon icon-sm" />
                   استخراج ذكي
                 </button>
-                <button type="button" className="gv-confirm-booking" onClick={() => void submitReservation()} disabled={reservationSubmitting}>
-                  <CalendarIcon className="icon icon-sm" />
-                  {reservationSubmitting ? "جارٍ الإرسال..." : "تأكيد طلب الحجز"}
+                <button type="button" className="gv-confirm-booking" onClick={() => goToReservationStep(4)}>
+                  <ArrowRightIcon className="icon icon-sm" />
+                  التالي: اختيار الفندق
                 </button>
                 <small><ShieldIcon className="icon icon-sm" /> جميع بياناتك محمية وآمنة</small>
               </div>
@@ -747,6 +1429,119 @@ export default function LandingPage() {
                 <p className="gv-upload-note">تأكد من أن جميع البيانات واضحة في الصورة</p>
               </article>
             </div>
+            ) : null}
+
+            {reservationStep === 4 ? (
+              <div className="gv-booking-stage gv-booking-stage--hotels">
+                <aside className="gv-booking-summary">
+                  <strong>ملخص رحلتك</strong>
+                  <span><CalendarIcon className="icon icon-sm" /> {bookingDays}</span>
+                  <span><UsersIcon className="icon icon-sm" /> 1 مسافر</span>
+                  <span><DocumentIcon className="icon icon-sm" /> الوثائق مكتملة</span>
+                  <span><SearchIcon className="icon icon-sm" /> تم الاستخراج بنجاح</span>
+                  <button type="button" onClick={() => goToReservationStep(3)}>تعديل البيانات</button>
+                  <p>لأن رحلتك تستحق الأفضل، اختر الفندق الأنسب قبل الدفع.</p>
+                </aside>
+                <section className="gv-hotel-stage">
+                  <h3>الخطوة الرابعة</h3>
+                  <p>اختر فندقك في مكة والمدينة</p>
+                  <div className="gv-hotel-tabs">
+                    <button className="is-active" type="button">مكة المكرمة</button>
+                    <button type="button">المدينة المنورة</button>
+                  </div>
+                  <div className="gv-hotel-list">
+                    {hotelOptions.map((hotel) => (
+                      <article className={selectedHotel === hotel.name ? "is-selected" : ""} key={hotel.name}>
+                        <div className="gv-hotel-image" style={{ backgroundImage: `url(${hotel.image})` }} />
+                        <div className="gv-hotel-copy">
+                          <h4>{hotel.name}</h4>
+                          <b>★★★★★</b>
+                          <p><LocationIcon className="icon icon-sm" /> {hotel.distance}</p>
+                          <div>
+                            {hotel.perks.map((perk) => <span key={perk}>{perk}</span>)}
+                          </div>
+                        </div>
+                        <div className="gv-hotel-price">
+                          <small>ابتداءً من</small>
+                          <strong>{hotel.price.toLocaleString("en-US")} د.ك</strong>
+                          <span>لليلة الواحدة</span>
+                          <button type="button" onClick={() => setSelectedHotel(hotel.name)}>اختيار هذا الفندق</button>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                  <div className="gv-stage-actions">
+                    <button type="button" className="gv-stage-back" onClick={() => goToReservationStep(3)}>العودة</button>
+                    <button type="button" className="gv-stage-next" onClick={() => goToReservationStep(5)}>التالي إلى الدفع</button>
+                  </div>
+                </section>
+              </div>
+            ) : null}
+
+            {reservationStep === 5 ? (
+              <div className="gv-booking-stage gv-booking-stage--payment">
+                <aside className="gv-booking-summary">
+                  <strong>ملخص الحجز</strong>
+                  <div className="gv-booking-summary__hotel">
+                    <span style={{ backgroundImage: `url(${selectedHotelInfo.image})` }} />
+                    <div>
+                      <b>{selectedHotelInfo.name}</b>
+                      <em>★★★★★</em>
+                      <small>{selectedHotelInfo.city}</small>
+                    </div>
+                  </div>
+                  <span><CalendarIcon className="icon icon-sm" /> {bookingDays}</span>
+                  <span><UsersIcon className="icon icon-sm" /> 1 مسافر</span>
+                  <span><MosqueIcon className="icon icon-sm" /> {selectedTravelOptions?.roomType ?? "غرفة مزدوجة"}</span>
+                  <hr />
+                  <p><small>سعر الفندق</small><b>{hotelTotal.toLocaleString("en-US")} د.ك</b></p>
+                  <p><small>الخدمات الإضافية</small><b>{servicesTotal.toLocaleString("en-US")} د.ك</b></p>
+                  <strong className="gv-booking-total">{reservationTotal.toLocaleString("en-US")} د.ك</strong>
+                </aside>
+                <section className="gv-payment-stage">
+                  <h3>الخطوة الخامسة</h3>
+                  <p>إتمام الدفع وتأكيد الحجز</p>
+                  <div className="gv-payment-tabs">
+                    <button className={paymentMethod === "myfatoorah" ? "is-active" : ""} type="button" onClick={() => setPaymentMethod("myfatoorah")}>الدفع عبر فاتورة</button>
+                    <button className={paymentMethod === "card" ? "is-active" : ""} type="button" onClick={() => setPaymentMethod("card")}>بطاقة ائتمان</button>
+                  </div>
+                  <div className="gv-payment-options">
+                    <button className={paymentMode === "full" ? "is-active" : ""} type="button" onClick={() => setPaymentMode("full")}>
+                      <span />
+                      <strong>الدفع الكامل</strong>
+                      <small>ادفع المبلغ كاملاً الآن</small>
+                    </button>
+                    <button className={paymentMode === "installments" ? "is-active" : ""} type="button" onClick={() => setPaymentMode("installments")}>
+                      <span />
+                      <strong>التقسيط</strong>
+                      <small>قسط رحلتك بسهولة</small>
+                    </button>
+                  </div>
+                  <div className="gv-payment-plans">
+                    {paymentPlans.map((plan) => (
+                      <span key={plan.months}>
+                        <strong>{plan.months}</strong>
+                        <small>{plan.amount}</small>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="gv-payment-secure">
+                    <ShieldIcon className="icon icon-sm" />
+                    دفع آمن 100% وجميع المعاملات محمية ومشفرة
+                  </div>
+                  <label className="gv-payment-terms">
+                    <input type="checkbox" checked={paymentTermsAccepted} onChange={(event) => setPaymentTermsAccepted(event.target.checked)} />
+                    أوافق على الشروط والأحكام وسياسة الإلغاء
+                  </label>
+                  <div className="gv-stage-actions">
+                    <button type="button" className="gv-stage-back" onClick={() => goToReservationStep(4)}>العودة</button>
+                    <button type="button" className="gv-stage-next" onClick={() => void submitReservation()} disabled={reservationSubmitting}>
+                      {reservationSubmitting ? "جارٍ التأكيد..." : "تأكيد الحجز والدفع الآن"}
+                    </button>
+                  </div>
+                </section>
+              </div>
+            ) : null}
             {ocrStatus ? <div className="gv-ocr-status">{ocrStatus}</div> : null}
             {reservationStatus ? <div className="gv-ocr-status">{reservationStatus}</div> : null}
             {reservationSuccessOpen ? (

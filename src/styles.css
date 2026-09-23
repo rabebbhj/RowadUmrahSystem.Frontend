@@ -776,6 +776,29 @@ img {
   font-size: 18px;
 }
 
+.gv-auth-nav {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(240, 200, 106, 0.56);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f0c86a;
+  font-size: 14px;
+  font-weight: 900;
+  direction: rtl;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.gv-auth-nav:hover {
+  transform: translateY(-1px);
+  border-color: rgba(240, 200, 106, 0.9);
+  background: rgba(240, 200, 106, 0.14);
+}
+
+.gv-auth-nav--logout {
+  color: #fff4d2;
+}
+
 .gv-contact {
   display: flex;
   align-items: center;
@@ -1514,6 +1537,75 @@ img {
   border-inline-start: 0;
 }
 
+.gv-travel-card__features--controls {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.gv-travel-card__features--controls label {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+  min-height: 96px;
+  padding: 0 12px;
+  line-height: 1.25;
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gv-travel-card__features--controls label:last-child {
+  border-inline-start: 0;
+}
+
+.gv-travel-card__features--controls strong {
+  color: #fff4df;
+  font-size: clamp(0.86rem, 0.82vw, 1rem);
+  font-weight: 900;
+}
+
+.gv-travel-card__features--controls input,
+.gv-travel-card__features--controls select {
+  width: min(100%, 180px);
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(223, 173, 75, 0.48);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff9ea;
+  font-size: clamp(0.78rem, 0.76vw, 0.92rem);
+  font-weight: 800;
+  text-align: center;
+  outline: 0;
+}
+
+.gv-travel-card__features--controls input {
+  direction: ltr;
+}
+
+.gv-travel-card__features--controls select {
+  direction: rtl;
+  cursor: pointer;
+}
+
+.gv-travel-card__features--controls option {
+  background: #071016;
+  color: #fff9ea;
+}
+
+.gv-travel-card__features--controls input:focus,
+.gv-travel-card__features--controls select:focus {
+  border-color: rgba(246, 214, 126, 0.95);
+  box-shadow: 0 0 0 3px rgba(216, 163, 62, 0.16);
+}
+
+.gv-travel-card__date-error {
+  margin: 12px 0 0;
+  color: #ffd56f;
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-align: center;
+}
+
 .gv-card__features .icon,
 .gv-travel-card__features .icon {
   width: 28px;
@@ -1724,6 +1816,27 @@ img {
     row-gap: 18px;
   }
 
+  .gv-travel-card__features--controls {
+    grid-template-columns: 1fr;
+  }
+
+  .gv-travel-card__features--controls label,
+  .gv-travel-card__features--controls label:last-child {
+    min-height: 0;
+    padding: 12px 0;
+    border-inline-start: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  }
+
+  .gv-travel-card__features--controls label:last-child {
+    border-bottom: 0;
+  }
+
+  .gv-travel-card__features--controls input,
+  .gv-travel-card__features--controls select {
+    width: 100%;
+  }
+
   .gv-card__features span,
   .gv-travel-card__features span {
     min-height: 66px;
@@ -1862,6 +1975,74 @@ img {
   font-weight: 700;
 }
 
+.gv-reservation-steps {
+  position: relative;
+  z-index: 2;
+  max-width: 1120px;
+  margin: 0 auto 28px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: start;
+  gap: 0;
+  direction: rtl;
+}
+
+.gv-reservation-steps::before {
+  content: "";
+  position: absolute;
+  top: 24px;
+  right: 10%;
+  left: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(189, 132, 42, 0.7), transparent);
+  z-index: -1;
+}
+
+.gv-reservation-steps button {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: #2d2b27;
+  font-weight: 900;
+}
+
+.gv-reservation-steps button span {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid rgba(189, 132, 42, 0.55);
+  background: rgba(255, 251, 242, 0.9);
+  color: #5d5750;
+  font-size: 1.05rem;
+  box-shadow: 0 8px 18px rgba(116, 78, 18, 0.12);
+}
+
+.gv-reservation-steps button small {
+  color: #5d5750;
+  font-size: 0.82rem;
+}
+
+.gv-reservation-steps button strong {
+  color: #111820;
+  font-size: 0.95rem;
+}
+
+.gv-reservation-steps button.is-active span,
+.gv-reservation-steps button.is-done span {
+  border-color: #d9a23d;
+  background: radial-gradient(circle at 34% 26%, #ffe8a7, #bd842a);
+  color: #071015;
+}
+
+.gv-reservation-steps button.is-done span {
+  background: #071015;
+  color: #f1cb72;
+}
+
 .gv-reservation__layout {
   display: grid;
   direction: ltr;
@@ -1869,7 +2050,386 @@ img {
   gap: clamp(18px, 1.55vw, 24px);
   align-items: stretch;
   max-width: 1500px;
+}
+
+.gv-booking-stage {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.42fr) minmax(0, 1fr);
+  gap: clamp(18px, 1.5vw, 26px);
+  max-width: 1500px;
   margin: 0 auto;
+  direction: rtl;
+}
+
+.gv-booking-summary {
+  min-height: 560px;
+  padding: 26px;
+  border-radius: 22px;
+  border: 1px solid rgba(217, 162, 61, 0.62);
+  background:
+    radial-gradient(circle at 8% 95%, rgba(217, 162, 61, 0.22), transparent 32%),
+    linear-gradient(160deg, #071015, #0a151c);
+  color: #fff6e7;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+}
+
+.gv-booking-summary > strong {
+  display: block;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(240, 201, 111, 0.32);
+  color: #f1cb72;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.gv-booking-summary > span,
+.gv-booking-summary p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  margin: 0;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 800;
+}
+
+.gv-booking-summary .icon {
+  color: #f1cb72;
+}
+
+.gv-booking-summary button {
+  width: 100%;
+  min-height: 50px;
+  margin: 18px 0;
+  border: 1px solid #d9a23d;
+  border-radius: 12px;
+  background: transparent;
+  color: #f1cb72;
+  font-weight: 900;
+}
+
+.gv-hotel-stage,
+.gv-payment-stage {
+  min-height: 560px;
+  padding: 26px;
+  border: 1px solid rgba(217, 162, 61, 0.34);
+  border-radius: 22px;
+  background: rgba(255, 250, 240, 0.92);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+}
+
+.gv-hotel-stage h3,
+.gv-payment-stage h3 {
+  margin: 0;
+  color: #071015;
+  text-align: center;
+  font-size: clamp(2rem, 2.4vw, 3rem);
+  font-weight: 900;
+}
+
+.gv-hotel-stage > p,
+.gv-payment-stage > p {
+  margin: 6px 0 22px;
+  color: #4f4a43;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.gv-hotel-tabs,
+.gv-payment-tabs,
+.gv-payment-options,
+.gv-payment-plans {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.gv-hotel-tabs button,
+.gv-payment-tabs button,
+.gv-payment-options button,
+.gv-stage-next,
+.gv-stage-back {
+  min-height: 54px;
+  border-radius: 12px;
+  border: 1px solid rgba(217, 162, 61, 0.38);
+  background: rgba(255, 255, 255, 0.56);
+  color: #071015;
+  font-weight: 900;
+}
+
+.gv-hotel-tabs button.is-active,
+.gv-payment-tabs button.is-active,
+.gv-payment-options button.is-active,
+.gv-stage-next {
+  background: linear-gradient(135deg, #f1cb72, #d9a23d);
+  border-color: #d9a23d;
+}
+
+.gv-hotel-list {
+  display: grid;
+  gap: 12px;
+}
+
+.gv-hotel-list article {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr) 180px;
+  gap: 16px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(217, 162, 61, 0.28);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.gv-hotel-list article.is-selected {
+  border-color: #d9a23d;
+  box-shadow: 0 12px 28px rgba(217, 162, 61, 0.16);
+}
+
+.gv-hotel-image {
+  min-height: 135px;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+}
+
+.gv-hotel-copy h4 {
+  margin: 0 0 4px;
+  color: #071015;
+  font-size: 1.18rem;
+  font-weight: 900;
+}
+
+.gv-hotel-copy b {
+  color: #d9a23d;
+  letter-spacing: 2px;
+}
+
+.gv-hotel-copy p {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0;
+  color: #4f4a43;
+  font-weight: 800;
+}
+
+.gv-hotel-copy div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gv-hotel-copy span {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(217, 162, 61, 0.12);
+  color: #4c3a13;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.gv-hotel-price {
+  display: grid;
+  gap: 5px;
+  text-align: center;
+}
+
+.gv-hotel-price strong {
+  color: #071015;
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.gv-hotel-price button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f1cb72, #d9a23d);
+  color: #071015;
+  font-weight: 900;
+}
+
+.gv-stage-actions {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.gv-stage-back {
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.gv-booking-summary__hotel {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.gv-booking-summary__hotel > span {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+}
+
+.gv-booking-summary__hotel b,
+.gv-booking-summary__hotel em,
+.gv-booking-summary__hotel small {
+  display: block;
+}
+
+.gv-booking-summary__hotel em {
+  color: #f1cb72;
+  font-style: normal;
+}
+
+.gv-booking-total {
+  margin-top: 16px;
+  color: #f1cb72 !important;
+  font-size: 1.35rem !important;
+}
+
+.gv-payment-options button {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  padding: 14px 18px;
+  text-align: right;
+}
+
+.gv-payment-options button span {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d9a23d;
+  border-radius: 50%;
+}
+
+.gv-payment-options button.is-active span {
+  background: #071015;
+  box-shadow: inset 0 0 0 4px #f1cb72;
+}
+
+.gv-payment-options button small {
+  color: #5d5750;
+}
+
+.gv-payment-plans {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.gv-payment-plans span {
+  display: grid;
+  gap: 5px;
+  min-height: 74px;
+  place-items: center;
+  border: 1px solid rgba(217, 162, 61, 0.28);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.62);
+  font-weight: 900;
+}
+
+.gv-payment-plans small {
+  color: #bd842a;
+}
+
+.gv-payment-secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 58px;
+  margin: 18px 0;
+  border-radius: 12px;
+  background: #071015;
+  color: #fff6e7;
+  font-weight: 900;
+}
+
+.gv-payment-terms {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  color: #111820;
+  font-weight: 900;
+}
+
+.gv-payment-terms input {
+  width: 20px;
+  height: 20px;
+  accent-color: #d9a23d;
+}
+
+@media (max-width: 1100px) {
+  .gv-reservation-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 14px;
+  }
+
+  .gv-reservation-steps::before {
+    display: none;
+  }
+
+  .gv-booking-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .gv-booking-summary {
+    min-height: 0;
+  }
+
+  .gv-hotel-list article {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .gv-hotel-price {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, auto));
+    align-items: center;
+    justify-content: space-between;
+    text-align: right;
+  }
+}
+
+@media (max-width: 720px) {
+  .gv-reservation-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .gv-reservation-steps button {
+    grid-template-columns: 44px 1fr;
+    justify-items: start;
+    text-align: right;
+  }
+
+  .gv-reservation-steps button span {
+    grid-row: span 2;
+  }
+
+  .gv-hotel-list article,
+  .gv-hotel-price,
+  .gv-payment-tabs,
+  .gv-payment-options,
+  .gv-payment-plans,
+  .gv-stage-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .gv-hotel-image {
+    min-height: 170px;
+  }
 }
 
 .gv-upload-card,
@@ -1964,7 +2524,8 @@ img {
   background: rgba(255, 255, 255, 0.04);
 }
 
-.gv-reservation__form input {
+.gv-reservation__form input,
+.gv-reservation__form select {
   min-height: 56px;
   width: 100%;
   padding: 0 18px;
@@ -1981,7 +2542,18 @@ img {
   color: rgba(255, 255, 255, 0.42);
 }
 
-.gv-reservation__form input:focus {
+.gv-reservation__form select {
+  direction: rtl;
+  cursor: pointer;
+}
+
+.gv-reservation__form select option {
+  background: #111c23;
+  color: #fff;
+}
+
+.gv-reservation__form input:focus,
+.gv-reservation__form select:focus {
   border-color: #e0ad49;
   box-shadow: 0 0 0 3px rgba(224, 173, 73, 0.12);
 }
@@ -2236,6 +2808,1105 @@ img {
   font-weight: 900;
 }
 
+.gv-auth-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  background: #071018;
+}
+
+.gv-auth-popup {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  height: auto;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 52% 48%;
+  direction: ltr;
+  overflow: hidden;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0 64%, rgba(255, 255, 255, 0.72) 91%),
+    url("/landingpage/auth-login-bg.png") left center / cover no-repeat;
+  border: 0;
+  box-shadow: none;
+  color: #111820;
+  isolation: isolate;
+}
+
+.gv-auth-popup::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 0 43%, rgba(251, 245, 234, 0.34) 56%, rgba(251, 245, 234, 0.92) 76%, rgba(251, 245, 234, 0.98) 100%);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  mask-image: linear-gradient(90deg, transparent 0 42%, rgba(0, 0, 0, 0.2) 53%, rgba(0, 0, 0, 0.72) 66%, #000 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0 42%, rgba(0, 0, 0, 0.2) 53%, rgba(0, 0, 0, 0.72) 66%, #000 100%);
+}
+
+.gv-auth-popup__close {
+  display: none;
+}
+
+.gv-auth-popup__visual {
+  position: relative;
+  z-index: 1;
+  direction: rtl;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: inherit;
+  padding: 7.1% 6.2% 7.2%;
+  background:
+    linear-gradient(90deg, rgba(20, 14, 8, 0.03), rgba(255, 245, 225, 0.08)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0 63%, rgba(255, 255, 255, 0.86) 91%);
+  isolation: isolate;
+}
+
+.gv-auth-popup__visual::before,
+.gv-auth-popup__side::before,
+.gv-auth-card::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.gv-auth-popup__visual::before {
+  inset: 0 auto auto 0;
+  width: 24%;
+  height: 48%;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 15px, rgba(121, 82, 29, 0.22) 16px 17px),
+    repeating-linear-gradient(-45deg, transparent 0 15px, rgba(121, 82, 29, 0.16) 16px 17px);
+  opacity: 0.55;
+  z-index: 0;
+  mask-image: radial-gradient(circle at 0 0, #000 0 46%, transparent 72%);
+}
+
+.gv-auth-popup__visual::after {
+  content: "";
+  position: absolute;
+  top: -10%;
+  left: -4%;
+  width: 26%;
+  height: 42%;
+  border: clamp(10px, 1.4vw, 22px) solid rgba(89, 55, 24, 0.34);
+  border-bottom: 0;
+  border-radius: 0 0 48% 48%;
+  transform: rotate(-2deg);
+  pointer-events: none;
+}
+
+.gv-auth-popup__hero-copy {
+  position: relative;
+  z-index: 1;
+  width: min(58%, 610px);
+  text-align: center;
+}
+
+.gv-auth-popup__hero-copy h2 {
+  margin: 0 0 3%;
+  color: #2d241a;
+  font-size: clamp(3.1rem, 4.65vw, 4.25rem);
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.gv-auth-popup__hero-copy p {
+  width: 82%;
+  margin: 0 auto;
+  color: #2b2114;
+  font-size: clamp(1.05rem, 1.35vw, 1.35rem);
+  font-weight: 800;
+  line-height: 1.8;
+}
+
+.gv-auth-ornament {
+  display: block;
+  width: 38%;
+  height: 18px;
+  margin: 4% auto 0;
+  background:
+    linear-gradient(90deg, transparent, #bd842a 42%, transparent 42% 58%, #bd842a 58%, transparent),
+    radial-gradient(circle, #bd842a 0 4px, transparent 5px);
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.gv-auth-benefits {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 84%;
+  margin: 0 auto;
+  gap: 2%;
+  text-align: center;
+}
+
+.gv-auth-benefits span {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  color: #121820;
+  font-size: clamp(0.86rem, 1.05vw, 1.08rem);
+  font-weight: 900;
+  line-height: 1.55;
+}
+
+.gv-auth-benefits .icon {
+  width: clamp(28px, 2.6vw, 42px);
+  height: clamp(28px, 2.6vw, 42px);
+  color: #b47d21;
+}
+
+.gv-auth-popup__side {
+  position: relative;
+  z-index: 1;
+  direction: rtl;
+  min-height: inherit;
+  padding: 2.7% 4.2% 7.4%;
+  background: transparent;
+}
+
+.gv-auth-popup__side::before {
+  inset: 0;
+  opacity: 0.16;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 18px, rgba(198, 142, 43, 0.55) 19px 20px),
+    repeating-linear-gradient(-45deg, transparent 0 18px, rgba(198, 142, 43, 0.35) 19px 20px);
+  mask-image: radial-gradient(circle at 100% 0%, #000 0 20%, transparent 34%);
+}
+
+.gv-auth-popup__top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 6%;
+  margin-bottom: 0.8%;
+}
+
+.gv-auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-inline: auto;
+}
+
+.gv-auth-brand__mark {
+  width: clamp(58px, 5vw, 78px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 18%;
+  background: linear-gradient(145deg, #111820, #030506);
+  color: #f3ca70;
+  border: 1px solid rgba(224, 173, 73, 0.48);
+}
+
+.gv-auth-brand__mark .icon {
+  width: 58%;
+  height: 58%;
+}
+
+.gv-auth-brand strong,
+.gv-auth-brand small {
+  display: block;
+}
+
+.gv-auth-brand strong {
+  color: #071018;
+  font-size: clamp(1.55rem, 2.35vw, 2.45rem);
+  font-weight: 950;
+  line-height: 1;
+}
+
+.gv-auth-brand small {
+  margin-top: 4px;
+  color: #2d2b28;
+  font-size: clamp(0.82rem, 1.05vw, 1.2rem);
+  font-weight: 800;
+}
+
+.gv-auth-language {
+  position: absolute;
+  top: 0;
+  left: auto;
+  right: 0;
+  min-width: clamp(122px, 11.5vw, 148px);
+  min-height: clamp(44px, 3.6vw, 56px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #071018;
+  color: #fff;
+  font-weight: 900;
+  font-size: clamp(0.8rem, 1vw, 1rem);
+}
+
+.gv-auth-card {
+  position: relative;
+  z-index: 1;
+  width: min(90%, 680px);
+  height: auto;
+  min-height: 0;
+  margin: 0 auto;
+  padding: clamp(34px, 3.4vw, 52px) clamp(34px, 3.65vw, 56px);
+  border-radius: clamp(28px, 2.2vw, 34px);
+  border: 1px solid rgba(218, 167, 67, 0.72);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(224, 173, 73, 0.12), transparent 26%),
+    linear-gradient(155deg, #101a20, #061017 74%);
+  color: #fff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.gv-auth-company {
+  position: relative;
+  z-index: 1;
+  width: min(76%, 620px);
+  margin: 0 auto 1.2%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 1.4vw, 22px);
+  color: #071018;
+}
+
+.gv-auth-company__text {
+  text-align: right;
+}
+
+.gv-auth-company__text strong {
+  display: block;
+  color: #c58d2f;
+  font-size: clamp(1.45rem, 2.3vw, 2.75rem);
+  font-weight: 950;
+  line-height: 1;
+}
+
+.gv-auth-company__text strong span {
+  color: #071018;
+}
+
+.gv-auth-company__text small {
+  display: block;
+  margin-top: 5px;
+  color: #5e554a;
+  font-size: clamp(0.66rem, 0.9vw, 1.05rem);
+  font-weight: 800;
+}
+
+.gv-auth-company__divider {
+  width: 1px;
+  height: clamp(38px, 4.2vw, 68px);
+  background: linear-gradient(180deg, transparent, rgba(183, 134, 45, 0.85), transparent);
+}
+
+.gv-auth-company img {
+  width: clamp(54px, 6vw, 94px);
+  height: clamp(54px, 6vw, 94px);
+  object-fit: contain;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
+}
+
+.gv-auth-popup--register .gv-auth-card,
+.gv-auth-popup--twoFactor .gv-auth-card {
+  width: min(96%, 820px);
+  max-height: none;
+  overflow: visible;
+  scrollbar-width: thin;
+}
+
+.gv-auth-card::after {
+  left: -10%;
+  bottom: -12%;
+  width: 42%;
+  aspect-ratio: 1.8;
+  border-radius: 60% 60% 0 0;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.gv-auth-card__head {
+  text-align: center;
+  margin-bottom: 7%;
+}
+
+.gv-auth-card__title-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 1vw, 16px);
+  margin: 0 auto 1.5%;
+}
+
+.gv-auth-card__title-row img {
+  width: clamp(40px, 3.4vw, 56px);
+  height: clamp(40px, 3.4vw, 56px);
+  object-fit: contain;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.35));
+}
+
+.gv-auth-card__head h2 {
+  margin: 0;
+  color: #f4cb70;
+  font-size: clamp(2.45rem, 3.15vw, 3rem);
+  font-weight: 850;
+  line-height: 1.18;
+}
+
+.gv-auth-card__head p,
+.gv-auth-card__head small {
+  display: block;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: clamp(1.02rem, 1.2vw, 1.25rem);
+  font-weight: 700;
+}
+
+.gv-auth-card__head small {
+  margin-top: 2%;
+  color: #f4cb70;
+  font-size: clamp(0.78rem, 0.9vw, 0.95rem);
+}
+
+.gv-auth-message {
+  margin-bottom: 4%;
+  padding: 2.5% 3%;
+  border: 1px solid rgba(244, 203, 112, 0.35);
+  border-radius: 14px;
+  background: rgba(244, 203, 112, 0.09);
+  color: #f4d285;
+  font-weight: 900;
+  text-align: center;
+}
+
+.gv-auth-form {
+  display: grid;
+  gap: clamp(14px, 1.45vw, 20px);
+}
+
+.gv-auth-form--compact {
+  gap: clamp(8px, 0.9vw, 13px);
+}
+
+.gv-auth-popup--register .gv-auth-form--compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(10px, 1.2vw, 18px);
+  row-gap: clamp(8px, 0.9vw, 12px);
+}
+
+.gv-auth-popup--register .gv-auth-form--compact .gv-auth-primary,
+.gv-auth-popup--register .gv-auth-form--compact .gv-auth-divider,
+.gv-auth-popup--register .gv-auth-form--compact .gv-auth-google,
+.gv-auth-popup--register .gv-auth-form--compact .gv-auth-switch {
+  grid-column: 1 / -1;
+}
+
+.gv-auth-popup--register .gv-auth-check--end {
+  align-self: end;
+  min-height: 100%;
+  padding-bottom: 6px;
+}
+
+.gv-auth-form label {
+  display: grid;
+  gap: 6px;
+  color: #fff;
+  font-weight: 800;
+  font-size: clamp(0.95rem, 1.1vw, 1.08rem);
+}
+
+.gv-auth-field {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 10%;
+  align-items: center;
+  min-height: 60px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  overflow: hidden;
+}
+
+.gv-auth-field input {
+  width: 100%;
+  min-height: inherit;
+  border: 0;
+  outline: 0;
+  padding: 0 18px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  text-align: right;
+}
+
+.gv-auth-field input::placeholder {
+  color: rgba(255, 255, 255, 0.44);
+}
+
+.gv-auth-field .icon {
+  width: clamp(20px, 1.8vw, 28px);
+  height: clamp(20px, 1.8vw, 28px);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.gv-auth-eye {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.gv-auth-error {
+  color: #f6b0a8;
+  font-style: normal;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.gv-auth-field--phone {
+  grid-template-columns: minmax(0, 1fr) 8% 16%;
+}
+
+.gv-auth-field--phone em {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.gv-auth-row,
+.gv-auth-check,
+.gv-auth-check--end,
+.gv-auth-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gv-auth-row button,
+.gv-auth-switch button,
+.gv-auth-linkline,
+.gv-auth-resend button {
+  border: 0;
+  background: transparent;
+  color: #f4cb70;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.gv-auth-check {
+  color: #fff;
+  font-weight: 800;
+}
+
+.gv-auth-check input {
+  width: 22px;
+  aspect-ratio: 1;
+  accent-color: #f4cb70;
+}
+
+.gv-auth-check--end {
+  justify-content: flex-start;
+  color: #f4cb70;
+}
+
+.gv-auth-primary,
+.gv-auth-google,
+.gv-auth-outline {
+  min-height: 66px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3%;
+  border-radius: 14px;
+  font-size: clamp(1.15rem, 1.55vw, 1.4rem);
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.gv-auth-primary {
+  border: 0;
+  background: linear-gradient(90deg, #f4cf76, #d99d31);
+  color: #0b0b08;
+  box-shadow: 0 14px 30px rgba(218, 161, 58, 0.25);
+}
+
+.gv-auth-primary .icon {
+  width: 46px;
+  height: 46px;
+  padding: 8px;
+  border-radius: 50%;
+  background: rgba(70, 44, 0, 0.48);
+  color: #fff0bf;
+}
+
+.gv-auth-primary:disabled {
+  cursor: progress;
+  opacity: 0.72;
+}
+
+.gv-auth-google,
+.gv-auth-outline {
+  min-height: 62px;
+  border: 1.5px solid #e1ae48;
+  background: transparent;
+  color: #fff;
+  box-shadow: none;
+}
+
+.gv-auth-google b {
+  color: #4285f4;
+  font-size: 1.2em;
+}
+
+.gv-auth-divider {
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 800;
+}
+
+.gv-auth-divider::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.32), transparent);
+}
+
+.gv-auth-divider span {
+  position: relative;
+  padding: 0 4%;
+  background: #071018;
+}
+
+.gv-auth-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(8, 11, 14, 0.28);
+  border-top-color: #080b0e;
+  border-radius: 50%;
+  animation: gv-auth-spin 800ms linear infinite;
+}
+
+.gv-auth-switch,
+.gv-auth-secure,
+.gv-auth-hint,
+.gv-auth-muted,
+.gv-auth-safety,
+.gv-auth-resend {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  text-align: center;
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.gv-auth-secure,
+.gv-auth-safety {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #f4cb70;
+}
+
+.gv-auth-code {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 2.2%;
+}
+
+.gv-auth-code input {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: clamp(12px, 1.2vw, 18px);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  text-align: center;
+  font-size: clamp(1.5rem, 3vw, 3rem);
+  font-weight: 950;
+  outline: 0;
+}
+
+.gv-auth-code input:focus {
+  border-color: #f4cb70;
+  box-shadow: 0 0 0 3px rgba(244, 203, 112, 0.12);
+}
+
+.gv-auth-resend {
+  display: grid;
+  gap: 6px;
+}
+
+.gv-auth-methods {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.2%;
+}
+
+.gv-auth-methods button {
+  min-height: clamp(74px, 7vw, 96px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: clamp(12px, 1.1vw, 18px);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font: inherit;
+  font-weight: 950;
+}
+
+.gv-auth-methods button span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.82em;
+}
+
+.gv-auth-methods button.is-active {
+  border-color: #f4cb70;
+  color: #f4cb70;
+  box-shadow: inset 0 0 0 1px rgba(244, 203, 112, 0.42);
+}
+
+.gv-auth-qr {
+  display: grid;
+  grid-template-columns: 34% minmax(0, 1fr);
+  gap: 5%;
+  align-items: center;
+  padding: 3.2%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: clamp(14px, 1.25vw, 20px);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.gv-auth-qr__box {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
+  aspect-ratio: 1;
+  padding: 7%;
+  border-radius: 10%;
+  background: #fff;
+}
+
+.gv-auth-qr__box span {
+  background: #fff;
+}
+
+.gv-auth-qr__box span.is-dark {
+  background: #071018;
+}
+
+.gv-auth-qr strong {
+  display: block;
+  color: #f4cb70;
+  font-size: clamp(1rem, 1.25vw, 1.28rem);
+  font-weight: 950;
+}
+
+.gv-auth-qr p {
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.7;
+  margin: 2% 0;
+}
+
+.gv-auth-qr code {
+  display: block;
+  padding: 3% 4%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+  direction: ltr;
+  text-align: center;
+}
+
+.gv-auth-popup__footer {
+  display: none;
+}
+
+.gv-auth-page-footer {
+  position: absolute;
+  z-index: 4;
+  inset-inline: 0;
+  bottom: 0;
+  height: 9.7%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  text-align: center;
+  font-size: clamp(0.9rem, 1.15vw, 1.18rem);
+  font-weight: 700;
+  background:
+    radial-gradient(circle at 86% 88%, rgba(217, 162, 61, 0.11), transparent 24%),
+    linear-gradient(180deg, rgba(7, 16, 21, 0.96), #050b0f);
+  border-radius: 52% 52% 0 0 / 30% 30% 0 0;
+}
+
+.gv-auth-page-footer::after {
+  content: "";
+  width: 18%;
+  height: 12px;
+  margin-top: 30px;
+  position: absolute;
+  background:
+    linear-gradient(90deg, transparent, #d9a23d 42%, transparent 42% 58%, #d9a23d 58%, transparent),
+    radial-gradient(circle, #d9a23d 0 4px, transparent 5px);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+@keyframes gv-auth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 1101px) {
+  .gv-auth-popup__visual {
+    padding-top: 4.7%;
+    padding-bottom: 6%;
+  }
+
+  .gv-auth-popup__hero-copy {
+    width: min(52%, 540px);
+    margin-top: -2.5%;
+  }
+
+  .gv-auth-popup__hero-copy h2 {
+    font-size: clamp(2rem, 3.15vw, 3.25rem);
+  }
+
+  .gv-auth-popup__hero-copy p {
+    font-size: clamp(0.78rem, 0.94vw, 1rem);
+    line-height: 1.62;
+  }
+
+  .gv-auth-ornament {
+    width: 26%;
+    height: 10px;
+    margin-top: 2.4%;
+  }
+
+  .gv-auth-benefits {
+    width: 78%;
+  }
+
+  .gv-auth-benefits span {
+    gap: 4px;
+    font-size: clamp(0.66rem, 0.76vw, 0.82rem);
+    line-height: 1.35;
+  }
+
+  .gv-auth-benefits .icon {
+    width: clamp(19px, 1.55vw, 26px);
+    height: clamp(19px, 1.55vw, 26px);
+  }
+
+  .gv-auth-popup__side {
+    padding: 0.4% 4.2% 10%;
+  }
+
+  .gv-auth-popup__top {
+    min-height: 4.6%;
+    margin-bottom: 2.2%;
+  }
+
+  .gv-auth-brand {
+    gap: 7px;
+  }
+
+  .gv-auth-brand__mark {
+    width: clamp(38px, 3.1vw, 52px);
+  }
+
+  .gv-auth-brand strong {
+    font-size: clamp(1.1rem, 1.55vw, 1.75rem);
+  }
+
+  .gv-auth-brand small {
+    font-size: clamp(0.58rem, 0.72vw, 0.8rem);
+  }
+
+  .gv-auth-language {
+    min-width: clamp(86px, 7.7vw, 108px);
+    min-height: clamp(30px, 2.45vw, 38px);
+    gap: 6px;
+    font-size: clamp(0.58rem, 0.72vw, 0.78rem);
+  }
+
+  .gv-auth-card {
+    width: min(76%, 520px);
+    padding: clamp(18px, 1.85vw, 28px) clamp(22px, 2.2vw, 34px);
+    border-radius: clamp(18px, 1.45vw, 24px);
+    margin-top: -1.2%;
+  }
+
+  .gv-auth-company {
+    width: min(76%, 560px);
+    margin-bottom: 0;
+    transform: translateY(-18%);
+  }
+
+  .gv-auth-company__text strong {
+    font-size: clamp(1.1rem, 1.75vw, 2.05rem);
+  }
+
+  .gv-auth-company__text small {
+    font-size: clamp(0.54rem, 0.68vw, 0.76rem);
+  }
+
+  .gv-auth-company__divider {
+    height: clamp(30px, 3.4vw, 50px);
+  }
+
+  .gv-auth-company img {
+    width: clamp(42px, 4.7vw, 70px);
+    height: clamp(42px, 4.7vw, 70px);
+  }
+
+  .gv-auth-popup--register .gv-auth-card,
+  .gv-auth-popup--twoFactor .gv-auth-card {
+    width: min(96%, 820px);
+    padding: clamp(16px, 1.55vw, 24px) clamp(24px, 2.2vw, 36px);
+  }
+
+  .gv-auth-card__head {
+    margin-bottom: 4%;
+  }
+
+  .gv-auth-card__head h2 {
+    font-size: clamp(1.5rem, 1.85vw, 2rem);
+  }
+
+  .gv-auth-card__head p,
+  .gv-auth-card__head small {
+    font-size: clamp(0.68rem, 0.8vw, 0.88rem);
+  }
+
+  .gv-auth-form {
+    gap: clamp(6px, 0.65vw, 10px);
+  }
+
+  .gv-auth-form label {
+    gap: 3px;
+    font-size: clamp(0.66rem, 0.74vw, 0.8rem);
+  }
+
+  .gv-auth-field {
+    min-height: 36px;
+    border-radius: 9px;
+  }
+
+  .gv-auth-field input {
+    padding: 0 10px;
+    font-size: clamp(0.66rem, 0.75vw, 0.82rem);
+  }
+
+  .gv-auth-field .icon {
+    width: clamp(13px, 1.05vw, 17px);
+    height: clamp(13px, 1.05vw, 17px);
+  }
+
+  .gv-auth-eye {
+    font-size: 0.85rem;
+  }
+
+  .gv-auth-error {
+    font-size: 0.62rem;
+  }
+
+  .gv-auth-row,
+  .gv-auth-check,
+  .gv-auth-switch {
+    font-size: clamp(0.64rem, 0.72vw, 0.78rem);
+  }
+
+  .gv-auth-check input {
+    width: 14px;
+  }
+
+  .gv-auth-primary,
+  .gv-auth-google,
+  .gv-auth-outline {
+    min-height: 38px;
+    border-radius: 9px;
+    font-size: clamp(0.76rem, 0.86vw, 0.95rem);
+  }
+
+  .gv-auth-primary .icon {
+    width: 27px;
+    height: 27px;
+    padding: 5px;
+  }
+
+  .gv-auth-google,
+  .gv-auth-outline {
+    min-height: 36px;
+  }
+
+  .gv-auth-divider,
+  .gv-auth-switch,
+  .gv-auth-secure,
+  .gv-auth-hint,
+  .gv-auth-muted,
+  .gv-auth-safety,
+  .gv-auth-resend {
+    font-size: clamp(0.68rem, 0.76vw, 0.84rem);
+  }
+
+  .gv-auth-spinner {
+    width: 11px;
+    height: 11px;
+  }
+
+  .gv-auth-page-footer {
+    height: 6.5%;
+    font-size: clamp(0.66rem, 0.76vw, 0.84rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gv-auth-spinner {
+    animation: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .gv-auth-modal {
+    overflow: auto;
+  }
+
+  .gv-auth-popup {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .gv-auth-popup__visual {
+    min-height: 44vh;
+  }
+
+  .gv-auth-popup__side {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .gv-auth-modal {
+    padding: 0;
+  }
+
+  .gv-auth-popup {
+    min-height: 100vh;
+    border-radius: 0;
+  }
+
+  .gv-auth-popup__visual {
+    min-height: 38vh;
+    padding: 14% 5% 5%;
+  }
+
+  .gv-auth-popup__hero-copy,
+  .gv-auth-benefits,
+  .gv-auth-card {
+    width: 94%;
+  }
+
+  .gv-auth-benefits {
+    grid-template-columns: 1fr;
+  }
+
+  .gv-auth-popup__side {
+    padding: 5%;
+  }
+
+  .gv-auth-popup__top {
+    align-items: flex-start;
+  }
+
+  .gv-auth-language {
+    min-width: 28%;
+  }
+
+  .gv-auth-card {
+    padding: 24px 16px;
+  }
+
+  .gv-auth-company {
+    width: 94%;
+    margin: 8px auto 14px;
+    gap: 10px;
+  }
+
+  .gv-auth-field {
+    grid-template-columns: minmax(0, 1fr) 44px;
+  }
+
+  .gv-auth-field--phone {
+    grid-template-columns: minmax(0, 1fr) 44px 64px;
+  }
+
+  .gv-auth-row,
+  .gv-auth-switch {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .gv-auth-code {
+    gap: 6px;
+  }
+
+  .gv-auth-methods,
+  .gv-auth-qr {
+    grid-template-columns: 1fr;
+  }
+
+  .gv-auth-popup--register .gv-auth-form--compact {
+    grid-template-columns: 1fr;
+  }
+
+  .gv-auth-popup--register .gv-auth-form--compact .gv-auth-primary,
+  .gv-auth-popup--register .gv-auth-form--compact .gv-auth-divider,
+  .gv-auth-popup--register .gv-auth-form--compact .gv-auth-google,
+  .gv-auth-popup--register .gv-auth-form--compact .gv-auth-switch {
+    grid-column: auto;
+  }
+
+  .gv-auth-qr__box {
+    width: 62%;
+    margin-inline: auto;
+  }
+}
+
 .gv-reservation__foot .icon {
   color: #bd842a;
 }
@@ -2295,7 +3966,8 @@ img {
   }
 
   .gv-field .icon,
-  .gv-reservation__form input {
+  .gv-reservation__form input,
+  .gv-reservation__form select {
     min-height: 54px;
   }
 
@@ -2376,7 +4048,8 @@ img {
   padding: clamp(10px, 0.85vw, 13px);
 }
 
-.gv-reservation__form input {
+.gv-reservation__form input,
+.gv-reservation__form select {
   min-height: clamp(46px, 3.4vw, 54px);
   padding-inline: clamp(12px, 1vw, 16px);
   font-size: clamp(0.92rem, 0.95vw, 1.05rem);
@@ -2553,7 +4226,8 @@ img {
   padding: clamp(8px, 0.7vw, 11px);
 }
 
-.gv-reservation__form input {
+.gv-reservation__form input,
+.gv-reservation__form select {
   min-height: clamp(38px, 2.85vw, 46px);
   padding-inline: clamp(10px, 0.8vw, 14px);
   font-size: clamp(0.82rem, 0.85vw, 0.98rem);
@@ -6939,10 +8613,10 @@ main {
   .gv-reservation {
     width: min(95vw, 1480px);
     max-height: calc(100vh - 16px);
-    height: min(760px, calc(100vh - 16px));
+    height: calc(100vh - 16px);
     display: flex;
     flex-direction: column;
-    padding: clamp(10px, 1vw, 18px);
+    padding: clamp(6px, 0.75vw, 12px) clamp(10px, 1vw, 18px) clamp(10px, 1vw, 18px);
     overflow: hidden;
   }
 
@@ -6956,21 +8630,65 @@ main {
 
   .gv-reservation__header {
     flex: 0 0 auto;
-    margin-bottom: 8px;
+    margin-bottom: 2px;
   }
 
   .gv-reservation__header > .icon {
-    width: 18px;
-    height: 18px;
+    width: 12px;
+    height: 12px;
   }
 
   .gv-reservation__header h2 {
     margin: 0;
-    font-size: clamp(1.65rem, 2.1vw, 2.45rem);
+    gap: 18px;
+    font-size: clamp(1.1rem, 1.45vw, 1.65rem);
+    line-height: 0.95;
   }
 
   .gv-reservation__header p {
-    font-size: clamp(0.78rem, 0.8vw, 0.95rem);
+    font-size: clamp(0.62rem, 0.66vw, 0.76rem);
+    line-height: 1.05;
+  }
+
+  .gv-reservation__header h2::before,
+  .gv-reservation__header h2::after {
+    width: clamp(48px, 6vw, 100px);
+  }
+
+  .gv-reservation-steps {
+    flex: 0 0 auto;
+    max-width: 760px;
+    margin: 0 auto 3px;
+  }
+
+  .gv-reservation-steps::before {
+    top: 11px;
+    right: 12%;
+    left: 12%;
+    height: 1px;
+  }
+
+  .gv-reservation-steps button {
+    gap: 0;
+  }
+
+  .gv-reservation-steps button span {
+    width: 24px;
+    height: 24px;
+    border-width: 2px;
+    font-size: 0.68rem;
+    box-shadow: 0 3px 8px rgba(116, 78, 18, 0.08);
+  }
+
+  .gv-reservation-steps button small {
+    margin-top: 2px;
+    font-size: 0.54rem;
+    line-height: 1;
+  }
+
+  .gv-reservation-steps button strong {
+    font-size: 0.62rem;
+    line-height: 1.05;
   }
 
   .gv-reservation__layout {
@@ -6985,63 +8703,86 @@ main {
   .gv-reservation__form {
     min-height: 0;
     height: 100%;
-    padding: clamp(10px, 0.9vw, 14px);
+    padding: clamp(8px, 0.72vw, 12px);
     border-radius: 18px;
   }
 
   .gv-reservation__form {
-    gap: 5px;
+    gap: 4px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(241, 203, 114, 0.75) rgba(255, 255, 255, 0.08);
+  }
+
+  .gv-reservation__form::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .gv-reservation__form::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+  }
+
+  .gv-reservation__form::-webkit-scrollbar-thumb {
+    background: rgba(241, 203, 114, 0.75);
+    border-radius: 999px;
   }
 
   .gv-reservation__form-head {
     margin-bottom: 0;
+    gap: 7px;
   }
 
   .gv-reservation__form-head > span {
-    width: 44px;
-    height: 44px;
+    width: 38px;
+    height: 38px;
   }
 
   .gv-reservation__form-head strong {
-    font-size: clamp(1rem, 1vw, 1.2rem);
+    font-size: clamp(0.92rem, 0.92vw, 1.08rem);
+    line-height: 1.15;
   }
 
   .gv-reservation__form-head p,
   .gv-upload-card__head p {
-    font-size: 0.76rem;
+    font-size: 0.68rem;
   }
 
   .gv-reservation__form label {
-    gap: 2px;
-    font-size: 0.86rem;
+    gap: 1px;
+    font-size: 0.78rem;
+    line-height: 1.12;
   }
 
   .gv-field {
-    grid-template-columns: minmax(0, 1fr) 38px;
-    gap: 6px;
+    grid-template-columns: minmax(0, 1fr) 34px;
+    gap: 5px;
   }
 
   .gv-field .icon {
-    width: 38px;
-    height: 38px;
-    padding: 8px;
+    width: 34px;
+    height: 34px;
+    padding: 7px;
   }
 
-  .gv-reservation__form input {
-    min-height: 38px;
-    font-size: 0.86rem;
+  .gv-reservation__form input,
+  .gv-reservation__form select {
+    min-height: 34px;
+    padding-inline: 10px;
+    font-size: 0.78rem;
     border-radius: 10px;
   }
 
   .gv-smart-extract,
   .gv-confirm-booking {
-    min-height: 40px;
-    font-size: 0.96rem;
+    min-height: 36px;
+    font-size: 0.86rem;
     border-radius: 10px;
   }
 
   .gv-reservation__form small {
-    font-size: 0.72rem;
+    margin-top: 2px;
+    font-size: 0.66rem;
   }
 
   .gv-upload-card {
@@ -7670,6 +9411,19 @@ main {
     min-height: clamp(44px, 4.2vw, 60px);
     gap: 5px;
     padding: 0 clamp(5px, 0.65vw, 9px);
+  }
+
+  .gv-travel-card__features--controls label {
+    min-height: clamp(68px, 6vw, 84px);
+    gap: 5px;
+    padding: 0 clamp(5px, 0.65vw, 9px);
+  }
+
+  .gv-travel-card__features--controls input,
+  .gv-travel-card__features--controls select {
+    min-height: clamp(30px, 2.45vw, 34px);
+    border-radius: 8px;
+    font-size: clamp(0.66rem, 0.72vw, 0.82rem);
   }
 
   .gv-travel-card__features .icon {
