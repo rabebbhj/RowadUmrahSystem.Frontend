@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { AuthUser } from "../../api/auth";
-import { getUsers, toggleUserActive, type UserListItem } from "../../api/users";
+import { getUsers, type UserListItem } from "../../api/users";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
 
 type UsersPanelProps = {
@@ -18,14 +18,28 @@ function getStatusBadgeClass(isActive: boolean) {
   return isActive ? "badge badge-soft-success" : "badge badge-soft-danger";
 }
 
+function isMainAdminUser(item: UserListItem) {
+  return item.email === "admin@rowad.local" || item.isMainAdmin;
+}
+
+function getPermissionTypeLabel(item: UserListItem) {
+  if (isMainAdminUser(item)) {
+    return "المدير الرئيسي";
+  }
+
+  if (item.roles.some((role) => role.toLowerCase() === "admin")) {
+    return "مدير النظام";
+  }
+
+  return item.hasPermissions ? "صلاحيات مخصصة" : "بدون صلاحيات مخصصة";
+}
+
 export function UsersPanel({ user, activePath, onNavigate, onLogout }: UsersPanelProps) {
   const [users, setUsers] = useState<UserListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [togglingUserId, setTogglingUserId] = useState("");
-  const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -83,26 +97,6 @@ export function UsersPanel({ user, activePath, onNavigate, onLogout }: UsersPane
     });
   }, [searchTerm, users]);
 
-  async function handleToggleActive(id: string) {
-    setActionMessage(null);
-    setTogglingUserId(id);
-
-    try {
-      const updated = await toggleUserActive(id);
-      setUsers((current) => current.map((item) => (item.id === id ? updated : item)));
-      setActionMessage(updated.isActive ? `تم تفعيل الحساب ${updated.fullName}.` : `تم تعطيل الحساب ${updated.fullName}.`);
-    } catch (error) {
-      if (error instanceof Error && error.message === "UNAUTHORIZED") {
-        onLogout();
-        return;
-      }
-
-      setActionMessage(error instanceof Error ? error.message : "Failed to update user");
-    } finally {
-      setTogglingUserId("");
-    }
-  }
-
   return (
     <div className="app-shell">
       <SignedInSidebar user={user} activePath={activePath} onNavigate={onNavigate} onLogout={onLogout} />
@@ -157,7 +151,6 @@ export function UsersPanel({ user, activePath, onNavigate, onLogout }: UsersPane
           </article>
         </section>
 
-        {actionMessage && <div className="state-box">{actionMessage}</div>}
         {error && <div className="state-box error">{error}</div>}
         {loading && <div className="state-box">جاري تحميل المستخدمين...</div>}
 
@@ -182,7 +175,7 @@ export function UsersPanel({ user, activePath, onNavigate, onLogout }: UsersPane
                     <th>رقم الهاتف</th>
                     <th>الحالة</th>
                     <th>تاريخ الإنشاء</th>
-                    <th className="text-center">الإجراءات</th>
+                    <th className="text-center">الصلاحيات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -203,47 +196,16 @@ export function UsersPanel({ user, activePath, onNavigate, onLogout }: UsersPane
                       </td>
                       <td>{formatDateOnly(item.createdAt)}</td>
                       <td className="text-center">
-                        {item.email === "admin@rowad.local" || item.isMainAdmin ? (
-                          <span className="badge bg-primary">المدير الرئيسي</span>
+                        {isMainAdminUser(item) ? (
+                          <div className="user-permissions-cell">
+                            <span className="badge bg-primary">{getPermissionTypeLabel(item)}</span>
+                          </div>
                         ) : (
-                          <div className="dropdown">
-                            <button className="btn btn-sm btn-outline-gold dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                              إجراءات
+                          <div className="user-permissions-cell">
+                            <span className="badge badge-soft-warning">{getPermissionTypeLabel(item)}</span>
+                            <button type="button" className="btn btn-sm btn-outline-gold" onClick={() => onNavigate(`/users/${item.id}/permissions`)}>
+                              تعديل
                             </button>
-
-                            <ul className="dropdown-menu">
-                              <li>
-                                <button type="button" className="dropdown-item" onClick={() => onNavigate(`/users/${item.id}/permissions`)}>
-                                  إدارة الصلاحيات
-                                </button>
-                              </li>
-
-                              <li>
-                                <form className="px-3 py-1" onSubmit={(event) => event.preventDefault()}>
-                                  <input type="hidden" name="id" value={item.id} />
-
-                                  {item.isActive ? (
-                                    <button
-                                      type="button"
-                                      className="btn btn-sm btn-danger w-100"
-                                      disabled={togglingUserId === item.id}
-                                      onClick={() => void handleToggleActive(item.id)}
-                                    >
-                                      تعطيل الحساب
-                                    </button>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      className="btn btn-sm btn-success w-100"
-                                      disabled={togglingUserId === item.id}
-                                      onClick={() => void handleToggleActive(item.id)}
-                                    >
-                                      تفعيل الحساب
-                                    </button>
-                                  )}
-                                </form>
-                              </li>
-                            </ul>
                           </div>
                         )}
                       </td>

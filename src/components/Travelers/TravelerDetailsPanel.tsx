@@ -38,16 +38,6 @@ function normalizeDisplayText(value: string | null | undefined) {
   }
 }
 
-function isPendingReservationRequest(traveler: TravelerDetail) {
-  const notes = normalizeDisplayText(traveler.notes);
-
-  return Boolean(
-    notes.includes("قيد التأكيد") ||
-    notes.includes("محال إلى خدمة العملاء") ||
-    notes.includes("طلب حجز عمرة من الصفحة العامة")
-  );
-}
-
 function documentTypeLabel(type: string) {
   const labels: Record<string, string> = {
     PersonalPhoto: "صورة شخصية",
@@ -245,9 +235,7 @@ export function TravelerDetailsPanel({
                     رقم الجواز: <strong>{traveler.passportNumber}</strong>
                   </p>
 
-                  {isPendingReservationRequest(traveler) ? (
-                    <span className="badge badge-soft-warning">قيد التأكيد</span>
-                  ) : traveler.isBlocked ? (
+                  {traveler.isBlocked ? (
                     <span className="badge badge-soft-danger">محظور</span>
                   ) : (
                     <span className="badge badge-soft-success">مسموح</span>

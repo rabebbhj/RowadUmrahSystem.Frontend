@@ -2334,6 +2334,32 @@ body {
     border-color: #bfdbfe;
 }
 
+.app-shell .user-permissions-cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-width: 220px;
+}
+
+.app-shell .user-permissions-cell__label {
+    color: var(--rowad-muted);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.app-shell .user-permissions-cell .btn {
+    min-height: 32px;
+    padding: 0 12px;
+}
+
+.app-shell .user-permissions-cell .bg-primary {
+    background: #f4f4f5;
+    color: #3f3f46;
+    border-color: #e4e4e7;
+}
+
 .app-shell .invoice-form,
 .app-shell .form-grid {
     display: grid;

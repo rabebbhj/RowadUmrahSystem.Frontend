@@ -32,29 +32,11 @@ function normalizeDisplayText(value: string | null | undefined) {
   }
 }
 
-function isPendingReservationRequest(traveler: TravelerListItem) {
-  const notes = normalizeDisplayText(traveler.notes);
-
-  return Boolean(
-    notes.includes("قيد التأكيد") ||
-    notes.includes("محال إلى خدمة العملاء") ||
-    notes.includes("طلب حجز عمرة من الصفحة العامة")
-  );
-}
-
 function statusClass(traveler: TravelerListItem) {
-  if (isPendingReservationRequest(traveler)) {
-    return "badge badge-soft-warning";
-  }
-
   return traveler.isBlocked ? "badge badge-soft-danger" : "badge badge-soft-success";
 }
 
 function statusText(traveler: TravelerListItem) {
-  if (isPendingReservationRequest(traveler)) {
-    return "قيد التأكيد";
-  }
-
   return traveler.isBlocked ? "محظور" : "مسموح";
 }
 

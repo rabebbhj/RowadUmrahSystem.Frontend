@@ -78,14 +78,6 @@ const services = [
   { icon: <UsersIcon className="icon icon-md" />, title: "مجموعات صغيرة", text: "خدمة أفضل واهتمام أكبر" }
 ];
 
-const reservationSteps = [
-  { id: 1, label: "بيانات المسافر" },
-  { id: 2, label: "الوثائق" },
-  { id: 3, label: "الاستخراج الذكي" },
-  { id: 4, label: "اختيار الفندق" },
-  { id: 5, label: "الدفع والتأكيد" }
-];
-
 const hotelOptions = [
   {
     name: "فندق ساعة مكة فيرمونت",
@@ -118,6 +110,8 @@ const paymentPlans = [
   { months: 6, label: "6 أشهر" },
   { months: 12, label: "12 شهر" }
 ];
+
+const reservationSteps = [1, 2, 3, 4, 5];
 
 const emptyFilters = {
   people: "",
@@ -875,7 +869,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       formData.append(
         "Notes",
         [
-          `طلب حجز عمرة من الصفحة العامة - محال إلى خدمة العملاء - قيد التأكيد: ${selectedBookingTitle || "حجز جديد"}`,
+          `حجز عمرة مكتمل من الصفحة العامة: ${selectedBookingTitle || "حجز جديد"}`,
           selectedPackage ? `الباقة: ${selectedPackage.name}` : "",
           selectedTravelOptions.bookingDate ? `تاريخ الحجز: ${selectedTravelOptions.bookingDate}` : "",
           selectedTravelOptions.travelers ? `عدد الأشخاص: ${selectedTravelOptions.travelers}` : "",
@@ -1022,20 +1016,9 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
         <div className="gv-hero__shade" />
         <header className="gv-header">
           <div className="gv-topbar">
-            <div className="gv-brand">
-              <MosqueIcon className="icon" />
-              <div>
-                <strong>رحلات العمرة</strong>
-                <span>طريقك إلى بيت الله</span>
-              </div>
+            <div className="gv-brand gv-brand--company">
+              <img src="/landingpage/company-logo.png" alt="شركة رواد لخدمات العمرة والحج" />
             </div>
-            <nav className="gv-nav" aria-label="التنقل الرئيسي">
-              <a className="active" href="#globalview">الرئيسية</a>
-              <a href="#gv-packages">العمرة</a>
-              <a href="#gv-packages">برامجنا</a>
-              <a href="#gv-services">عنّا</a>
-              <a href="#gv-reservation">تواصل معنا</a>
-            </nav>
             <div className="gv-contact">
               <span><MailIcon className="icon icon-sm" /> info@umrah.com</span>
               <span><PhoneIcon className="icon icon-sm" /> +965 55 123 4567</span>
@@ -1061,24 +1044,6 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           <p>رحلة إيمانية ..</p>
           <h1>تجربة روحانية لا تُنسى</h1>
           <span>نقدم لكم أفضل خدمات العمرة المتكاملة، برعاية واهتمام لنجعل رحلتكم إلى بيت الله الحرام سهلة وآمنة ومميزة.</span>
-          <div className="gv-hero-features">
-            <article>
-              <UsersIcon className="icon icon-md" />
-              <strong>مرافقة دينية<br />متخصصة</strong>
-            </article>
-            <article>
-              <MosqueIcon className="icon icon-md" />
-              <strong>فنادق قريبة<br />من الحرم</strong>
-            </article>
-            <article>
-              <BusIcon className="icon icon-md" />
-              <strong>مواصلات مريحة<br />وحديثة</strong>
-            </article>
-            <article>
-              <ShieldIcon className="icon icon-md" />
-              <strong>دعم على مدار<br />الساعة</strong>
-            </article>
-          </div>
           <div className="gv-actions">
             <button type="button" onClick={() => document.getElementById("gv-packages")?.scrollIntoView({ behavior: "smooth" })}>
               استعرض باقات العمرة
@@ -1089,12 +1054,6 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
               شاهد فيديو تعريفي
             </button>
           </div>
-        </div>
-
-        <div className="gv-spiritual">
-          <strong>لبيك<br />اللهم لبيك</strong>
-          <span />
-          <p>رحلة تبدأ من قلبك<br />وتنتهي بالقرب من الله</p>
         </div>
 
         <aside className="gv-support">
@@ -1460,25 +1419,23 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
               <MosqueIcon className="icon icon-md" />
               <h2 id="gv-reservation-title">{bookingDays}</h2>
             </div>
-
-            <div className="gv-reservation-steps" aria-label="خطوات الحجز">
-              {reservationSteps.map((step) => {
-                const isDone = step.id < reservationStep;
-                const isActive = step.id === reservationStep;
-                return (
-                  <button
-                    key={step.id}
-                    type="button"
-                    className={`${isActive ? "is-active" : ""} ${isDone ? "is-done" : ""}`}
-                    onClick={() => goToReservationStep(step.id)}
-                  >
-                    <span>{isDone ? "✓" : step.id}</span>
-                    <small>الخطوة {step.id}</small>
-                    <strong>{step.label}</strong>
-                  </button>
-                );
-              })}
-            </div>
+            <nav className="gv-reservation-steps gv-reservation-steps--icons" aria-label="مراحل الحجز">
+              {reservationSteps.map((step) => (
+                <button
+                  key={step}
+                  type="button"
+                  className={[
+                    step === reservationStep ? "is-active" : "",
+                    step < reservationStep ? "is-done" : ""
+                  ].filter(Boolean).join(" ")}
+                  onClick={() => goToReservationStep(step)}
+                  aria-label={`الخطوة ${step}`}
+                  title={`الخطوة ${step}`}
+                >
+                  <span>{step <= reservationStep ? "✓" : step}</span>
+                </button>
+              ))}
+            </nav>
 
             {reservationStep <= 3 ? (
             <div className="gv-reservation__layout">
