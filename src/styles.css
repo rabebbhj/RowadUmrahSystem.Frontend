@@ -2120,6 +2120,7 @@ img {
   font-weight: 800;
   text-align: center;
   outline: 0;
+  color-scheme: dark;
 }
 
 .gv-travel-card--standard .gv-travel-card__features--controls input,
@@ -2142,6 +2143,18 @@ img {
 
 .gv-travel-card__features--controls input {
   direction: ltr;
+}
+
+.gv-travel-card__features--controls input[type="date"] {
+  direction: rtl;
+}
+
+.gv-travel-card__features--controls input[type="date"]::-webkit-calendar-picker-indicator {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  filter: invert(79%) sepia(58%) saturate(492%) hue-rotate(358deg) brightness(101%) contrast(93%);
+  opacity: 0.95;
 }
 
 .gv-travel-card__features--controls .gv-custom-travelers-input {

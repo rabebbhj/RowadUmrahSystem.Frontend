@@ -190,6 +190,12 @@ function toDateInputValue(value: string | null | undefined) {
   return value ? value.slice(0, 10) : "";
 }
 
+function getTodayDateInputValue() {
+  const today = new Date();
+  const timezoneOffset = today.getTimezoneOffset() * 60 * 1000;
+  return new Date(today.getTime() - timezoneOffset).toISOString().slice(0, 10);
+}
+
 function isImageFile(file: File) {
   return file.type.startsWith("image/");
 }
@@ -514,6 +520,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const bookingDays = selectedPackage?.durationLabel ?? (selectedBookingTitle.includes("6") ? "6 أيام" : "10 أيام");
   const bookingNights = selectedPackage?.durationDays ?? (bookingDays === "6 أيام" ? 6 : 10);
   const availableNationalities = packagePricing?.nationalities?.length ? packagePricing.nationalities : nationalityOptions;
+  const todayDateInputValue = getTodayDateInputValue();
   const getHotelNightPrice = (hotelName: string, fallbackPrice: number) =>
     findPackagePrice(packagePricing, bookingDays, hotelName, selectedNationality, fallbackPrice);
   const selectedHotelNightPrice = getHotelNightPrice(selectedHotelInfo.name, selectedHotelInfo.price);
@@ -692,14 +699,15 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   };
 
   const updateTravelBookingDate = (packageId: string, departureDates: string[], value: string) => {
-    const validDate = !value || departureDates.length === 0 || departureDates.includes(value);
+    const isPastDate = Boolean(value && value < todayDateInputValue);
+    const validDate = !value || (!isPastDate && (departureDates.length === 0 || departureDates.includes(value)));
 
     setTravelOptions((current) => ({
       ...current,
       [packageId]: {
         ...(current[packageId] ?? defaultTravelPackageOptions),
         bookingDate: validDate ? value : "",
-        dateError: value && !validDate ? "هذا التاريخ غير متاح لهذه الباقة." : ""
+        dateError: isPastDate ? "لا يمكن اختيار تاريخ سابق." : value && !validDate ? "هذا التاريخ غير متاح لهذه الباقة." : ""
       }
     }));
   };
@@ -1170,19 +1178,27 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           <div className="gv-travel-card__features gv-travel-card__features--controls">
             <label>
               <span className="gv-travel-field-title"><CalendarIcon className="icon icon-sm" /><strong>تاريخ الحجز</strong></span>
-              {program.departureDates.length > 0 ? (
+              {variant !== "rowad" ? (
+                <input
+                  type="date"
+                  min={todayDateInputValue}
+                  value={options.bookingDate}
+                  onChange={(event) => updateTravelBookingDate(program.id, [], event.target.value)}
+                />
+              ) : program.departureDates.length > 0 ? (
                 <select
                   value={options.bookingDate}
                   onChange={(event) => updateTravelOption(program.id, "bookingDate", event.target.value)}
                 >
                   <option value="">اختر التاريخ</option>
                   {program.departureDates.map((date) => (
-                    <option key={date} value={date}>{date}</option>
+                    <option key={date} value={date} disabled={date < todayDateInputValue}>{date}</option>
                   ))}
                 </select>
               ) : (
                 <input
                   type="date"
+                  min={todayDateInputValue}
                   value={options.bookingDate}
                   onChange={(event) => updateTravelBookingDate(program.id, program.departureDates, event.target.value)}
                 />
