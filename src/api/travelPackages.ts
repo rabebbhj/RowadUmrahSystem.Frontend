@@ -22,6 +22,31 @@ export interface PricingRule {
   active: boolean;
 }
 
+export interface RowadPricingProfile {
+  enabled: boolean;
+  visaPrice: number;
+  busPrices: Record<string, number>;
+  makkahRoomPrices: Record<string, Record<string, number>>;
+  madinahRoomPrices: Record<string, Record<string, number>>;
+}
+
+const defaultVisaSupplement = 45;
+const standardMakkahRoomPrices: Record<string, Record<number, number>> = {
+  "6": { 4: 25, 3: 30, 2: 35, 1: 40 },
+  "10": { 4: 35, 3: 40, 2: 45, 1: 50 },
+  "11": { 4: 35, 3: 40, 2: 45, 1: 50 }
+};
+const standardMadinahRoomPrices: Record<string, Record<number, number>> = {
+  "6": { 4: 0, 3: 0, 2: 0, 1: 0 },
+  "10": { 4: 55, 3: 60, 2: 65, 1: 70 },
+  "11": { 4: 55, 3: 60, 2: 65, 1: 70 }
+};
+const standardBusPrices: Record<string, number> = {
+  "6": 20,
+  "10": 30,
+  "11": 30
+};
+
 export interface TravelPackage {
   id: string;
   name: string;
@@ -40,6 +65,7 @@ export interface TravelPackage {
   roomTypes: PackageOption[];
   departureDates: string[];
   pricingRules: PricingRule[];
+  pricingProfile?: RowadPricingProfile | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -228,10 +254,104 @@ function ruleHasCondition(rule: PricingRule, field: string) {
   return rule.conditions.some((condition) => condition.field === field);
 }
 
+function getRoomCapacity(roomType: PackageOption | string | null | undefined) {
+  const id = typeof roomType === "string" ? "" : roomType?.id.toLowerCase() ?? "";
+  const label = typeof roomType === "string" ? roomType : roomType?.label ?? "";
+
+  if (id.includes("quad") || label.includes("رباع")) return 4;
+  if (id.includes("triple") || label.includes("ثلاث")) return 3;
+  if (id.includes("double") || label.includes("ثنائ") || label.includes("مزدوج")) return 2;
+  if (id.includes("single") || label.includes("فرد")) return 1;
+
+  return 1;
+}
+
+function getRoomParts(roomType: string | undefined) {
+  return (roomType ?? "")
+    .split("+")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function getRoomProfilePrice(prices: Record<string, Record<string, number>> | undefined, durationDays: number | undefined, roomLabel: string) {
+  const durationKey = String(durationDays ?? "");
+  return prices?.[durationKey]?.[roomLabel] ?? 0;
+}
+
+function calculateProfilePackagePrice(packageItem: TravelPackage, context: PackagePriceContext) {
+  const profile = packageItem.pricingProfile;
+  if (!profile?.enabled) return null;
+
+  const durationDays = context.durationDays ?? packageItem.durationDays;
+  const roomParts = getRoomParts(context.roomType);
+  const selectedRoomParts = roomParts.length > 0 ? roomParts : [packageItem.roomTypes.find((item) => item.active)?.label ?? ""].filter(Boolean);
+  const roomTotal = selectedRoomParts.reduce((total, roomLabel) => {
+    const roomType = packageItem.roomTypes.find((item) => item.label === roomLabel);
+    const capacity = getRoomCapacity(roomType ?? roomLabel);
+    const makkahPrice = getRoomProfilePrice(profile.makkahRoomPrices, durationDays, roomLabel);
+    const madinahPrice = getRoomProfilePrice(profile.madinahRoomPrices, durationDays, roomLabel);
+
+    return total + (makkahPrice + madinahPrice) * capacity;
+  }, 0);
+  const travelers = Math.max(1, context.travelers ?? selectedRoomParts.reduce((total, roomLabel) => {
+    const roomType = packageItem.roomTypes.find((item) => item.label === roomLabel);
+    return total + getRoomCapacity(roomType ?? roomLabel);
+  }, 1));
+  const roomAverage = roomTotal > 0 ? roomTotal / travelers : packageItem.basePrice;
+  const transportPrice = context.transport === "باص" ? (profile.busPrices[String(durationDays)] ?? 0) : 0;
+  const visaPrice = context.previousVisa === "yes" ? 0 : profile.visaPrice;
+
+  return roomAverage + transportPrice + visaPrice;
+}
+
+function calculateStandardRulesPrice(packageItem: TravelPackage, context: PackagePriceContext) {
+  const durationKey = String(context.durationDays ?? packageItem.durationDays);
+  if (!standardMakkahRoomPrices[durationKey] || !standardMadinahRoomPrices[durationKey]) return null;
+
+  const roomParts = getRoomParts(context.roomType);
+  const selectedRoomParts = roomParts.length > 0 ? roomParts : [packageItem.roomTypes.find((item) => item.active)?.label ?? ""].filter(Boolean);
+  if (selectedRoomParts.length === 0) return null;
+
+  const roomTotal = selectedRoomParts.reduce((total, roomLabel) => {
+    const roomType = packageItem.roomTypes.find((item) => item.label === roomLabel);
+    const capacity = getRoomCapacity(roomType ?? roomLabel);
+    const makkahPrice = standardMakkahRoomPrices[durationKey]?.[capacity] ?? 0;
+    const madinahPrice = standardMadinahRoomPrices[durationKey]?.[capacity] ?? 0;
+
+    return total + (makkahPrice + madinahPrice) * capacity;
+  }, 0);
+  if (roomTotal <= 0) return null;
+
+  const travelers = Math.max(1, context.travelers ?? selectedRoomParts.reduce((total, roomLabel) => {
+    const roomType = packageItem.roomTypes.find((item) => item.label === roomLabel);
+    return total + getRoomCapacity(roomType ?? roomLabel);
+  }, 1));
+  const roomAverage = roomTotal / travelers;
+  const transportPrice = context.transport === "باص"
+    ? (standardBusPrices[durationKey] ?? 0)
+    : getSelectedOptionSupplement(packageItem.transportOptions, context.transport);
+  const visaPrice = context.previousVisa === "yes" ? 0 : defaultVisaSupplement;
+
+  return roomAverage + transportPrice + visaPrice;
+}
+
 export function calculatePackagePrice(packageItem: TravelPackage, context: PackagePriceContext) {
+  const profilePrice = calculateProfilePackagePrice(packageItem, context);
+  if (profilePrice != null) {
+    return Math.round(profilePrice);
+  }
+
+  const standardRulesPrice = calculateStandardRulesPrice(packageItem, context);
+  if (standardRulesPrice != null) {
+    return Math.round(standardRulesPrice);
+  }
+
   const roomSupplement = getSelectedOptionSupplement(packageItem.roomTypes, context.roomType);
   const transportSupplement = getSelectedOptionSupplement(packageItem.transportOptions, context.transport);
-  const visaSupplement = context.previousVisa === "yes" ? 0 : (packageItem.visaSupplement ?? 0);
+  const configuredVisaSupplement = packageItem.visaSupplement && packageItem.visaSupplement > 0
+    ? packageItem.visaSupplement
+    : defaultVisaSupplement;
+  const visaSupplement = context.previousVisa === "yes" ? 0 : configuredVisaSupplement;
   const optionSupplement = roomSupplement + transportSupplement + visaSupplement;
 
   if (packageItem.priceMode !== "rules") {
@@ -269,7 +389,7 @@ export function createEmptyPackage(order = 1): TravelPackage {
     durationLabel: "6 أيام",
     imageUrl: "/landingpage/paysage.png",
     basePrice: 75,
-    visaSupplement: 0,
+    visaSupplement: defaultVisaSupplement,
     currency: "د.ك",
     priceMode: "rules",
     status: "draft",
@@ -283,6 +403,7 @@ export function createEmptyPackage(order = 1): TravelPackage {
       { id: "quad", label: "غرفة رباعية", active: true, supplement: 0, price: null }
     ],
     departureDates: [],
+    pricingProfile: null,
     pricingRules: [
       {
         id: "default-rule",

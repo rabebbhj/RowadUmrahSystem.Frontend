@@ -13,6 +13,7 @@ import {
   type PackageOption,
   type PricingCondition,
   type PricingRule,
+  type RowadPricingProfile,
   type TravelPackage
 } from "../../api/travelPackages";
 import { AdminWelcomeBanner } from "../Layout/AdminWelcomeBanner";
@@ -60,6 +61,15 @@ const conditionOperators = [
 
 const statusLabel = (value: string) => statusOptions.find((item) => item.value === value)?.label ?? value;
 const activeOptions = (items: PackageOption[]) => items.filter((item) => item.active);
+const rowadPricingDurations = ["6", "10"];
+const defaultRowadMakkahPrices: Record<string, Record<string, number>> = {
+  "6": { "غرفة رباعية": 25, "غرفة ثلاثية": 30, "غرفة ثنائية": 35, "غرفة فردية": 40 },
+  "10": { "غرفة رباعية": 35, "غرفة ثلاثية": 40, "غرفة ثنائية": 45, "غرفة فردية": 50 }
+};
+const defaultRowadMadinahPrices: Record<string, Record<string, number>> = {
+  "6": { "غرفة رباعية": 0, "غرفة ثلاثية": 0, "غرفة ثنائية": 0, "غرفة فردية": 0 },
+  "10": { "غرفة رباعية": 55, "غرفة ثلاثية": 60, "غرفة ثنائية": 65, "غرفة فردية": 70 }
+};
 
 function makeId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -72,6 +82,26 @@ function option(label = ""): PackageOption {
     active: true,
     supplement: 0,
     price: null
+  };
+}
+
+function createDefaultRowadPricingProfile(roomTypes: PackageOption[]): RowadPricingProfile {
+  const labels = roomTypes.map((item) => item.label).filter(Boolean);
+  const normalizePrices = (source: Record<string, Record<string, number>>) =>
+    rowadPricingDurations.reduce<Record<string, Record<string, number>>>((durationMap, duration) => {
+      durationMap[duration] = labels.reduce<Record<string, number>>((roomMap, label) => {
+        roomMap[label] = source[duration]?.[label] ?? 0;
+        return roomMap;
+      }, {});
+      return durationMap;
+    }, {});
+
+  return {
+    enabled: true,
+    visaPrice: 45,
+    busPrices: { "6": 20, "10": 30 },
+    makkahRoomPrices: normalizePrices(defaultRowadMakkahPrices),
+    madinahRoomPrices: normalizePrices(defaultRowadMadinahPrices)
   };
 }
 
@@ -293,6 +323,70 @@ export function PackageSettingsPanel({ user, activePath, onNavigate, onLogout }:
     });
   };
 
+  const ensureRowadPricingProfile = () => {
+    setEditingPackage((current) =>
+      current
+        ? {
+            ...current,
+            pricingProfile: current.pricingProfile ?? createDefaultRowadPricingProfile(current.roomTypes),
+            priceMode: "rules"
+          }
+        : current
+    );
+  };
+
+  const updateRowadPricingProfile = (changes: Partial<RowadPricingProfile>) => {
+    setEditingPackage((current) => {
+      if (!current) return current;
+      const profile = current.pricingProfile ?? createDefaultRowadPricingProfile(current.roomTypes);
+      return { ...current, pricingProfile: { ...profile, ...changes }, priceMode: "rules" };
+    });
+  };
+
+  const updateRowadRoomPrice = (
+    area: "makkahRoomPrices" | "madinahRoomPrices",
+    duration: string,
+    roomLabel: string,
+    price: number
+  ) => {
+    setEditingPackage((current) => {
+      if (!current) return current;
+      const profile = current.pricingProfile ?? createDefaultRowadPricingProfile(current.roomTypes);
+      return {
+        ...current,
+        priceMode: "rules",
+        pricingProfile: {
+          ...profile,
+          [area]: {
+            ...profile[area],
+            [duration]: {
+              ...(profile[area]?.[duration] ?? {}),
+              [roomLabel]: price
+            }
+          }
+        }
+      };
+    });
+  };
+
+  const updateRowadBusPrice = (duration: string, price: number) => {
+    setEditingPackage((current) => {
+      if (!current) return current;
+      const profile = current.pricingProfile ?? createDefaultRowadPricingProfile(current.roomTypes);
+      return {
+        ...current,
+        priceMode: "rules",
+        pricingProfile: {
+          ...profile,
+          busPrices: {
+            ...profile.busPrices,
+            [duration]: price
+          }
+        }
+      };
+    });
+  };
+
   const updateRule = (index: number, changes: Partial<PricingRule>) => {
     setEditingPackage((current) => {
       if (!current) return current;
@@ -378,6 +472,128 @@ export function PackageSettingsPanel({ user, activePath, onNavigate, onLogout }:
     if (!file) return;
     const dataUrl = await readFileAsDataUrl(file);
     updateEditing({ imageUrl: dataUrl });
+  };
+
+  const renderRowadPricingEditor = () => {
+    if (!editingPackage) return null;
+
+    return (
+      <section className="package-editor-section rowad-pricing-editor">
+        <div className="package-editor-head">
+          <div>
+            <h3>جدول أسعار رواد</h3>
+            <p>هذه القيم تحسب السعر في الموقع مباشرة حسب الفلاتر: الجنسية، التأشيرة، الغرفة، الباص والمدة.</p>
+          </div>
+          <label className="rowad-pricing-toggle">
+            <input
+              type="checkbox"
+              checked={Boolean(editingPackage.pricingProfile?.enabled)}
+              onChange={(event) => {
+                if (!editingPackage.pricingProfile) {
+                  ensureRowadPricingProfile();
+                }
+                updateRowadPricingProfile({ enabled: event.target.checked });
+              }}
+            />
+            تفعيل جدول رواد
+          </label>
+        </div>
+
+        <div className="rowad-pricing-basics">
+          <label>
+            سعر التأشيرة
+            <input
+              type="number"
+              min="0"
+              value={editingPackage.pricingProfile?.visaPrice ?? 45}
+              onChange={(event) => updateRowadPricingProfile({ visaPrice: Number(event.target.value) || 0 })}
+            />
+          </label>
+          {rowadPricingDurations.map((duration) => (
+            <label key={duration}>
+              سعر الباص {duration} أيام
+              <input
+                type="number"
+                min="0"
+                value={editingPackage.pricingProfile?.busPrices?.[duration] ?? (duration === "6" ? 20 : 30)}
+                onChange={(event) => updateRowadBusPrice(duration, Number(event.target.value) || 0)}
+              />
+            </label>
+          ))}
+        </div>
+
+        {(["makkahRoomPrices", "madinahRoomPrices"] as const).map((area) => (
+          <div className="rowad-price-table" key={area}>
+            <h4>{area === "makkahRoomPrices" ? "الغرف (مكة المكرمة)" : "الغرف (المدينة)"}</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>الغرفة</th>
+                  <th>سعر 6 أيام</th>
+                  <th>سعر 10 أيام</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeOptions(editingPackage.roomTypes).map((roomType) => (
+                  <tr key={`${area}-${roomType.id}`}>
+                    <td>{roomType.label}</td>
+                    {rowadPricingDurations.map((duration) => (
+                      <td key={`${area}-${roomType.id}-${duration}`}>
+                        <input
+                          type="number"
+                          min="0"
+                          value={editingPackage.pricingProfile?.[area]?.[duration]?.[roomType.label] ?? 0}
+                          onChange={(event) => updateRowadRoomPrice(area, duration, roomType.label, Number(event.target.value) || 0)}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+      </section>
+    );
+  };
+
+  const renderPricingRulesEditor = () => {
+    if (!editingPackage) return null;
+
+    return (
+      <section className="package-editor-section">
+        <div className="package-editor-head">
+          <h3>قواعد التسعير</h3>
+          <button type="button" onClick={addRule}>+ إضافة قاعدة تسعير</button>
+        </div>
+        {editingPackage.pricingRules.map((pricingRule, ruleIndex) => (
+          <article className="pricing-rule-editor" key={pricingRule.id}>
+            <div className="pricing-rule-grid">
+              <input value={pricingRule.name} onChange={(event) => updateRule(ruleIndex, { name: event.target.value })} placeholder="اسم القاعدة" />
+              <input type="number" min="0" value={pricingRule.price} onChange={(event) => updateRule(ruleIndex, { price: Number(event.target.value) || 0 })} placeholder="السعر" />
+              <input type="number" min="0" value={pricingRule.priority} onChange={(event) => updateRule(ruleIndex, { priority: Number(event.target.value) || 0 })} placeholder="الأولوية" />
+              <label><input type="checkbox" checked={pricingRule.active} onChange={(event) => updateRule(ruleIndex, { active: event.target.checked })} /> مفعلة</label>
+              <button type="button" onClick={() => removeRule(ruleIndex)}>حذف القاعدة</button>
+            </div>
+            <div className="condition-list">
+              {pricingRule.conditions.map((item, conditionIndex) => (
+                <div className="condition-row" key={`${pricingRule.id}-${conditionIndex}`}>
+                  <select value={item.field} onChange={(event) => updateCondition(ruleIndex, conditionIndex, { field: event.target.value })}>
+                    {conditionFields.map((field) => <option key={field.value} value={field.value}>{field.label}</option>)}
+                  </select>
+                  <select value={item.operator} onChange={(event) => updateCondition(ruleIndex, conditionIndex, { operator: event.target.value })}>
+                    {conditionOperators.map((operator) => <option key={operator.value} value={operator.value}>{operator.label}</option>)}
+                  </select>
+                  <input value={item.value} onChange={(event) => updateCondition(ruleIndex, conditionIndex, { value: event.target.value })} placeholder="القيمة" />
+                  <button type="button" onClick={() => removeCondition(ruleIndex, conditionIndex)}>×</button>
+                </div>
+              ))}
+              <button type="button" className="package-mini-button" onClick={() => addCondition(ruleIndex)}>+ إضافة شرط</button>
+            </div>
+          </article>
+        ))}
+      </section>
+    );
   };
 
   return (
@@ -533,6 +749,9 @@ export function PackageSettingsPanel({ user, activePath, onNavigate, onLogout }:
                 </label>
               </div>
 
+              {renderRowadPricingEditor()}
+              {renderPricingRulesEditor()}
+
               <section className="package-editor-section">
                 <div className="package-editor-head">
                   <h3>أنواع الغرف</h3>
@@ -573,39 +792,6 @@ export function PackageSettingsPanel({ user, activePath, onNavigate, onLogout }:
                     <button key={date} type="button" onClick={() => removeDepartureDate(date)}>{date} ×</button>
                   ))}
                 </div>
-              </section>
-
-              <section className="package-editor-section">
-                <div className="package-editor-head">
-                  <h3>قواعد التسعير</h3>
-                  <button type="button" onClick={addRule}>+ إضافة قاعدة تسعير</button>
-                </div>
-                {editingPackage.pricingRules.map((pricingRule, ruleIndex) => (
-                  <article className="pricing-rule-editor" key={pricingRule.id}>
-                    <div className="pricing-rule-grid">
-                      <input value={pricingRule.name} onChange={(event) => updateRule(ruleIndex, { name: event.target.value })} placeholder="اسم القاعدة" />
-                      <input type="number" min="0" value={pricingRule.price} onChange={(event) => updateRule(ruleIndex, { price: Number(event.target.value) || 0 })} placeholder="السعر" />
-                      <input type="number" min="0" value={pricingRule.priority} onChange={(event) => updateRule(ruleIndex, { priority: Number(event.target.value) || 0 })} placeholder="الأولوية" />
-                      <label><input type="checkbox" checked={pricingRule.active} onChange={(event) => updateRule(ruleIndex, { active: event.target.checked })} /> مفعلة</label>
-                      <button type="button" onClick={() => removeRule(ruleIndex)}>حذف القاعدة</button>
-                    </div>
-                    <div className="condition-list">
-                      {pricingRule.conditions.map((item, conditionIndex) => (
-                        <div className="condition-row" key={`${pricingRule.id}-${conditionIndex}`}>
-                          <select value={item.field} onChange={(event) => updateCondition(ruleIndex, conditionIndex, { field: event.target.value })}>
-                            {conditionFields.map((field) => <option key={field.value} value={field.value}>{field.label}</option>)}
-                          </select>
-                          <select value={item.operator} onChange={(event) => updateCondition(ruleIndex, conditionIndex, { operator: event.target.value })}>
-                            {conditionOperators.map((operator) => <option key={operator.value} value={operator.value}>{operator.label}</option>)}
-                          </select>
-                          <input value={item.value} onChange={(event) => updateCondition(ruleIndex, conditionIndex, { value: event.target.value })} placeholder="القيمة" />
-                          <button type="button" onClick={() => removeCondition(ruleIndex, conditionIndex)}>×</button>
-                        </div>
-                      ))}
-                      <button type="button" className="package-mini-button" onClick={() => addCondition(ruleIndex)}>+ إضافة شرط</button>
-                    </div>
-                  </article>
-                ))}
               </section>
 
               <section className="package-preview">

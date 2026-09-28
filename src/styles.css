@@ -2172,6 +2172,16 @@ img {
   cursor: pointer;
 }
 
+.gv-travel-card__features--controls .gv-travel-field--visa select {
+  width: min(100%, 210px);
+  font-size: clamp(0.72rem, 0.68vw, 0.84rem);
+}
+
+.gv-travel-card--standard .gv-travel-card__features--controls .gv-travel-field--visa select {
+  width: min(100%, 220px);
+  font-size: clamp(0.64rem, 0.62vw, 0.76rem);
+}
+
 .gv-travel-card__features--controls option {
   background: #071016;
   color: #fff9ea;
@@ -2567,6 +2577,11 @@ img {
   min-height: 32px;
   padding: 0 9px;
   font-size: clamp(0.68rem, 0.66vw, 0.82rem);
+}
+
+.gv-travel-card--rowad .gv-travel-card__features--controls .gv-travel-field--visa select {
+  width: min(100%, 170px);
+  font-size: clamp(0.62rem, 0.6vw, 0.74rem);
 }
 
 .gv-travel-card--rowad .gv-travel-card__features .icon {
@@ -11917,6 +11932,13 @@ main {
   font-weight: 900;
 }
 
+.package-editor-head p {
+  margin: 5px 0 0;
+  color: #765f47;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
 .package-editor-head button {
   min-height: 36px;
   border: 1px solid #c79a48;
@@ -11982,6 +12004,83 @@ main {
   display: grid;
   grid-template-columns: 1fr 1fr 1.2fr auto;
   gap: 8px;
+}
+
+.rowad-pricing-editor {
+  border: 1px solid #e3c99a;
+  background: linear-gradient(180deg, #fffaf0 0%, #fffdf8 100%);
+}
+
+.rowad-pricing-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #5d3c17;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.rowad-pricing-basics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.rowad-pricing-basics label {
+  display: grid;
+  gap: 6px;
+  color: #5d3c17;
+  font-weight: 900;
+}
+
+.rowad-price-table {
+  margin-top: 14px;
+  overflow-x: auto;
+}
+
+.rowad-price-table h4 {
+  margin: 0 0 8px;
+  color: #2b1a0d;
+  font-weight: 900;
+}
+
+.rowad-price-table table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: 1px solid #e1ceb0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.rowad-price-table th,
+.rowad-price-table td {
+  padding: 9px;
+  border-bottom: 1px solid #ead8bb;
+  text-align: center;
+  color: #3b2817;
+  font-weight: 900;
+}
+
+.rowad-price-table th {
+  background: #f5ead8;
+}
+
+.rowad-price-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.rowad-price-table input,
+.rowad-pricing-basics input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid #ddc7a8;
+  border-radius: 9px;
+  background: #fffdf8;
+  color: #2b1a0d;
+  text-align: center;
+  font-weight: 900;
 }
 
 .package-preview-card {

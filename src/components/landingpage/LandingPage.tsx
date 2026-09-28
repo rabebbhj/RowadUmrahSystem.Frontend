@@ -137,7 +137,21 @@ const emptyReservationForm = {
   civilId: ""
 };
 
-const nationalityOptions = ["هندي", "بنغلاديشي", "مصري", "سوري", "سوداني", "نيجيري", "افغاني", "فلسطيني", "كويتي", "سعودي"];
+const nationalityOptions = [
+  "سوري",
+  "مالي",
+  "سوداني",
+  "باكستاني",
+  "مغربي",
+  "أردني",
+  "مصري",
+  "هندي",
+  "بنغلاديشي",
+  "اندونيسي",
+  "تونسي",
+  "جزائري",
+  "فلسطيني"
+];
 const acceptedDocumentTypes = ["image/jpeg", "image/png", "application/pdf"];
 const maxDocumentSize = 5 * 1024 * 1024;
 
@@ -212,28 +226,71 @@ function normalizeNationality(value: string | null | undefined) {
     bangladeshi: "بنغلاديشي",
     bangladesh: "بنغلاديشي",
     "بنجلاديشي": "بنغلاديشي",
+    "بنغلادش": "بنغلاديشي",
+    "بنغلادشي": "بنغلاديشي",
+    "بنغلاديش": "بنغلاديشي",
     egyptian: "مصري",
     egypt: "مصري",
     "مصرية": "مصري",
     syrian: "سوري",
     syria: "سوري",
     "سورية": "سوري",
+    malian: "مالي",
+    mali: "مالي",
     sudanese: "سوداني",
     sudan: "سوداني",
-    nigerian: "نيجيري",
-    nigeria: "نيجيري",
-    afghan: "افغاني",
-    afghanistan: "افغاني",
+    pakistani: "باكستاني",
+    pakistan: "باكستاني",
+    moroccan: "مغربي",
+    morocco: "مغربي",
+    jordanian: "أردني",
+    jordan: "أردني",
+    "اردني": "أردني",
+    indonesian: "اندونيسي",
+    indonesia: "اندونيسي",
+    "إندونيسي": "اندونيسي",
+    tunisian: "تونسي",
+    tunisia: "تونسي",
+    algerian: "جزائري",
+    algeria: "جزائري",
     palestinian: "فلسطيني",
-    palestine: "فلسطيني",
-    kuwaiti: "كويتي",
-    kuwait: "كويتي",
-    saudi: "سعودي",
-    "saudi arabian": "سعودي",
-    "saudi arabia": "سعودي"
+    palestine: "فلسطيني"
   };
 
   return aliases[normalized] ?? nationalityOptions.find((option) => option === value?.trim()) ?? "";
+}
+
+const touristVisaNationalities = new Set(["سوري", "مالي", "سوداني", "باكستاني", "مغربي", "أردني", "اردني"]);
+const umrahVisaNationalities = new Set(["مصري", "هندي", "بنغلاديشي", "بنغلادشي", "بنغلادش", "اندونيسي", "تونسي", "جزائري", "فلسطيني"]);
+
+function getVisaTypeForNationality(nationality: string | null | undefined) {
+  const normalizedNationality = normalizeNationality(nationality) || nationality?.trim() || "";
+
+  if (touristVisaNationalities.has(normalizedNationality)) return "tourist";
+  if (umrahVisaNationalities.has(normalizedNationality)) return "umrah";
+
+  return "umrah";
+}
+
+function getVisaTypeLabel(value: string | null | undefined, nationality?: string | null) {
+  if (value === "yes-tourist") return "لدي تأشيرة سياحية";
+  if (value === "yes-umrah" || value === "yes") return "لدي تأشيرة عمرة";
+
+  const visaType = getVisaTypeForNationality(nationality);
+  return visaType === "tourist" ? "بدون تأشيرة سياحية" : "بدون تأشيرة عمرة";
+}
+
+function hasExistingVisa(value: string | null | undefined) {
+  return value === "yes" || value === "yes-umrah" || value === "yes-tourist";
+}
+
+function getExistingVisaChoiceForNationality(nationality?: string | null) {
+  return getVisaTypeForNationality(nationality) === "tourist" ? "yes-tourist" : "yes-umrah";
+}
+
+function getVisaChoiceValue(value: string | null | undefined, nationality?: string | null) {
+  if (hasExistingVisa(value)) return getExistingVisaChoiceForNationality(nationality);
+  return "no";
 }
 
 function getRoomCapacity(roomType: PackageOption | string | null | undefined) {
@@ -247,6 +304,8 @@ function getRoomCapacity(roomType: PackageOption | string | null | undefined) {
 
   return 0;
 }
+
+const singleRoomLabel = "غرفة فردية";
 
 function buildRoomCombinationLabel(rooms: PackageOption[]) {
   return rooms.map((room) => room.label).join(" + ");
@@ -292,8 +351,13 @@ function getRoomCombinationOptions(packageItem: TravelPackage | null | undefined
     .filter((roomType) => roomType.capacity === travelerCount)
     .map((roomType) => roomType.label);
   const combinationOptions = combinations.map(buildRoomCombinationLabel);
+  const options = Array.from(new Set([...exactRoomOptions, ...combinationOptions]));
 
-  return Array.from(new Set([...exactRoomOptions, ...combinationOptions]));
+  if (travelerCount === 1 && !options.some((roomType) => getRoomCapacity(roomType) === 1)) {
+    return [singleRoomLabel, ...options];
+  }
+
+  return options;
 }
 
 function getCompatibleRoomLabel(packageItem: TravelPackage | null | undefined, travelers: string, fallback = "") {
@@ -451,11 +515,14 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           items.forEach((packageItem) => {
             const compatibleRoomType = getCompatibleRoomLabel(packageItem, defaultTravelPackageOptions.travelers);
             const firstTransport = getDefaultTransportLabel(packageItem);
+            const defaultNationality = nationalityOptions[0];
 
             next[packageItem.id] = next[packageItem.id] ?? {
               ...defaultTravelPackageOptions,
               roomType: compatibleRoomType,
-              transportType: firstTransport
+              transportType: firstTransport,
+              nationality: defaultNationality,
+              hasVisa: "no"
             };
           });
 
@@ -507,19 +574,24 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   );
 
   const selectedHotelInfo = hotelOptions.find((hotel) => hotel.name === selectedHotel) ?? hotelOptions[0];
+  const availableNationalities = nationalityOptions;
   const selectedPackage = publishedTravelPackages.find((packageItem) => packageItem.id === selectedPackageId) ?? null;
+  const fallbackSelectedNationality = availableNationalities[0] ?? nationalityOptions[0];
   const selectedTravelOptions = travelOptions[selectedPackageId] ?? {
     ...defaultTravelPackageOptions,
     roomType: getCompatibleRoomLabel(selectedPackage, defaultTravelPackageOptions.travelers),
-    transportType: getDefaultTransportLabel(selectedPackage)
+    transportType: getDefaultTransportLabel(selectedPackage),
+    nationality: fallbackSelectedNationality,
+    hasVisa: "no"
   };
   const selectedTransportType = isRowadTravelPackage(selectedPackage) ? rowadFixedTransport : selectedTravelOptions.transportType;
   const selectedNationality = reservationForm.nationality || selectedTravelOptions.nationality;
   const selectedTravelerCount = Math.max(1, Number(selectedTravelOptions.travelers) || 1);
-  const selectedHasVisa = selectedTravelOptions.hasVisa === "yes";
+  const selectedHasVisa = hasExistingVisa(selectedTravelOptions.hasVisa);
+  const selectedVisaChoice = getVisaChoiceValue(selectedTravelOptions.hasVisa, selectedNationality);
+  const selectedVisaLabel = getVisaTypeLabel(selectedVisaChoice, selectedNationality);
   const bookingDays = selectedPackage?.durationLabel ?? (selectedBookingTitle.includes("6") ? "6 أيام" : "10 أيام");
   const bookingNights = selectedPackage?.durationDays ?? (bookingDays === "6 أيام" ? 6 : 10);
-  const availableNationalities = packagePricing?.nationalities?.length ? packagePricing.nationalities : nationalityOptions;
   const todayDateInputValue = getTodayDateInputValue();
   const getHotelNightPrice = (hotelName: string, fallbackPrice: number) =>
     findPackagePrice(packagePricing, bookingDays, hotelName, selectedNationality, fallbackPrice);
@@ -630,6 +702,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     const options = packageId ? travelOptions[packageId] : null;
 
     if (packageItem && packageItem.departureDates.length > 0 && !options?.bookingDate) {
+      const defaultNationality = availableNationalities[0] ?? nationalityOptions[0];
       setTravelOptions((current) => ({
         ...current,
         [packageId]: {
@@ -637,7 +710,8 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
             ...defaultTravelPackageOptions,
             roomType: getCompatibleRoomLabel(packageItem, defaultTravelPackageOptions.travelers),
             transportType: getDefaultTransportLabel(packageItem),
-            nationality: availableNationalities[0] ?? nationalityOptions[0]
+            nationality: defaultNationality,
+            hasVisa: "no"
           }),
           dateError: "اختر تاريخ الحجز قبل المتابعة."
         }
@@ -659,7 +733,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     name: "bookingDate" | "travelers" | "roomType" | "transportType" | "nationality" | "hasVisa",
     value: string
   ) => {
-    if (name === "hasVisa" && value !== "yes") {
+    if (name === "hasVisa" && !hasExistingVisa(value)) {
       removeDocumentFile("visa");
       setFormErrors((current) => ({ ...current, visaFile: "" }));
       setUploadErrors((current) => ({ ...current, visa: "" }));
@@ -667,11 +741,13 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
     setTravelOptions((current) => {
       const packageItem = publishedTravelPackages.find((item) => item.id === packageId);
+      const defaultNationality = availableNationalities[0] ?? nationalityOptions[0];
       const currentOptions = current[packageId] ?? {
         ...defaultTravelPackageOptions,
         roomType: getCompatibleRoomLabel(packageItem, defaultTravelPackageOptions.travelers),
         transportType: getDefaultTransportLabel(packageItem),
-        nationality: availableNationalities[0] ?? nationalityOptions[0]
+        nationality: defaultNationality,
+        hasVisa: "no"
       };
       const nextOptions = {
         ...currentOptions,
@@ -871,6 +947,25 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const updateReservationField = (name: ReservationField, value: string) => {
     setReservationForm((current) => ({ ...current, [name]: value }));
     setFormErrors((current) => ({ ...current, [name]: "" }));
+
+    if (name === "nationality" && selectedPackageId) {
+      setTravelOptions((current) => {
+        const packageItem = publishedTravelPackages.find((item) => item.id === selectedPackageId);
+        const currentOptions = current[selectedPackageId] ?? {
+          ...defaultTravelPackageOptions,
+          roomType: getCompatibleRoomLabel(packageItem, defaultTravelPackageOptions.travelers),
+          transportType: getDefaultTransportLabel(packageItem)
+        };
+
+        return {
+          ...current,
+          [selectedPackageId]: {
+            ...currentOptions,
+            nationality: value
+          }
+        };
+      });
+    }
   };
 
   const validateDocumentFile = (file: File) => {
@@ -1045,7 +1140,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           selectedTravelOptions.travelers ? `عدد الأشخاص: ${selectedTravelOptions.travelers}` : "",
           selectedTravelOptions.roomType ? `نوع الغرفة: ${selectedTravelOptions.roomType}` : "",
           selectedTransportType ? `وسيلة النقل: ${selectedTransportType}` : "",
-          `التأشيرة: ${selectedHasVisa ? "لديه تأشيرة" : "بدون تأشيرة"}`,
+          `التأشيرة: ${selectedVisaLabel}`,
           `المبلغ المحسوب: ${reservationTotal.toLocaleString("en-US")} د.ك`
         ].filter(Boolean).join(" | ")
       );
@@ -1141,12 +1236,13 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const rowadTravelStyle = { "--rowad-travel-bg": `url(${rowadTravelBackground})` } as CSSProperties;
 
   const renderTravelPackageCard = (program: TravelPackage, variant: "rowad" | "regular" = "regular") => {
+    const defaultNationality = availableNationalities[0] ?? nationalityOptions[0];
     const options = travelOptions[program.id] ?? {
       bookingDate: "",
       travelers: "1",
       roomType: getCompatibleRoomLabel(program, "1"),
       transportType: getDefaultTransportLabel(program),
-      nationality: availableNationalities[0] ?? nationalityOptions[0],
+      nationality: defaultNationality,
       hasVisa: "no",
       dateError: ""
     };
@@ -1155,6 +1251,8 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     const roomOptions = getRoomCombinationOptions(program, options.travelers);
     const isRowadPackage = isRowadTravelPackage(program);
     const selectedTransport = isRowadPackage ? rowadFixedTransport : options.transportType;
+    const selectedVisaChoice = getVisaChoiceValue(options.hasVisa, options.nationality);
+    const selectedVisaLabel = getVisaTypeLabel(selectedVisaChoice, options.nationality);
     const travelerCount = Math.max(1, Number(options.travelers) || 1);
     const dynamicPrice = calculatePackagePrice(program, {
       packageId: program.id,
@@ -1162,7 +1260,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       roomType: options.roomType,
       transport: selectedTransport,
       nationality: options.nationality,
-      previousVisa: options.hasVisa === "yes" ? "yes" : "no",
+      previousVisa: hasExistingVisa(options.hasVisa) ? "yes" : "no",
       departureDate: options.bookingDate,
       durationDays: program.durationDays
     });
@@ -1215,14 +1313,17 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                 ))}
               </select>
             </label>
-            <label>
+            <label className="gv-travel-field--visa">
               <span className="gv-travel-field-title"><DocumentIcon className="icon icon-sm" /><strong>التأشيرة</strong></span>
               <select
-                value={options.hasVisa}
+                value={selectedVisaChoice}
                 onChange={(event) => updateTravelOption(program.id, "hasVisa", event.target.value)}
+                aria-label={`التأشيرة: ${selectedVisaLabel}`}
               >
-                <option value="no">بدون تأشيرة</option>
-                <option value="yes">لدي تأشيرة</option>
+                <option value="no">{getVisaTypeLabel("no", options.nationality)}</option>
+                <option value={getExistingVisaChoiceForNationality(options.nationality)}>
+                  {getVisaTypeLabel(getExistingVisaChoiceForNationality(options.nationality), options.nationality)}
+                </option>
               </select>
             </label>
             {!isRowadPackage ? (
@@ -1830,9 +1931,11 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                         <label>
                           حالة التأشيرة
                           <span className="gv-field">
-                            <select value={selectedTravelOptions.hasVisa} onChange={(event) => updateTravelOption(selectedPackage.id, "hasVisa", event.target.value)}>
-                              <option value="no">بدون تأشيرة</option>
-                              <option value="yes">لدي تأشيرة</option>
+                            <select value={selectedVisaChoice} onChange={(event) => updateTravelOption(selectedPackage.id, "hasVisa", event.target.value)}>
+                              <option value="no">{getVisaTypeLabel("no", selectedNationality)}</option>
+                              <option value={getExistingVisaChoiceForNationality(selectedNationality)}>
+                                {getVisaTypeLabel(getExistingVisaChoiceForNationality(selectedNationality), selectedNationality)}
+                              </option>
                             </select>
                             <DocumentIcon className="icon icon-sm" />
                           </span>
@@ -1930,7 +2033,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                   <span><CalendarIcon className="icon icon-sm" /> {bookingDays}</span>
                   <span><UsersIcon className="icon icon-sm" /> {selectedTravelerCount} {selectedTravelerCount === 1 ? "مسافر" : "مسافرين"}</span>
                   <span><DocumentIcon className="icon icon-sm" /> الوثائق مكتملة</span>
-                  <span><DocumentIcon className="icon icon-sm" /> {selectedHasVisa ? "لديه تأشيرة" : "بدون تأشيرة"}</span>
+                  <span><DocumentIcon className="icon icon-sm" /> {selectedVisaLabel}</span>
                   <span><SearchIcon className="icon icon-sm" /> تم الاستخراج بنجاح</span>
                   <button type="button" onClick={() => goToReservationStep(3)}>تعديل البيانات</button>
                   <p>لأن رحلتك تستحق الأفضل، اختر الفندق الأنسب قبل الدفع.</p>
@@ -1989,7 +2092,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                   <span><CalendarIcon className="icon icon-sm" /> {bookingDays}</span>
                   <span><UsersIcon className="icon icon-sm" /> {selectedTravelerCount} {selectedTravelerCount === 1 ? "مسافر" : "مسافرين"}</span>
                   <span><MosqueIcon className="icon icon-sm" /> {selectedTravelOptions?.roomType ?? "غرفة مزدوجة"}</span>
-                  <span><DocumentIcon className="icon icon-sm" /> {selectedHasVisa ? "لديه تأشيرة" : "بدون تأشيرة"}</span>
+                  <span><DocumentIcon className="icon icon-sm" /> {selectedVisaLabel}</span>
                   <hr />
                   <p><small>{reservationBaseLabel}</small><b>{hotelTotal.toLocaleString("en-US")} د.ك</b></p>
                   <strong className="gv-booking-total">{reservationTotal.toLocaleString("en-US")} د.ك</strong>
