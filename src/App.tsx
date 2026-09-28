@@ -18,6 +18,7 @@ import { UsersPanel } from "./components/Users/UsersPanel";
 import { UsersCreatePanel } from "./components/Users/UsersCreatePanel";
 import { UsersPermissionsPanel } from "./components/Users/UsersPermissionsPanel";
 import { AccountingPanel } from "./components/Accounting/AccountingPanel";
+import { DocumentsPanel } from "./components/Documents/DocumentsPanel";
 import { FinancialReportsPanel } from "./components/Accounting/FinancialReportsPanel";
 import { AccountsPanel } from "./components/Accounts/AccountsPanel";
 import { AccountsCreatePanel } from "./components/Accounts/AccountsCreatePanel";
@@ -91,8 +92,25 @@ function hasRole(user: AuthUser, role: string) {
   return user.roles.some((item) => item.toLowerCase() === role.toLowerCase());
 }
 
+function isMainAdmin(user: AuthUser) {
+  return user.email?.toLowerCase() === "admin@rowad.local";
+}
+
 function can(user: AuthUser, permission: keyof NonNullable<AuthUser["permissions"]>) {
-  return hasRole(user, "Admin") || Boolean(user.permissions?.[permission]);
+  return isMainAdmin(user) || Boolean(user.permissions?.[permission]);
+}
+
+function getDefaultAuthorizedPath(user: AuthUser) {
+  if (can(user, "canAccessDashboard")) return "/admin";
+  if (can(user, "canViewTravelers")) return "/travelers";
+  if (can(user, "canViewDocuments")) return "/documents";
+  if (can(user, "canViewTrips")) return "/trips";
+  if (can(user, "canViewAccounting")) return "/accounting";
+  if (can(user, "canViewBlocks")) return "/travelers/blocked";
+  if (can(user, "canViewAuditLogs")) return "/audit-logs";
+  if (can(user, "canViewNotifications")) return "/notifications";
+  if (hasRole(user, "Admin")) return "/users";
+  return null;
 }
 
 export default function App() {
@@ -156,7 +174,7 @@ export default function App() {
         }
 
         setUser(result.user);
-        navigate("/admin");
+        navigate(getDefaultAuthorizedPath(result.user) ?? "/admin");
       } catch (error) {
         setLoginError(error instanceof Error ? error.message : "Login failed.");
       } finally {
@@ -195,6 +213,15 @@ export default function App() {
   }, []);
 
   const segments = useMemo(() => path.split("/").filter(Boolean), [path]);
+
+  useEffect(() => {
+    if (!authLoading && user?.isAuthenticated && path === "/admin" && !can(user, "canAccessDashboard")) {
+      const fallbackPath = getDefaultAuthorizedPath(user);
+      if (fallbackPath) {
+        navigate(fallbackPath);
+      }
+    }
+  }, [authLoading, navigate, path, user]);
 
   if (frontendDevPorts.has(window.location.port) && isAdminRoute(path)) {
     window.location.replace(`${backendAdminOrigin}${path}${window.location.search}${window.location.hash}`);
@@ -239,7 +266,11 @@ export default function App() {
     </div>
   );
 
+  if (path === "/admin" && !can(user, "canAccessDashboard") && getDefaultAuthorizedPath(user)) {
+    return <div className="state-box">جاري فتح الصفحة المسموح بها...</div>;
+  }
   if (path === "/admin" && !can(user, "canAccessDashboard")) return forbiddenPanel;
+  if (path === "/notifications" && !can(user, "canViewNotifications")) return forbiddenPanel;
   if (path.startsWith("/travelers/create") && !can(user, "canCreateTravelers")) return forbiddenPanel;
   if (path.startsWith("/travelers/deleted") && !can(user, "canRestoreTravelers")) return forbiddenPanel;
   if (path.startsWith("/travelers/blocked") && !can(user, "canViewBlocks")) return forbiddenPanel;
@@ -253,7 +284,7 @@ export default function App() {
   if (segments[0] === "users" && !hasRole(user, "Admin")) return forbiddenPanel;
   if (segments[0] === "settings" && !hasRole(user, "Admin")) return forbiddenPanel;
   if (path === "/accounting" && !can(user, "canViewAccounting")) return forbiddenPanel;
-  if (path === "/documents" && !can(user, "canViewDocuments")) return forbiddenPanel;
+  if (segments[0] === "documents" && !can(user, "canViewDocuments")) return forbiddenPanel;
   if ((path === "/audit-logs" || path === "/auditlogs") && !can(user, "canViewAuditLogs")) return forbiddenPanel;
   if (path === "/financial-reports" && !can(user, "canViewFinancialReports")) return forbiddenPanel;
   if (segments[0] === "accounts" && !can(user, "canManageChartOfAccounts")) return forbiddenPanel;
@@ -312,18 +343,10 @@ export default function App() {
   }
 
   if (path === "/accounting") return <AccountingPanel {...commonProps} />;
-  if (path === "/documents") {
-    return (
-      <AdminPlaceholderPanel
-        {...commonProps}
-        eyebrow="Documents"
-        title="الوثائق"
-        description="إدارة الوثائق تتم من ملف المسافر داخل شاشة المسافرين."
-        primaryActionLabel="فتح المسافرين"
-        primaryActionPath="/travelers"
-      />
-    );
+  if (segments[0] === "documents" && segments[1] === "travelers") {
+    return <TravelerDetailsPanel {...commonProps} activePath="/documents" travelerId={parseId(segments[2])} readOnly />;
   }
+  if (path === "/documents") return <DocumentsPanel {...commonProps} />;
   if (path === "/audit-logs" || path === "/auditlogs") {
     return (
       <AdminPlaceholderPanel

@@ -1,5 +1,6 @@
 export interface AuthPermissions {
   canAccessDashboard: boolean;
+  canViewNotifications: boolean;
   canManageUsers: boolean;
   canViewTravelers: boolean;
   canCreateTravelers: boolean;

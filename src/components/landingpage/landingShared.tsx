@@ -130,6 +130,45 @@ export function BusIcon({ className }: IconProps) {
   );
 }
 
+export function BedIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <path d="M4 19V8.5M20 19v-5.2c0-1.6-1.2-2.8-2.8-2.8H10v8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 13h16M4 19h16" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M6.2 11h2.2c.9 0 1.6-.7 1.6-1.6S9.3 7.8 8.4 7.8H6.2v3.2Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    </SvgIcon>
+  );
+}
+
+export function GlobeIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <circle cx="12" cy="12" r="8.4" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M3.8 12h16.4M12 3.6c2.2 2.2 3.2 5 3.2 8.4s-1 6.2-3.2 8.4M12 3.6c-2.2 2.2-3.2 5-3.2 8.4s1 6.2 3.2 8.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </SvgIcon>
+  );
+}
+
+export function PlaneIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <path d="M3.8 13.1 20 5.2c.7-.3 1.4.4 1.1 1.1l-7.9 16.2-2.5-7-6.9-2.4Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="m10.8 15.4 4.7-4.7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </SvgIcon>
+  );
+}
+
+export function CoinsIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <ellipse cx="12" cy="6.8" rx="5.2" ry="2.6" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M6.8 6.8v4c0 1.4 2.3 2.6 5.2 2.6s5.2-1.2 5.2-2.6v-4" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M6.8 10.8v4c0 1.4 2.3 2.6 5.2 2.6s5.2-1.2 5.2-2.6v-4" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M6.8 14.8v2.4c0 1.4 2.3 2.6 5.2 2.6s5.2-1.2 5.2-2.6v-2.4" stroke="currentColor" strokeWidth="1.7" />
+    </SvgIcon>
+  );
+}
+
 export function UsersIcon({ className }: IconProps) {
   return (
     <SvgIcon className={className}>

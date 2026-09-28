@@ -24,6 +24,8 @@ export interface UserPermissions {
   userId: string;
   userFullName: string;
   userEmail: string;
+  canAccessDashboard: boolean;
+  canViewNotifications: boolean;
   canManageUsers: boolean;
   canViewTravelers: boolean;
   canCreateTravelers: boolean;

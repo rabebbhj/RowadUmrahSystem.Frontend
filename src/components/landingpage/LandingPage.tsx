@@ -8,19 +8,24 @@ import {
   getPackageFromPrice,
   getPublishedPackages,
   resolvePackageImageUrl,
+  type PackageOption,
   type TravelPackage
 } from "../../api/travelPackages";
 import {
   ArrowRightIcon,
+  BedIcon,
   BusIcon,
   CalendarIcon,
   ChatIcon,
+  CoinsIcon,
   DocumentIcon,
+  GlobeIcon,
   HeadsetIcon,
   LocationIcon,
   MailIcon,
   MosqueIcon,
   PhoneIcon,
+  PlaneIcon,
   SearchIcon,
   ShieldIcon,
   UsersIcon
@@ -141,12 +146,15 @@ type FilterName = keyof Filters;
 type ReservationForm = typeof emptyReservationForm;
 type ReservationField = keyof ReservationForm;
 type UploadKind = "passport" | "id";
+type ReservationUploadKind = UploadKind | "visa";
 type AuthPopupView = "login" | "register" | "forgot" | "reset" | "verify" | "twoFactor";
 type TravelPackageOptionState = {
   bookingDate: string;
   travelers: string;
   roomType: string;
   transportType: string;
+  nationality: string;
+  hasVisa: string;
   dateError: string;
 };
 type TravelPackageOptions = Record<string, TravelPackageOptionState>;
@@ -155,9 +163,25 @@ const defaultTravelPackageOptions: TravelPackageOptionState = {
   travelers: "1",
   roomType: "",
   transportType: "",
+  nationality: nationalityOptions[0],
+  hasVisa: "no",
   dateError: ""
 };
+const rowadPackagePrefix = "rowad-company-";
+const rowadFixedTransport = "باص";
+
+function isRowadTravelPackage(packageItem: TravelPackage | null | undefined) {
+  return Boolean(packageItem?.id.startsWith(rowadPackagePrefix));
+}
+
+function getDefaultTransportLabel(packageItem: TravelPackage | null | undefined) {
+  if (!packageItem) return "";
+  if (isRowadTravelPackage(packageItem)) return rowadFixedTransport;
+  return packageItem.transportOptions.find((item) => item.active)?.label ?? "";
+}
 const travelerCountOptions = ["1", "2", "3", "4"];
+const customTravelerOption = "custom";
+const maxGeneratedRoomCombinations = 8;
 type LandingPageProps = {
   initialAuthView?: AuthPopupView | null;
 };
@@ -206,6 +230,82 @@ function normalizeNationality(value: string | null | undefined) {
   return aliases[normalized] ?? nationalityOptions.find((option) => option === value?.trim()) ?? "";
 }
 
+function getRoomCapacity(roomType: PackageOption | string | null | undefined) {
+  const id = typeof roomType === "string" ? "" : roomType?.id.toLowerCase() ?? "";
+  const label = typeof roomType === "string" ? roomType : roomType?.label ?? "";
+
+  if (id.includes("quad") || label.includes("رباع")) return 4;
+  if (id.includes("triple") || label.includes("ثلاث")) return 3;
+  if (id.includes("double") || label.includes("ثنائ") || label.includes("مزدوج")) return 2;
+  if (id.includes("single") || label.includes("فرد")) return 1;
+
+  return 0;
+}
+
+function buildRoomCombinationLabel(rooms: PackageOption[]) {
+  return rooms.map((room) => room.label).join(" + ");
+}
+
+function getRoomCombinationCapacity(packageItem: TravelPackage | null | undefined, roomLabel: string) {
+  const activeRoomTypes = packageItem?.roomTypes.filter((item) => item.active) ?? [];
+
+  return roomLabel
+    .split(" + ")
+    .map((label) => activeRoomTypes.find((roomType) => roomType.label === label.trim()))
+    .reduce((total, roomType) => total + getRoomCapacity(roomType), 0);
+}
+
+function getRoomCombinationOptions(packageItem: TravelPackage | null | undefined, travelers: string) {
+  const activeRoomTypes = packageItem?.roomTypes.filter((item) => item.active) ?? [];
+  const travelerCount = Number(travelers) || 1;
+  const validRoomTypes = activeRoomTypes
+    .map((roomType) => ({ ...roomType, capacity: getRoomCapacity(roomType) }))
+    .filter((roomType) => roomType.capacity > 0)
+    .sort((first, second) => second.capacity - first.capacity);
+  const combinations: PackageOption[][] = [];
+
+  function collect(startIndex: number, remainingCapacity: number, selectedRooms: PackageOption[]) {
+    if (combinations.length >= maxGeneratedRoomCombinations) return;
+
+    if (remainingCapacity === 0) {
+      combinations.push(selectedRooms);
+      return;
+    }
+
+    for (let index = startIndex; index < validRoomTypes.length; index += 1) {
+      const roomType = validRoomTypes[index];
+      if (roomType.capacity > remainingCapacity) continue;
+
+      collect(index, remainingCapacity - roomType.capacity, [...selectedRooms, roomType]);
+    }
+  }
+
+  collect(0, travelerCount, []);
+
+  const exactRoomOptions = validRoomTypes
+    .filter((roomType) => roomType.capacity === travelerCount)
+    .map((roomType) => roomType.label);
+  const combinationOptions = combinations.map(buildRoomCombinationLabel);
+
+  return Array.from(new Set([...exactRoomOptions, ...combinationOptions]));
+}
+
+function getCompatibleRoomLabel(packageItem: TravelPackage | null | undefined, travelers: string, fallback = "") {
+  const roomOptions = getRoomCombinationOptions(packageItem, travelers);
+  const defaultRoomLabel = packageItem?.roomTypes.find((item) => item.active)?.label || "";
+
+  if (fallback && roomOptions.includes(fallback)) {
+    return fallback;
+  }
+
+  return roomOptions[0] || defaultRoomLabel;
+}
+
+function getCompatibleTravelerCount(packageItem: TravelPackage | null | undefined, roomType: string, fallback = "1") {
+  const capacity = getRoomCombinationCapacity(packageItem, roomType) || getRoomCapacity(roomType);
+  return capacity > 0 ? String(capacity) : fallback;
+}
+
 export default function LandingPage({ initialAuthView = null }: LandingPageProps) {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [submittedFilters, setSubmittedFilters] = useState<Filters>(emptyFilters);
@@ -217,12 +317,14 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const [selectedPackageId, setSelectedPackageId] = useState("");
   const [passportPreview, setPassportPreview] = useState<string | null>(null);
   const [idPreview, setIdPreview] = useState<string | null>(null);
+  const [visaPreview, setVisaPreview] = useState<string | null>(null);
   const [passportFile, setPassportFile] = useState<File | null>(null);
   const [idFile, setIdFile] = useState<File | null>(null);
+  const [visaFile, setVisaFile] = useState<File | null>(null);
   const [ocrStatus, setOcrStatus] = useState("");
   const [reservationForm, setReservationForm] = useState<ReservationForm>(emptyReservationForm);
-  const [formErrors, setFormErrors] = useState<Partial<Record<ReservationField | "passportFile" | "idFile", string>>>({});
-  const [uploadErrors, setUploadErrors] = useState<Partial<Record<UploadKind, string>>>({});
+  const [formErrors, setFormErrors] = useState<Partial<Record<ReservationField | "passportFile" | "idFile" | "visaFile", string>>>({});
+  const [uploadErrors, setUploadErrors] = useState<Partial<Record<ReservationUploadKind, string>>>({});
   const [reservationStatus, setReservationStatus] = useState("");
   const [reservationSuccessOpen, setReservationSuccessOpen] = useState(false);
   const [reservationSubmitting, setReservationSubmitting] = useState(false);
@@ -287,8 +389,9 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     return () => {
       if (passportPreview) URL.revokeObjectURL(passportPreview);
       if (idPreview) URL.revokeObjectURL(idPreview);
+      if (visaPreview) URL.revokeObjectURL(visaPreview);
     };
-  }, [passportPreview, idPreview]);
+  }, [passportPreview, idPreview, visaPreview]);
 
   useEffect(() => {
     let active = true;
@@ -340,12 +443,12 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           const next = { ...current };
 
           items.forEach((packageItem) => {
-            const firstRoomType = packageItem.roomTypes.find((item) => item.active)?.label ?? "";
-            const firstTransport = packageItem.transportOptions.find((item) => item.active)?.label ?? "";
+            const compatibleRoomType = getCompatibleRoomLabel(packageItem, defaultTravelPackageOptions.travelers);
+            const firstTransport = getDefaultTransportLabel(packageItem);
 
             next[packageItem.id] = next[packageItem.id] ?? {
               ...defaultTravelPackageOptions,
-              roomType: firstRoomType,
+              roomType: compatibleRoomType,
               transportType: firstTransport
             };
           });
@@ -401,39 +504,41 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const selectedPackage = publishedTravelPackages.find((packageItem) => packageItem.id === selectedPackageId) ?? null;
   const selectedTravelOptions = travelOptions[selectedPackageId] ?? {
     ...defaultTravelPackageOptions,
-    roomType: selectedPackage?.roomTypes.find((item) => item.active)?.label ?? "",
-    transportType: selectedPackage?.transportOptions.find((item) => item.active)?.label ?? ""
+    roomType: getCompatibleRoomLabel(selectedPackage, defaultTravelPackageOptions.travelers),
+    transportType: getDefaultTransportLabel(selectedPackage)
   };
+  const selectedTransportType = isRowadTravelPackage(selectedPackage) ? rowadFixedTransport : selectedTravelOptions.transportType;
+  const selectedNationality = reservationForm.nationality || selectedTravelOptions.nationality;
   const selectedTravelerCount = Math.max(1, Number(selectedTravelOptions.travelers) || 1);
+  const selectedHasVisa = selectedTravelOptions.hasVisa === "yes";
   const bookingDays = selectedPackage?.durationLabel ?? (selectedBookingTitle.includes("6") ? "6 أيام" : "10 أيام");
   const bookingNights = selectedPackage?.durationDays ?? (bookingDays === "6 أيام" ? 6 : 10);
   const availableNationalities = packagePricing?.nationalities?.length ? packagePricing.nationalities : nationalityOptions;
   const getHotelNightPrice = (hotelName: string, fallbackPrice: number) =>
-    findPackagePrice(packagePricing, bookingDays, hotelName, reservationForm.nationality, fallbackPrice);
+    findPackagePrice(packagePricing, bookingDays, hotelName, selectedNationality, fallbackPrice);
   const selectedHotelNightPrice = getHotelNightPrice(selectedHotelInfo.name, selectedHotelInfo.price);
   const getReservationPackagePrice = (hotelName: string, fallbackPrice: number) =>
     selectedPackage
       ? calculatePackagePrice(selectedPackage, {
           packageId: selectedPackage.id,
-          nationality: reservationForm.nationality,
+          nationality: selectedNationality,
           roomType: selectedTravelOptions.roomType,
-          transport: selectedTravelOptions.transportType,
+          transport: selectedTransportType,
           travelers: selectedTravelerCount,
+          previousVisa: selectedHasVisa ? "yes" : "no",
           departureDate: selectedTravelOptions.bookingDate,
           durationDays: selectedPackage.durationDays,
           hotel: hotelName
         })
       : getHotelNightPrice(hotelName, fallbackPrice);
   const selectedPackagePrice = getReservationPackagePrice(selectedHotelInfo.name, selectedHotelInfo.price);
-  const selectedTransportSupplement =
-    selectedPackage?.transportOptions.find((item) => item.label === selectedTravelOptions.transportType)?.supplement ?? 0;
   const hotelTotal = selectedPackage ? selectedPackagePrice * selectedTravelerCount : selectedHotelNightPrice * bookingNights;
-  const servicesTotal = selectedTransportSupplement;
+  const servicesTotal = 0;
   const reservationTotal = hotelTotal + servicesTotal;
   const reservationBaseLabel = selectedPackage ? "سعر الباقة" : "سعر الفندق";
 
   const validateReservationData = () => {
-    const nextErrors: Partial<Record<ReservationField | "passportFile" | "idFile", string>> = {};
+    const nextErrors: Partial<Record<ReservationField | "passportFile" | "idFile" | "visaFile", string>> = {};
 
     if (!reservationForm.fullName.trim()) {
       nextErrors.fullName = "يرجى إدخال الاسم الكامل";
@@ -457,6 +562,10 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
     if (!idFile) {
       nextErrors.idFile = "يرجى رفع صورة بطاقة الهوية";
+    }
+
+    if (selectedHasVisa && !visaFile) {
+      nextErrors.visaFile = "يرجى رفع صورة التأشيرة";
     }
 
     setFormErrors(nextErrors);
@@ -517,7 +626,12 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       setTravelOptions((current) => ({
         ...current,
         [packageId]: {
-          ...(current[packageId] ?? defaultTravelPackageOptions),
+          ...(current[packageId] ?? {
+            ...defaultTravelPackageOptions,
+            roomType: getCompatibleRoomLabel(packageItem, defaultTravelPackageOptions.travelers),
+            transportType: getDefaultTransportLabel(packageItem),
+            nationality: availableNationalities[0] ?? nationalityOptions[0]
+          }),
           dateError: "اختر تاريخ الحجز قبل المتابعة."
         }
       }));
@@ -535,17 +649,46 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
   const updateTravelOption = (
     packageId: string,
-    name: "bookingDate" | "travelers" | "roomType" | "transportType",
+    name: "bookingDate" | "travelers" | "roomType" | "transportType" | "nationality" | "hasVisa",
     value: string
   ) => {
-    setTravelOptions((current) => ({
-      ...current,
-      [packageId]: {
-        ...(current[packageId] ?? defaultTravelPackageOptions),
+    if (name === "hasVisa" && value !== "yes") {
+      removeDocumentFile("visa");
+      setFormErrors((current) => ({ ...current, visaFile: "" }));
+      setUploadErrors((current) => ({ ...current, visa: "" }));
+    }
+
+    setTravelOptions((current) => {
+      const packageItem = publishedTravelPackages.find((item) => item.id === packageId);
+      const currentOptions = current[packageId] ?? {
+        ...defaultTravelPackageOptions,
+        roomType: getCompatibleRoomLabel(packageItem, defaultTravelPackageOptions.travelers),
+        transportType: getDefaultTransportLabel(packageItem),
+        nationality: availableNationalities[0] ?? nationalityOptions[0]
+      };
+      const nextOptions = {
+        ...currentOptions,
         [name]: value,
-        dateError: name === "bookingDate" ? "" : (current[packageId]?.dateError ?? "")
+        dateError: name === "bookingDate" ? "" : currentOptions.dateError
+      };
+
+      if (name === "travelers") {
+        nextOptions.roomType = getCompatibleRoomLabel(packageItem, value, currentOptions.roomType);
       }
-    }));
+
+      if (name === "roomType") {
+        nextOptions.travelers = getCompatibleTravelerCount(packageItem, value, currentOptions.travelers);
+      }
+
+      if (isRowadTravelPackage(packageItem)) {
+        nextOptions.transportType = rowadFixedTransport;
+      }
+
+      return {
+        ...current,
+        [packageId]: nextOptions
+      };
+    });
   };
 
   const updateTravelBookingDate = (packageId: string, departureDates: string[], value: string) => {
@@ -734,7 +877,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     return "";
   };
 
-  const updateDocumentFile = (kind: UploadKind, file?: File) => {
+  const updateDocumentFile = (kind: ReservationUploadKind, file?: File) => {
     if (!file) return;
 
     const error = validateDocumentFile(file);
@@ -744,12 +887,20 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     }
 
     setUploadErrors((current) => ({ ...current, [kind]: "" }));
-    setFormErrors((current) => ({ ...current, [kind === "passport" ? "passportFile" : "idFile"]: "" }));
+    const formErrorKey = kind === "passport" ? "passportFile" : kind === "id" ? "idFile" : "visaFile";
+    setFormErrors((current) => ({ ...current, [formErrorKey]: "" }));
 
     if (kind === "passport") {
       if (passportPreview) URL.revokeObjectURL(passportPreview);
       setPassportFile(file);
       setPassportPreview(isImageFile(file) ? URL.createObjectURL(file) : null);
+      return;
+    }
+
+    if (kind === "visa") {
+      if (visaPreview) URL.revokeObjectURL(visaPreview);
+      setVisaFile(file);
+      setVisaPreview(isImageFile(file) ? URL.createObjectURL(file) : null);
       return;
     }
 
@@ -766,11 +917,22 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     updateDocumentFile("id", file);
   };
 
-  const removeDocumentFile = (kind: UploadKind) => {
+  const updateVisaFile = (file?: File) => {
+    updateDocumentFile("visa", file);
+  };
+
+  const removeDocumentFile = (kind: ReservationUploadKind) => {
     if (kind === "passport") {
       if (passportPreview) URL.revokeObjectURL(passportPreview);
       setPassportFile(null);
       setPassportPreview(null);
+      return;
+    }
+
+    if (kind === "visa") {
+      if (visaPreview) URL.revokeObjectURL(visaPreview);
+      setVisaFile(null);
+      setVisaPreview(null);
       return;
     }
 
@@ -779,7 +941,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     setIdPreview(null);
   };
 
-  const handleDocumentDrop = (kind: UploadKind, fileList: FileList | null) => {
+  const handleDocumentDrop = (kind: ReservationUploadKind, fileList: FileList | null) => {
     updateDocumentFile(kind, fileList?.[0]);
   };
 
@@ -859,7 +1021,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       const formData = new FormData();
       formData.append("PassportNumber", reservationForm.passportNumber.trim());
       formData.append("FullName", reservationForm.fullName.trim());
-      formData.append("Nationality", reservationForm.nationality.trim() || "غير محدد");
+      formData.append("Nationality", selectedNationality.trim() || "غير محدد");
       formData.append("Gender", reservationForm.gender.trim() || "غير محدد");
       formData.append("DateOfBirth", reservationForm.dateOfBirth || "1990-01-01");
       formData.append("PassportExpiryDate", reservationForm.passportExpiryDate || "");
@@ -874,7 +1036,8 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           selectedTravelOptions.bookingDate ? `تاريخ الحجز: ${selectedTravelOptions.bookingDate}` : "",
           selectedTravelOptions.travelers ? `عدد الأشخاص: ${selectedTravelOptions.travelers}` : "",
           selectedTravelOptions.roomType ? `نوع الغرفة: ${selectedTravelOptions.roomType}` : "",
-          selectedTravelOptions.transportType ? `وسيلة النقل: ${selectedTravelOptions.transportType}` : "",
+          selectedTransportType ? `وسيلة النقل: ${selectedTransportType}` : "",
+          `التأشيرة: ${selectedHasVisa ? "لديه تأشيرة" : "بدون تأشيرة"}`,
           `المبلغ المحسوب: ${reservationTotal.toLocaleString("en-US")} د.ك`
         ].filter(Boolean).join(" | ")
       );
@@ -885,13 +1048,17 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       formData.append("BookingDate", selectedTravelOptions.bookingDate || "");
       formData.append("TravelersCount", String(selectedTravelerCount));
       formData.append("RoomType", selectedTravelOptions.roomType || "");
-      formData.append("TransportType", selectedTravelOptions.transportType || "");
+      formData.append("TransportType", selectedTransportType || "");
+      formData.append("HasVisa", String(selectedHasVisa));
       formData.append("ReservationTotal", String(reservationTotal));
       if (passportFile) {
         formData.append("passportImage", passportFile);
       }
       if (idFile) {
         formData.append("civilIdImage", idFile);
+      }
+      if (visaFile) {
+        formData.append("visaImage", visaFile);
       }
 
       await createTraveler(formData);
@@ -904,8 +1071,64 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     }
   };
 
-  const rowadTravelPackages = publishedTravelPackages.filter((program) => program.id.startsWith("rowad-company-"));
-  const regularTravelPackages = publishedTravelPackages.filter((program) => !program.id.startsWith("rowad-company-"));
+  const renderReservationDocumentCard = ({
+    kind,
+    number,
+    title,
+    subtitle,
+    inputId,
+    file,
+    preview,
+    error,
+    onFileChange
+  }: {
+    kind: ReservationUploadKind;
+    number: string;
+    title: string;
+    subtitle: string;
+    inputId: string;
+    file: File | null;
+    preview: string | null;
+    error?: string;
+    onFileChange: (file?: File) => void;
+  }) => (
+    <article className="gv-doc-card">
+      <div className="gv-doc-card__head">
+        <span>{number}</span>
+        <div>
+          <strong>{title}</strong>
+          <p>{subtitle}</p>
+        </div>
+        <DocumentIcon className="icon icon-sm" />
+      </div>
+      <label
+        className="gv-doc-dropzone"
+        htmlFor={inputId}
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={(event) => {
+          event.preventDefault();
+          handleDocumentDrop(kind, event.dataTransfer.files);
+        }}
+      >
+        <input id={inputId} type="file" accept="image/jpeg,image/png,application/pdf" onChange={(event) => onFileChange(event.target.files?.[0])} />
+        <span className="gv-doc-dropzone__icon"><DocumentIcon className="icon icon-sm" /></span>
+        <b>{preview ? "تم اختيار الملف" : "اسحب وأفلت الملف هنا"}</b>
+        <small>أو اضغط للاختيار من جهازك</small>
+      </label>
+      {file ? (
+        <div className="gv-doc-file">
+          {preview ? <img src={preview} alt={title} /> : <DocumentIcon className="icon icon-sm" />}
+          <span>{file.name}</span>
+          <button type="button" onClick={() => removeDocumentFile(kind)} aria-label="حذف الملف">×</button>
+        </div>
+      ) : null}
+      {file ? <em className="gv-doc-ready">تم الرفع وجاهز للاستخراج</em> : null}
+      {error ? <em className="gv-upload-error">{error}</em> : null}
+    </article>
+  );
+
+  const rowadTravelPackages = publishedTravelPackages.filter((program) => isRowadTravelPackage(program));
+  const regularTravelPackages = publishedTravelPackages.filter((program) => !isRowadTravelPackage(program));
   const rowadTravelBackground = resolvePackageImageUrl(rowadTravelPackages[1]?.imageUrl ?? rowadTravelPackages[0]?.imageUrl ?? "/landingpage/hero-kaaba-premium.png");
   const rowadTravelStyle = { "--rowad-travel-bg": `url(${rowadTravelBackground})` } as CSSProperties;
 
@@ -913,33 +1136,40 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     const options = travelOptions[program.id] ?? {
       bookingDate: "",
       travelers: "1",
-      roomType: program.roomTypes.find((item) => item.active)?.label ?? "",
-      transportType: program.transportOptions.find((item) => item.active)?.label ?? "",
+      roomType: getCompatibleRoomLabel(program, "1"),
+      transportType: getDefaultTransportLabel(program),
+      nationality: availableNationalities[0] ?? nationalityOptions[0],
+      hasVisa: "no",
       dateError: ""
     };
     const activeRoomTypes = program.roomTypes.filter((item) => item.active);
     const activeTransportOptions = program.transportOptions.filter((item) => item.active);
+    const roomOptions = getRoomCombinationOptions(program, options.travelers);
+    const isRowadPackage = isRowadTravelPackage(program);
+    const selectedTransport = isRowadPackage ? rowadFixedTransport : options.transportType;
+    const travelerCount = Math.max(1, Number(options.travelers) || 1);
     const dynamicPrice = calculatePackagePrice(program, {
       packageId: program.id,
-      travelers: Number(options.travelers) || 1,
+      travelers: travelerCount,
       roomType: options.roomType,
-      transport: options.transportType,
+      transport: selectedTransport,
+      nationality: options.nationality,
+      previousVisa: options.hasVisa === "yes" ? "yes" : "no",
       departureDate: options.bookingDate,
       durationDays: program.durationDays
     });
-    const displayPrice = dynamicPrice || getPackageFromPrice(program);
+    const displayPrice = (dynamicPrice || getPackageFromPrice(program)) * travelerCount;
 
     return (
-      <article className={`gv-travel-card ${variant === "rowad" ? "gv-travel-card--rowad" : ""}`} key={program.id}>
+      <article className={`gv-travel-card ${variant === "rowad" ? "gv-travel-card--rowad" : "gv-travel-card--standard"}`} key={program.id}>
         <div className="gv-travel-card__media" style={{ backgroundImage: `url(${resolvePackageImageUrl(program.imageUrl)})` }}>
-          <span>{program.durationLabel}</span>
+          <span><CalendarIcon className="icon icon-sm" /> {program.durationLabel}</span>
           {variant === "rowad" ? <em className="gv-travel-card__brand">رواد</em> : null}
         </div>
         <div className="gv-travel-card__body">
           <div className="gv-travel-card__features gv-travel-card__features--controls">
             <label>
-              <CalendarIcon className="icon icon-sm" />
-              <strong>تاريخ الحجز</strong>
+              <span className="gv-travel-field-title"><CalendarIcon className="icon icon-sm" /><strong>تاريخ الحجز</strong></span>
               {program.departureDates.length > 0 ? (
                 <select
                   value={options.bookingDate}
@@ -959,38 +1189,74 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
               )}
             </label>
             <label>
-              <UsersIcon className="icon icon-sm" />
-              <strong>عدد الأشخاص</strong>
+              <span className="gv-travel-field-title"><GlobeIcon className="icon icon-sm" /><strong>الجنسية</strong></span>
               <select
-                value={options.travelers}
-                onChange={(event) => updateTravelOption(program.id, "travelers", event.target.value)}
+                value={options.nationality}
+                onChange={(event) => updateTravelOption(program.id, "nationality", event.target.value)}
               >
-                {travelerCountOptions.map((count) => (
-                  <option key={count} value={count}>{count}</option>
+                {availableNationalities.map((nationality) => (
+                  <option key={nationality} value={nationality}>{nationality}</option>
                 ))}
               </select>
             </label>
             <label>
-              <MosqueIcon className="icon icon-sm" />
-              <strong>نوع الغرفة</strong>
+              <span className="gv-travel-field-title"><DocumentIcon className="icon icon-sm" /><strong>التأشيرة</strong></span>
+              <select
+                value={options.hasVisa}
+                onChange={(event) => updateTravelOption(program.id, "hasVisa", event.target.value)}
+              >
+                <option value="no">بدون تأشيرة</option>
+                <option value="yes">لدي تأشيرة</option>
+              </select>
+            </label>
+            {!isRowadPackage ? (
+              <label>
+                <span className="gv-travel-field-title"><BusIcon className="icon icon-sm" /><strong>وسيلة النقل</strong></span>
+                <select
+                  value={options.transportType}
+                  onChange={(event) => updateTravelOption(program.id, "transportType", event.target.value)}
+                >
+                  {activeTransportOptions.map((transport) => (
+                    <option key={transport.id} value={transport.label}>{transport.label}</option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+            <label>
+              <span className="gv-travel-field-title"><UsersIcon className="icon icon-sm" /><strong>عدد الأشخاص</strong></span>
+              {travelerCountOptions.includes(options.travelers) ? (
+                <select
+                  value={options.travelers}
+                  onChange={(event) => {
+                    const nextValue = event.target.value === customTravelerOption ? "5" : event.target.value;
+                    updateTravelOption(program.id, "travelers", nextValue);
+                  }}
+                >
+                  {travelerCountOptions.map((count) => (
+                    <option key={count} value={count}>{count}</option>
+                  ))}
+                  <option value={customTravelerOption}>عدد مخصص</option>
+                </select>
+              ) : (
+                <input
+                  className="gv-custom-travelers-input"
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={options.travelers}
+                  onChange={(event) => updateTravelOption(program.id, "travelers", event.target.value)}
+                  aria-label="عدد الأشخاص المخصص"
+                />
+              )}
+            </label>
+            <label>
+              <span className="gv-travel-field-title"><BedIcon className="icon icon-sm" /><strong>نوع الغرفة</strong></span>
               <select
                 value={options.roomType}
                 onChange={(event) => updateTravelOption(program.id, "roomType", event.target.value)}
               >
-                {activeRoomTypes.map((roomType) => (
-                  <option key={roomType.id} value={roomType.label}>{roomType.label}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <BusIcon className="icon icon-sm" />
-              <strong>وسيلة النقل</strong>
-              <select
-                value={options.transportType}
-                onChange={(event) => updateTravelOption(program.id, "transportType", event.target.value)}
-              >
-                {activeTransportOptions.map((transport) => (
-                  <option key={transport.id} value={transport.label}>{transport.label}</option>
+                {(roomOptions.length ? roomOptions : activeRoomTypes.map((roomType) => roomType.label)).map((roomTypeLabel) => (
+                  <option key={roomTypeLabel} value={roomTypeLabel}>{roomTypeLabel}</option>
                 ))}
               </select>
             </label>
@@ -998,12 +1264,34 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           {options.dateError ? (
             <p className="gv-travel-card__date-error">{options.dateError}</p>
           ) : null}
-          <div className="gv-travel-card__divider" />
+          {variant === "rowad" ? (
+            <div className="gv-travel-card__divider" />
+          ) : (
+            <div className="gv-travel-card__divider"><span><PlaneIcon className="icon icon-sm" /></span></div>
+          )}
           <div className="gv-travel-card__footer">
-            <p>تبدأ من <b>{displayPrice.toLocaleString("en-US")}</b> {program.currency}</p>
-            <button type="button" onClick={() => openBookingSection(program.durationLabel, program.id)}>
-              حجز
-            </button>
+            {variant === "rowad" ? (
+              <>
+                <p>الإجمالي <b>{displayPrice.toLocaleString("en-US")}</b> {program.currency}</p>
+                <button type="button" onClick={() => openBookingSection(program.durationLabel, program.id)}>
+                  حجز
+                </button>
+              </>
+            ) : (
+              <>
+                <button type="button" onClick={() => openBookingSection(program.durationLabel, program.id)}>
+                  حجز الآن
+                  <PlaneIcon className="icon icon-sm" />
+                </button>
+                <div className="gv-travel-card__footer-separator" />
+                <p className="gv-travel-card__price">
+                  <span>الإجمالي</span>
+                  <b>{displayPrice.toLocaleString("en-US")}</b>
+                  <small>{program.currency}</small>
+                  <CoinsIcon className="icon icon-md" />
+                </p>
+              </>
+            )}
           </div>
         </div>
       </article>
@@ -1438,138 +1726,185 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
             </nav>
 
             {reservationStep <= 3 ? (
-            <div className="gv-reservation__layout">
-              <div className="gv-reservation__form">
-                <div className="gv-reservation__form-head">
-                  <span><UsersIcon className="icon icon-md" /></span>
-                  <div>
-                    <strong>بيانات المسافر</strong>
-                    <p>أدخل بياناتك لإتمام الحجز</p>
-                  </div>
-                </div>
-                <label>
-                  الاسم الكامل
-                  <span className="gv-field">
-                    <input id="gv-full-name" type="text" placeholder="اكتب الاسم الكامل" value={reservationForm.fullName} onChange={(event) => updateReservationField("fullName", event.target.value)} aria-invalid={Boolean(formErrors.fullName)} />
-                    <UsersIcon className="icon icon-sm" />
-                  </span>
-                  {formErrors.fullName ? <em>{formErrors.fullName}</em> : null}
-                </label>
-                <label>
-                  رقم الهاتف
-                  <span className="gv-field">
-                    <input id="gv-phone" type="tel" placeholder="+965" value={reservationForm.phoneNumber} onChange={(event) => updateReservationField("phoneNumber", event.target.value)} aria-invalid={Boolean(formErrors.phoneNumber)} />
-                    <PhoneIcon className="icon icon-sm" />
-                  </span>
-                  {formErrors.phoneNumber ? <em>{formErrors.phoneNumber}</em> : null}
-                </label>
-                <label>
-                  البريد الإلكتروني
-                  <span className="gv-field">
-                    <input id="gv-email" type="email" placeholder="name@example.com" value={reservationForm.email} onChange={(event) => updateReservationField("email", event.target.value)} aria-invalid={Boolean(formErrors.email)} />
-                    <MailIcon className="icon icon-sm" />
-                  </span>
-                  {formErrors.email ? <em>{formErrors.email}</em> : null}
-                </label>
-                <label>
-                  رقم الجواز
-                  <span className="gv-field">
-                    <input id="gv-passport-number" type="text" placeholder="اكتب رقم الجواز" value={reservationForm.passportNumber} onChange={(event) => updateReservationField("passportNumber", event.target.value)} aria-invalid={Boolean(formErrors.passportNumber)} />
-                    <DocumentIcon className="icon icon-sm" />
-                  </span>
-                  {formErrors.passportNumber ? <em>{formErrors.passportNumber}</em> : null}
-                </label>
-                <label>
-                  الجنسية
-                  <span className="gv-field">
-                    <select id="gv-nationality" value={reservationForm.nationality} onChange={(event) => updateReservationField("nationality", event.target.value)}>
-                      <option value="">اختر الجنسية</option>
-                      {availableNationalities.map((nationality) => (
-                        <option key={nationality} value={nationality}>{nationality}</option>
-                      ))}
-                    </select>
-                    <LocationIcon className="icon icon-sm" />
-                  </span>
-                </label>
-                <button type="button" className="gv-smart-extract" onClick={() => void extractAllDocuments()} disabled={!passportFile && !idFile}>
-                  <SearchIcon className="icon icon-sm" />
-                  استخراج ذكي
-                </button>
-                <button type="button" className="gv-confirm-booking" onClick={() => goToReservationStep(4)}>
-                  <ArrowRightIcon className="icon icon-sm" />
-                  التالي: اختيار الفندق
-                </button>
-                <small><ShieldIcon className="icon icon-sm" /> جميع بياناتك محمية وآمنة</small>
-              </div>
-
-              <div className="gv-upload-stack">
-                <article className="gv-upload-card">
-                  <div className="gv-upload-card__head">
-                    <span>02</span>
+              <div className="gv-reservation-ui">
+                <section className="gv-reservation-form-panel">
+                  <header className="gv-reservation-section-head">
+                    <span><UsersIcon className="icon icon-sm" /></span>
                     <div>
-                      <strong>إضافة جواز السفر</strong>
-                      <p>ارفع صورة جواز السفر بوضوح</p>
+                      <strong>البيانات الأساسية</strong>
+                      <p>راجع البيانات المستخرجة وأكمل الحقول المطلوبة</p>
                     </div>
-                  </div>
-                  <label
-                    className="gv-dropzone"
-                    htmlFor="gv-passport-upload"
-                    onDragOver={(event) => event.preventDefault()}
-                    onDrop={(event) => {
-                      event.preventDefault();
-                      handleDocumentDrop("passport", event.dataTransfer.files);
-                    }}
-                  >
-                    <input id="gv-passport-upload" type="file" accept="image/jpeg,image/png,application/pdf" onChange={(event) => updatePassportFile(event.target.files?.[0])} />
-                    <div className="gv-document-preview gv-document-preview--passport">
-                      {passportPreview ? <img src={passportPreview} alt="معاينة جواز السفر" /> : <DocumentIcon className="icon" />}
-                    </div>
-                    <span className="gv-upload-cloud"><DocumentIcon className="icon icon-sm" /></span>
-                    <b>اسحب وأفلت صورة جواز السفر هنا</b>
-                  </label>
-                  {passportFile ? (
-                    <div className="gv-file-row">
-                      <span>{passportFile.name}</span>
-                      <button type="button" onClick={() => removeDocumentFile("passport")}>حذف</button>
-                    </div>
-                  ) : null}
-                  {(uploadErrors.passport || formErrors.passportFile) ? <em className="gv-upload-error">{uploadErrors.passport || formErrors.passportFile}</em> : null}
-                </article>
+                  </header>
 
-                <article className="gv-upload-card">
-                  <div className="gv-upload-card__head">
-                    <span>01</span>
-                    <div>
-                      <strong>إضافة بطاقة الهوية</strong>
-                      <p>ارفع صورة بطاقة الهوية الوطنية</p>
+                  <div className="gv-reservation-card">
+                    <div className="gv-reservation-grid">
+                      <label>
+                        الاسم الكامل *
+                        <span className="gv-field">
+                          <input id="gv-full-name" type="text" placeholder="اكتب الاسم الكامل" value={reservationForm.fullName} onChange={(event) => updateReservationField("fullName", event.target.value)} aria-invalid={Boolean(formErrors.fullName)} />
+                          <UsersIcon className="icon icon-sm" />
+                        </span>
+                        {formErrors.fullName ? <em>{formErrors.fullName}</em> : null}
+                      </label>
+                      <label>
+                        رقم الجواز *
+                        <span className="gv-field">
+                          <input id="gv-passport-number" type="text" placeholder="اكتب رقم الجواز" value={reservationForm.passportNumber} onChange={(event) => updateReservationField("passportNumber", event.target.value)} aria-invalid={Boolean(formErrors.passportNumber)} />
+                          <DocumentIcon className="icon icon-sm" />
+                        </span>
+                        {formErrors.passportNumber ? <em>{formErrors.passportNumber}</em> : null}
+                      </label>
+                      <label>
+                        الجنسية
+                        <span className="gv-field">
+                          <select id="gv-nationality" value={reservationForm.nationality} onChange={(event) => updateReservationField("nationality", event.target.value)}>
+                            <option value="">اختر الجنسية</option>
+                            {availableNationalities.map((nationality) => (
+                              <option key={nationality} value={nationality}>{nationality}</option>
+                            ))}
+                          </select>
+                          <LocationIcon className="icon icon-sm" />
+                        </span>
+                      </label>
+                      <label>
+                        الجنس
+                        <span className="gv-field">
+                          <select value={reservationForm.gender} onChange={(event) => updateReservationField("gender", event.target.value)}>
+                            <option value="">اختر الجنس</option>
+                            <option value="ذكر">ذكر</option>
+                            <option value="أنثى">أنثى</option>
+                          </select>
+                          <UsersIcon className="icon icon-sm" />
+                        </span>
+                      </label>
                     </div>
                   </div>
-                  <label
-                    className="gv-dropzone"
-                    htmlFor="gv-id-upload"
-                    onDragOver={(event) => event.preventDefault()}
-                    onDrop={(event) => {
-                      event.preventDefault();
-                      handleDocumentDrop("id", event.dataTransfer.files);
-                    }}
-                  >
-                    <input id="gv-id-upload" type="file" accept="image/jpeg,image/png,application/pdf" onChange={(event) => updateIdFile(event.target.files?.[0])} />
-                    <div className="gv-document-preview gv-document-preview--id">
-                      {idPreview ? <img src={idPreview} alt="معاينة بطاقة الهوية" /> : <DocumentIcon className="icon" />}
+
+                  <div className="gv-reservation-card">
+                    <header className="gv-reservation-section-head gv-reservation-section-head--inner">
+                      <span><CalendarIcon className="icon icon-sm" /></span>
+                      <div>
+                        <strong>بيانات الميلاد والوثائق</strong>
+                        <p>تستخدم نفس حقول الحجز الحالية دون تغيير API</p>
+                      </div>
+                    </header>
+                    <div className="gv-reservation-grid">
+                      <label>
+                        تاريخ الميلاد
+                        <span className="gv-field">
+                          <input type="date" value={reservationForm.dateOfBirth} onChange={(event) => updateReservationField("dateOfBirth", event.target.value)} />
+                          <CalendarIcon className="icon icon-sm" />
+                        </span>
+                      </label>
+                      <label>
+                        انتهاء الجواز
+                        <span className="gv-field">
+                          <input type="date" value={reservationForm.passportExpiryDate} onChange={(event) => updateReservationField("passportExpiryDate", event.target.value)} />
+                          <CalendarIcon className="icon icon-sm" />
+                        </span>
+                      </label>
+                      <label>
+                        رقم الإقامة
+                        <span className="gv-field">
+                          <input type="text" placeholder="رقم الإقامة" value={reservationForm.civilId} onChange={(event) => updateReservationField("civilId", event.target.value)} />
+                          <DocumentIcon className="icon icon-sm" />
+                        </span>
+                      </label>
+                      {selectedPackage ? (
+                        <label>
+                          حالة التأشيرة
+                          <span className="gv-field">
+                            <select value={selectedTravelOptions.hasVisa} onChange={(event) => updateTravelOption(selectedPackage.id, "hasVisa", event.target.value)}>
+                              <option value="no">بدون تأشيرة</option>
+                              <option value="yes">لدي تأشيرة</option>
+                            </select>
+                            <DocumentIcon className="icon icon-sm" />
+                          </span>
+                        </label>
+                      ) : null}
                     </div>
-                    <span className="gv-upload-cloud"><DocumentIcon className="icon icon-sm" /></span>
-                    <b>اسحب وأفلت صورة بطاقة الهوية هنا</b>
-                  </label>
-                  {idFile ? (
-                    <div className="gv-file-row">
-                      <span>{idFile.name}</span>
-                      <button type="button" onClick={() => removeDocumentFile("id")}>حذف</button>
+                  </div>
+
+                  <div className="gv-reservation-card">
+                    <header className="gv-reservation-section-head gv-reservation-section-head--inner">
+                      <span><PhoneIcon className="icon icon-sm" /></span>
+                      <div>
+                        <strong>بيانات التواصل</strong>
+                        <p>نفس بيانات الاتصال المطلوبة للتأكيد</p>
+                      </div>
+                    </header>
+                    <div className="gv-reservation-grid">
+                      <label>
+                        رقم الهاتف *
+                        <span className="gv-field">
+                          <input id="gv-phone" type="tel" placeholder="+965" value={reservationForm.phoneNumber} onChange={(event) => updateReservationField("phoneNumber", event.target.value)} aria-invalid={Boolean(formErrors.phoneNumber)} />
+                          <PhoneIcon className="icon icon-sm" />
+                        </span>
+                        {formErrors.phoneNumber ? <em>{formErrors.phoneNumber}</em> : null}
+                      </label>
+                      <label>
+                        البريد الإلكتروني
+                        <span className="gv-field">
+                          <input id="gv-email" type="email" placeholder="name@example.com" value={reservationForm.email} onChange={(event) => updateReservationField("email", event.target.value)} aria-invalid={Boolean(formErrors.email)} />
+                          <MailIcon className="icon icon-sm" />
+                        </span>
+                        {formErrors.email ? <em>{formErrors.email}</em> : null}
+                      </label>
                     </div>
-                  ) : null}
-                  {(uploadErrors.id || formErrors.idFile) ? <em className="gv-upload-error">{uploadErrors.id || formErrors.idFile}</em> : null}
-                </article>
+                  </div>
+                </section>
+
+                <aside className="gv-doc-panel">
+                  <header className="gv-doc-panel__head">
+                    <span><DocumentIcon className="icon icon-sm" /></span>
+                    <div>
+                      <strong>المستندات المطلوبة</strong>
+                      <p>ارفع الصور أو التقطها لاستخراج البيانات تلقائياً</p>
+                    </div>
+                  </header>
+
+                  {renderReservationDocumentCard({
+                    kind: "id",
+                    number: "01",
+                    title: "إضافة بطاقة الهوية",
+                    subtitle: "ارفع صورة بطاقة الهوية الوطنية",
+                    inputId: "gv-id-upload",
+                    file: idFile,
+                    preview: idPreview,
+                    error: uploadErrors.id || formErrors.idFile,
+                    onFileChange: updateIdFile
+                  })}
+
+                  {renderReservationDocumentCard({
+                    kind: "passport",
+                    number: "02",
+                    title: "إضافة جواز السفر",
+                    subtitle: "ارفع صورة جواز السفر بوضوح",
+                    inputId: "gv-passport-upload",
+                    file: passportFile,
+                    preview: passportPreview,
+                    error: uploadErrors.passport || formErrors.passportFile,
+                    onFileChange: updatePassportFile
+                  })}
+
+                  {selectedHasVisa ? renderReservationDocumentCard({
+                    kind: "visa",
+                    number: "03",
+                    title: "إضافة التأشيرة",
+                    subtitle: "ارفع صورة التأشيرة الموجودة لديك",
+                    inputId: "gv-visa-upload",
+                    file: visaFile,
+                    preview: visaPreview,
+                    error: uploadErrors.visa || formErrors.visaFile,
+                    onFileChange: updateVisaFile
+                  }) : null}
+
+                  <button type="button" className="gv-smart-extract gv-smart-extract--panel" onClick={() => void extractAllDocuments()} disabled={!passportFile && !idFile}>
+                    <SearchIcon className="icon icon-sm" />
+                    استخراج ذكي
+                  </button>
+                </aside>
               </div>
-            </div>
             ) : null}
 
             {reservationStep === 4 ? (
@@ -1579,6 +1914,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                   <span><CalendarIcon className="icon icon-sm" /> {bookingDays}</span>
                   <span><UsersIcon className="icon icon-sm" /> {selectedTravelerCount} {selectedTravelerCount === 1 ? "مسافر" : "مسافرين"}</span>
                   <span><DocumentIcon className="icon icon-sm" /> الوثائق مكتملة</span>
+                  <span><DocumentIcon className="icon icon-sm" /> {selectedHasVisa ? "لديه تأشيرة" : "بدون تأشيرة"}</span>
                   <span><SearchIcon className="icon icon-sm" /> تم الاستخراج بنجاح</span>
                   <button type="button" onClick={() => goToReservationStep(3)}>تعديل البيانات</button>
                   <p>لأن رحلتك تستحق الأفضل، اختر الفندق الأنسب قبل الدفع.</p>
@@ -1587,7 +1923,6 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                   <p>اختر فندقك في مكة والمدينة</p>
                   <div className="gv-hotel-tabs">
                     <button className="is-active" type="button">مكة المكرمة</button>
-                    <button type="button">المدينة المنورة</button>
                   </div>
                   <div className="gv-hotel-list">
                     {hotelOptions.map((hotel) => {
@@ -1606,7 +1941,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                             </div>
                           </div>
                           <div className="gv-hotel-price">
-                            <small>{reservationForm.nationality ? `سعر ${reservationForm.nationality}` : "ابتداءً من"}</small>
+                            <small>{selectedNationality ? `سعر ${selectedNationality}` : "ابتداءً من"}</small>
                             <strong>{(selectedPackage ? packageHotelPrice : hotelNightPrice).toLocaleString("en-US")} د.ك</strong>
                             <span>{selectedPackage ? "للشخص الواحد" : "لليلة الواحدة"}</span>
                             <button type="button" onClick={() => setSelectedHotel(hotel.name)}>اختيار هذا الفندق</button>
@@ -1638,9 +1973,9 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                   <span><CalendarIcon className="icon icon-sm" /> {bookingDays}</span>
                   <span><UsersIcon className="icon icon-sm" /> {selectedTravelerCount} {selectedTravelerCount === 1 ? "مسافر" : "مسافرين"}</span>
                   <span><MosqueIcon className="icon icon-sm" /> {selectedTravelOptions?.roomType ?? "غرفة مزدوجة"}</span>
+                  <span><DocumentIcon className="icon icon-sm" /> {selectedHasVisa ? "لديه تأشيرة" : "بدون تأشيرة"}</span>
                   <hr />
                   <p><small>{reservationBaseLabel}</small><b>{hotelTotal.toLocaleString("en-US")} د.ك</b></p>
-                  <p><small>الخدمات الإضافية</small><b>{servicesTotal.toLocaleString("en-US")} د.ك</b></p>
                   <strong className="gv-booking-total">{reservationTotal.toLocaleString("en-US")} د.ك</strong>
                 </aside>
                 <section className="gv-payment-stage">
@@ -1693,7 +2028,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                 <div>
                   <span><CalendarIcon className="icon icon-sm" /></span>
                   <strong>تم تحويل طلبكم إلى خدمة العملاء</strong>
-                  <p>طلب الحجز الآن قيد التأكيد. سيتواصل معكم أحد ممثلي خدمة العملاء لمراجعة البيانات وتأكيد تفاصيل رحلة العمرة قبل اعتماد الحجز نهائياً.</p>
+                  <p>تم تأكيد الحجز وتسجيل بيانات المسافر بنجاح. يمكنكم متابعة تفاصيل الرحلة من لوحة المسافر.</p>
                   <button type="button" onClick={() => setReservationSuccessOpen(false)}>
                     حسناً
                   </button>
@@ -1701,8 +2036,22 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
               </div>
             ) : null}
             <div className="gv-reservation__foot">
-              <MosqueIcon className="icon icon-sm" />
-              <span>في خدمتكم لرحلة إيمانية مميزة</span>
+              <div>
+                <MosqueIcon className="icon icon-sm" />
+                <span>جميع بياناتك محمية وآمنة</span>
+              </div>
+              {reservationStep <= 3 ? (
+                <div className="gv-reservation__foot-actions">
+                  <button type="button" className="gv-smart-extract" onClick={() => void extractAllDocuments()} disabled={!passportFile && !idFile}>
+                    <SearchIcon className="icon icon-sm" />
+                    استخراج ذكي
+                  </button>
+                  <button type="button" className="gv-confirm-booking" onClick={() => goToReservationStep(4)}>
+                    التالي: اختيار الفندق
+                    <ArrowRightIcon className="icon icon-sm" />
+                  </button>
+                </div>
+              ) : null}
             </div>
           </section>
         </div>

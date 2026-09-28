@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import type { AuthUser } from "../../api/auth";
+import { AdminWelcomeBanner } from "../Layout/AdminWelcomeBanner";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
+import { PackageSectionsTabs } from "../Settings/PackageSectionsTabs";
 
 type ServicesAddonsPageProps = {
   user: AuthUser;
@@ -61,13 +63,13 @@ export function ServicesAddonsPage({ user, activePath, onNavigate, onLogout }: S
       <SignedInSidebar user={user} activePath={activePath} onNavigate={onNavigate} onLogout={onLogout} />
 
       <main className="main-panel pricing-admin-page services-addons-page" dir="rtl">
-        <section className="pricing-hero">
-          <div>
-            <span className="eyebrow">الخدمات</span>
-            <h1>الخدمات والإضافات</h1>
-            <p>تعريف كل ما يمكن إضافته على الحجز وربطه بالقواعد</p>
-          </div>
-        </section>
+        <AdminWelcomeBanner
+          eyebrow="الخدمات"
+          title="الخدمات والإضافات"
+          description="تعريف كل ما يمكن إضافته على الحجز وربطه بالقواعد"
+        />
+
+        <PackageSectionsTabs active="services" onNavigate={onNavigate} />
 
         <section className="service-category-grid">
           {categories.map((category) => (

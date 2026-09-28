@@ -15,7 +15,9 @@ import {
   type PricingRule,
   type TravelPackage
 } from "../../api/travelPackages";
+import { AdminWelcomeBanner } from "../Layout/AdminWelcomeBanner";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
+import { PackageSectionsTabs } from "./PackageSectionsTabs";
 
 type PackageSettingsPanelProps = {
   user: AuthUser;
@@ -106,7 +108,6 @@ export function PackageSettingsPanel({ user, activePath, onNavigate, onLogout }:
   const [packages, setPackages] = useState<TravelPackage[]>([]);
   const [editingPackage, setEditingPackage] = useState<TravelPackage | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"packages" | "rules" | "groups" | "services">("packages");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [durationFilter, setDurationFilter] = useState("all");
@@ -384,23 +385,18 @@ export function PackageSettingsPanel({ user, activePath, onNavigate, onLogout }:
       <SignedInSidebar user={user} activePath={activePath} onNavigate={onNavigate} onLogout={onLogout} />
 
       <main className="main-panel package-admin" dir="rtl">
-        <section className="package-admin-hero">
-          <div>
-            <span className="eyebrow">إدارة الأسعار</span>
-            <h1>إدارة الباقات والأسعار</h1>
-            <p>إنشاء وتعديل الباقات التي تظهر في الموقع مع قواعد تسعير مرنة حسب الشروط.</p>
-          </div>
-          <button type="button" className="package-primary-action" onClick={openCreateDrawer}>
-            + إضافة باقة جديدة
-          </button>
-        </section>
+        <AdminWelcomeBanner
+          eyebrow="إدارة الأسعار"
+          title="إدارة الباقات والأسعار"
+          description="إنشاء وتعديل الباقات التي تظهر في الموقع مع قواعد تسعير مرنة حسب الشروط."
+          action={
+            <button type="button" className="package-primary-action" onClick={openCreateDrawer}>
+              + إضافة باقة جديدة
+            </button>
+          }
+        />
 
-        <section className="package-admin-tabs" aria-label="أقسام الإعدادات">
-          <button className={activeTab === "packages" ? "is-active" : ""} type="button" onClick={() => setActiveTab("packages")}>الباقات</button>
-          <button className={activeTab === "rules" ? "is-active" : ""} type="button" onClick={() => onNavigate("/pricing-rules")}>قواعد التسعير</button>
-          <button className={activeTab === "groups" ? "is-active" : ""} type="button" onClick={() => onNavigate("/nationality-groups")}>مجموعات الجنسيات</button>
-          <button className={activeTab === "services" ? "is-active" : ""} type="button" onClick={() => onNavigate("/services-addons")}>الخدمات والإضافات</button>
-        </section>
+        <PackageSectionsTabs active="packages" onNavigate={onNavigate} />
 
         <section className="package-filters">
           <label>
@@ -441,24 +437,21 @@ export function PackageSettingsPanel({ user, activePath, onNavigate, onLogout }:
 
             return (
               <article className="package-admin-card" key={packageItem.id}>
-                <div className="package-admin-card__media" style={{ backgroundImage: `url(${resolvePackageImageUrl(packageItem.imageUrl)})` }}>
-                  <span>{packageItem.durationLabel}</span>
-                </div>
+                <aside className="package-admin-card__summary">
+                  <span className={isPublished ? "package-status is-live" : "package-status"}>{statusLabel(packageItem.status)}</span>
+                  <strong>{fromPrice.toLocaleString("en-US")} {packageItem.currency}</strong>
+                  <small>تبدأ من للشخص الواحد</small>
+                  <em>آخر تعديل: {packageItem.updatedAt.slice(0, 10)}</em>
+                </aside>
                 <div className="package-admin-card__body">
                   <div className="package-admin-card__title">
                     <small>#{String(index + 1).padStart(3, "0")}</small>
                     <h3>{packageItem.name}</h3>
-                    <span className={isPublished ? "package-status is-live" : "package-status"}>{statusLabel(packageItem.status)}</span>
                   </div>
                   <p>{packageItem.description || packageItem.shortTitle}</p>
                   <div className="package-tags">
                     {activeOptions(packageItem.roomTypes).slice(0, 4).map((item) => <span key={item.id}>{item.label}</span>)}
                     {activeOptions(packageItem.transportOptions).slice(0, 2).map((item) => <span key={item.id}>{item.label}</span>)}
-                  </div>
-                  <div className="package-card-meta">
-                    <strong>{fromPrice.toLocaleString("en-US")} {packageItem.currency}</strong>
-                    <small>تبدأ من للشخص الواحد</small>
-                    <em>آخر تعديل: {packageItem.updatedAt.slice(0, 10)}</em>
                   </div>
                   <div className="package-card-actions">
                     <button type="button" onClick={() => openEditDrawer(packageItem)}>تعديل</button>
@@ -468,6 +461,9 @@ export function PackageSettingsPanel({ user, activePath, onNavigate, onLogout }:
                     <button type="button" onClick={() => void movePackage(packageItem.id, -1)}>↑</button>
                     <button type="button" onClick={() => void movePackage(packageItem.id, 1)}>↓</button>
                   </div>
+                </div>
+                <div className="package-admin-card__media" style={{ backgroundImage: `url(${resolvePackageImageUrl(packageItem.imageUrl)})` }}>
+                  <span>{packageItem.durationLabel}</span>
                 </div>
               </article>
             );
@@ -513,6 +509,10 @@ export function PackageSettingsPanel({ user, activePath, onNavigate, onLogout }:
                 <label>
                   السعر يبدأ من
                   <input type="number" min="0" value={editingPackage.basePrice} onChange={(event) => updateEditing({ basePrice: Number(event.target.value) || 0 })} />
+                </label>
+                <label>
+                  تكلفة التأشيرة
+                  <input type="number" min="0" value={editingPackage.visaSupplement ?? 0} onChange={(event) => updateEditing({ visaSupplement: Number(event.target.value) || 0 })} />
                 </label>
                 <label>
                   طريقة حساب السعر
@@ -622,7 +622,7 @@ export function PackageSettingsPanel({ user, activePath, onNavigate, onLogout }:
                     </div>
                     <div className="gv-travel-card__divider" />
                     <div className="gv-travel-card__footer">
-                      <p>تبدأ من <b>{calculatePackagePrice(editingPackage, {})}</b> {editingPackage.currency}</p>
+                      <p>تبدأ من <b>{calculatePackagePrice(editingPackage, { previousVisa: "no" })}</b> {editingPackage.currency}</p>
                       <button type="button">حجز</button>
                     </div>
                   </div>

@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import type { AuthUser } from "../../api/auth";
+import { AdminWelcomeBanner } from "../Layout/AdminWelcomeBanner";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
+import { PackageSectionsTabs } from "../Settings/PackageSectionsTabs";
 
 type PricingRuleBuilderPageProps = {
   user: AuthUser;
@@ -81,13 +83,13 @@ export function PricingRuleBuilderPage({ user, activePath, onNavigate, onLogout 
       <main className="main-panel pricing-admin-page pricing-rule-page" dir="rtl">
         {toast ? <div className="ng-toast">{toast}</div> : null}
 
-        <section className="pricing-hero">
-          <div>
-            <span className="eyebrow">قواعد التسعير</span>
-            <h1>إنشاء قاعدة تسعير جديدة</h1>
-            <p>أضف الشروط وحدد السعر والأولوية وآلية التطبيق</p>
-          </div>
-        </section>
+        <AdminWelcomeBanner
+          eyebrow="قواعد التسعير"
+          title="إنشاء قاعدة تسعير جديدة"
+          description="أضف الشروط وحدد السعر والأولوية وآلية التطبيق"
+        />
+
+        <PackageSectionsTabs active="rules" onNavigate={onNavigate} />
 
         <section className="pricing-rule-layout">
           <aside className="pricing-preview-panel">

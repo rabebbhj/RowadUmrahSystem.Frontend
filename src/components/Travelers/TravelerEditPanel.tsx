@@ -77,11 +77,24 @@ export function TravelerEditPanel({
       formData.append("PassportNumber", traveler.passportNumber);
       formData.append("PassportImagePath", traveler.passportImagePath || "");
       formData.append("FullName", traveler.fullName);
+      formData.append("FirstNameArabic", traveler.firstNameArabic || "");
+      formData.append("FatherNameArabic", traveler.fatherNameArabic || "");
+      formData.append("GrandFatherNameArabic", traveler.grandFatherNameArabic || "");
+      formData.append("FamilyNameArabic", traveler.familyNameArabic || "");
+      formData.append("FirstNameEnglish", traveler.firstNameEnglish || "");
+      formData.append("FatherNameEnglish", traveler.fatherNameEnglish || "");
+      formData.append("GrandFatherNameEnglish", traveler.grandFatherNameEnglish || "");
+      formData.append("FamilyNameEnglish", traveler.familyNameEnglish || "");
       formData.append("Nationality", traveler.nationality);
       formData.append("Gender", traveler.gender);
+      formData.append("Profession", traveler.profession || "");
+      formData.append("BirthCountry", traveler.birthCountry || "");
+      formData.append("BirthCity", traveler.birthCity || "");
+      formData.append("MaritalStatus", traveler.maritalStatus || "");
       formData.append("DateOfBirth", traveler.dateOfBirth.slice(0, 10));
       formData.append("Email", traveler.email || "");
       formData.append("ResidenceNumber", traveler.residenceNumber || "");
+      formData.append("ResidenceExpiryDate", traveler.residenceExpiryDate?.slice(0, 10) || "");
       formData.append("PassportExpiryDate", traveler.passportExpiryDate || "");
       formData.append("PhoneNumber", traveler.phoneNumber);
       formData.append("Notes", traveler.notes || "");
@@ -153,7 +166,46 @@ export function TravelerEditPanel({
                   <div className="page-card h-100">
                     <h4 className="section-title">البيانات الأساسية</h4>
 
-                    <div className="row">
+                    <div className="traveler-profile-grid">
+                      <div className="traveler-form-field">
+                        <label className="form-label">الاسم الأول (عربي) *</label>
+                        <input className="form-control" value={traveler.firstNameArabic || ""} onChange={(event) => setTraveler({ ...traveler, firstNameArabic: event.target.value })} />
+                      </div>
+
+                      <div className="traveler-form-field">
+                        <label className="form-label">اسم الأب (عربي)</label>
+                        <input className="form-control" value={traveler.fatherNameArabic || ""} onChange={(event) => setTraveler({ ...traveler, fatherNameArabic: event.target.value })} />
+                      </div>
+
+                      <div className="traveler-form-field">
+                        <label className="form-label">اسم الجد (عربي)</label>
+                        <input className="form-control" value={traveler.grandFatherNameArabic || ""} onChange={(event) => setTraveler({ ...traveler, grandFatherNameArabic: event.target.value })} />
+                      </div>
+
+                      <div className="traveler-form-field">
+                        <label className="form-label">اسم العائلة (عربي) *</label>
+                        <input className="form-control" value={traveler.familyNameArabic || ""} onChange={(event) => setTraveler({ ...traveler, familyNameArabic: event.target.value })} />
+                      </div>
+
+                      <div className="traveler-form-field">
+                        <label className="form-label">الاسم الأول *</label>
+                        <input className="form-control" value={traveler.firstNameEnglish || ""} onChange={(event) => setTraveler({ ...traveler, firstNameEnglish: event.target.value })} />
+                      </div>
+
+                      <div className="traveler-form-field">
+                        <label className="form-label">اسم الأب</label>
+                        <input className="form-control" value={traveler.fatherNameEnglish || ""} onChange={(event) => setTraveler({ ...traveler, fatherNameEnglish: event.target.value })} />
+                      </div>
+
+                      <div className="traveler-form-field">
+                        <label className="form-label">اسم الجد</label>
+                        <input className="form-control" value={traveler.grandFatherNameEnglish || ""} onChange={(event) => setTraveler({ ...traveler, grandFatherNameEnglish: event.target.value })} />
+                      </div>
+
+                      <div className="traveler-form-field">
+                        <label className="form-label">اسم العائلة *</label>
+                        <input className="form-control" value={traveler.familyNameEnglish || ""} onChange={(event) => setTraveler({ ...traveler, familyNameEnglish: event.target.value })} />
+                      </div>
                       <div className="col-md-6 mb-3">
                         <label className="form-label">رقم الجواز</label>
                         <input className="form-control" value={traveler.passportNumber} onChange={(event) => setTraveler({ ...traveler, passportNumber: event.target.value })} />
@@ -178,6 +230,32 @@ export function TravelerEditPanel({
                         </select>
                       </div>
 
+                      <div className="traveler-form-field">
+                        <label className="form-label">المهنة *</label>
+                        <input className="form-control" value={traveler.profession || ""} onChange={(event) => setTraveler({ ...traveler, profession: event.target.value })} />
+                      </div>
+
+                      <div className="traveler-form-field">
+                        <label className="form-label">دولة الميلاد *</label>
+                        <input className="form-control" value={traveler.birthCountry || ""} onChange={(event) => setTraveler({ ...traveler, birthCountry: event.target.value })} />
+                      </div>
+
+                      <div className="traveler-form-field">
+                        <label className="form-label">مدينة الميلاد *</label>
+                        <input className="form-control" value={traveler.birthCity || ""} onChange={(event) => setTraveler({ ...traveler, birthCity: event.target.value })} />
+                      </div>
+
+                      <div className="traveler-form-field">
+                        <label className="form-label">الحالة الاجتماعية *</label>
+                        <select className="form-select" value={traveler.maritalStatus || ""} onChange={(event) => setTraveler({ ...traveler, maritalStatus: event.target.value })}>
+                          <option value="">اختر الحالة</option>
+                          <option value="متزوج">متزوج</option>
+                          <option value="أعزب">أعزب</option>
+                          <option value="مطلق">مطلق</option>
+                          <option value="أرمل">أرمل</option>
+                        </select>
+                      </div>
+
                       <div className="col-md-6 mb-3">
                         <label className="form-label">تاريخ الميلاد</label>
                         <input type="date" className="form-control" value={traveler.dateOfBirth.slice(0, 10)} onChange={(event) => setTraveler({ ...traveler, dateOfBirth: event.target.value })} />
@@ -186,6 +264,16 @@ export function TravelerEditPanel({
                       <div className="col-md-6 mb-3">
                         <label className="form-label">تاريخ انتهاء الجواز</label>
                         <input type="date" className="form-control" value={traveler.passportExpiryDate?.slice(0, 10) || ""} onChange={(event) => setTraveler({ ...traveler, passportExpiryDate: event.target.value || null })} />
+                      </div>
+
+                      <div className="traveler-form-field">
+                        <label className="form-label">رقم الإقامة *</label>
+                        <input className="form-control" value={traveler.residenceNumber || ""} onChange={(event) => setTraveler({ ...traveler, residenceNumber: event.target.value })} />
+                      </div>
+
+                      <div className="traveler-form-field">
+                        <label className="form-label">تاريخ انتهاء الإقامة *</label>
+                        <input type="date" className="form-control" value={traveler.residenceExpiryDate?.slice(0, 10) || ""} onChange={(event) => setTraveler({ ...traveler, residenceExpiryDate: event.target.value || null })} />
                       </div>
 
                       <div className="col-md-6 mb-3">
@@ -198,7 +286,7 @@ export function TravelerEditPanel({
                         <input className="form-control" value={traveler.email || ""} onChange={(event) => setTraveler({ ...traveler, email: event.target.value })} />
                       </div>
 
-                      <div className="col-12 mb-3">
+                      <div className="traveler-form-field traveler-form-field-wide">
                         <label className="form-label">ملاحظات</label>
                         <textarea className="form-control" rows={4} value={traveler.notes || ""} onChange={(event) => setTraveler({ ...traveler, notes: event.target.value })} />
                       </div>

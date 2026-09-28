@@ -3,6 +3,7 @@ import type { AuthUser } from "../../api/auth";
 import {
   deleteTraveler,
   getTravelers,
+  markTravelerDocumentsReviewed,
   unblockTraveler,
   type TravelerListItem
 } from "../../api/travelers";
@@ -40,6 +41,18 @@ function statusText(traveler: TravelerListItem) {
   return traveler.isBlocked ? "محظور" : "مسموح";
 }
 
+function formatDateTime(value: string | null | undefined) {
+  return value ? new Date(value).toLocaleString("fr-FR") : "-";
+}
+
+function isMainAdmin(user: AuthUser) {
+  return user.email?.toLowerCase() === "admin@rowad.local";
+}
+
+function can(user: AuthUser, permission: keyof NonNullable<AuthUser["permissions"]>) {
+  return isMainAdmin(user) || Boolean(user.permissions?.[permission]);
+}
+
 export function TravelersPanel({ user, activePath, onNavigate, onLogout }: TravelersPanelProps) {
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,6 +61,16 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [reviewingTravelerId, setReviewingTravelerId] = useState<number | null>(null);
+  const canCreateTraveler = can(user, "canCreateTravelers");
+  const canEditTraveler = can(user, "canEditTravelers");
+  const canArchiveTraveler = can(user, "canArchiveTravelers");
+  const canCreateTrip = can(user, "canCreateTrips");
+  const canViewTrips = can(user, "canViewTrips");
+  const canBlockTraveler = can(user, "canBlockTravelers");
+  const canUnblockTraveler = can(user, "canUnblockTravelers");
+  const canExportReports = can(user, "canExportReports");
+  const canReviewDocuments = can(user, "canViewDocuments") && can(user, "canUploadDocuments");
 
   useEffect(() => {
     let cancelled = false;
@@ -59,7 +82,7 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
       try {
         const items = await getTravelers(searchTerm, false, false);
         if (!cancelled) {
-          setTravelers(items);
+          setTravelers(items.filter((traveler) => !traveler.documentsReviewed));
         }
       } catch (error) {
         if (cancelled) {
@@ -122,6 +145,27 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
     }
   }
 
+  async function handleMarkDocumentsReviewed(id: number) {
+    setActionMessage(null);
+    setReviewingTravelerId(id);
+
+    try {
+      await markTravelerDocumentsReviewed(id);
+      setActionMessage("تم تدقيق وثائق المسافر ونقله إلى مركز الوثائق.");
+      setTravelers((current) => current.filter((traveler) => traveler.id !== id));
+      setRefreshToken((value) => value + 1);
+    } catch (error) {
+      if (error instanceof Error && error.message === "UNAUTHORIZED") {
+        onLogout();
+        return;
+      }
+
+      setActionMessage(error instanceof Error ? error.message : "تعذر تأكيد تدقيق الوثائق.");
+    } finally {
+      setReviewingTravelerId((current) => (current === id ? null : current));
+    }
+  }
+
   function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSearchTerm(searchInput);
@@ -140,32 +184,38 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
             </div>
 
             <div className="action-bar mb-0">
-              <button type="button" className="btn btn-gold" onClick={() => onNavigate("/travelers/create")}>
-                + تسجيل مسافر جديد
-              </button>
-
-              <div className="dropdown">
-                <button className="btn btn-outline-gold dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                  التقارير
+              {canCreateTraveler && (
+                <button type="button" className="btn btn-gold" onClick={() => onNavigate("/travelers/create")}>
+                  + تسجيل مسافر جديد
                 </button>
+              )}
 
-                <ul className="dropdown-menu">
-                  <li>
-                    <button type="button" className="dropdown-item" onClick={() => window.location.assign("/Travelers/ExportToExcel")}>
-                      تصدير Excel
-                    </button>
-                  </li>
-                  <li>
-                    <button type="button" className="dropdown-item" onClick={() => window.location.assign("/Travelers/ExportToPdf")}>
-                      تصدير PDF
-                    </button>
-                  </li>
-                </ul>
-              </div>
+              {canExportReports && (
+                <div className="dropdown">
+                  <button className="btn btn-outline-gold dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    التقارير
+                  </button>
 
-              <button type="button" className="btn btn-outline-secondary" onClick={() => onNavigate("/trips")}>
-                سجل الرحلات
-              </button>
+                  <ul className="dropdown-menu">
+                    <li>
+                      <button type="button" className="dropdown-item" onClick={() => window.location.assign("/Travelers/ExportToExcel")}>
+                        تصدير Excel
+                      </button>
+                    </li>
+                    <li>
+                      <button type="button" className="dropdown-item" onClick={() => window.location.assign("/Travelers/ExportToPdf")}>
+                        تصدير PDF
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              )}
+
+              {canViewTrips && (
+                <button type="button" className="btn btn-outline-secondary" onClick={() => onNavigate("/trips")}>
+                  سجل الرحلات
+                </button>
+              )}
             </div>
           </div>
 
@@ -220,6 +270,7 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
                     <th>الهاتف</th>
                     <th>عدد العمرات</th>
                     <th>الحالة</th>
+                    <th>تاريخ ووقت الطلب</th>
                     <th className="text-center">الإجراءات</th>
                   </tr>
                 </thead>
@@ -234,6 +285,7 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
                       <td>{traveler.phoneNumber}</td>
                       <td><span className="badge badge-soft-warning">{traveler.tripCount}</span></td>
                       <td><span className={statusClass(traveler)}>{statusText(traveler)}</span></td>
+                      <td>{formatDateTime(traveler.createdAt)}</td>
 
                       <td className="text-center">
                         <div className="dropdown rowad-actions-dropdown">
@@ -255,31 +307,50 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
                               </button>
                             </li>
 
-                            <li>
-                              <button type="button" className="dropdown-item" onClick={() => onNavigate(`/travelers/${traveler.id}/edit`)}>
-                                تعديل البيانات
-                              </button>
-                            </li>
+                            {canEditTraveler && (
+                              <li>
+                                <button type="button" className="dropdown-item" onClick={() => onNavigate(`/travelers/${traveler.id}/edit`)}>
+                                  تعديل البيانات
+                                </button>
+                              </li>
+                            )}
 
-                            <li>
-                              <button
-                                type="button"
-                                className="dropdown-item"
-                                onClick={() => onNavigate(`/trips/create?travelerId=${traveler.id}`)}
-                              >
-                                إضافة عمرة
-                              </button>
-                            </li>
+                            {canCreateTrip && (
+                              <li>
+                                <button
+                                  type="button"
+                                  className="dropdown-item"
+                                  onClick={() => onNavigate(`/trips/create?travelerId=${traveler.id}`)}
+                                >
+                                  إضافة عمرة
+                                </button>
+                              </li>
+                            )}
 
-                            <li><hr className="dropdown-divider" /></li>
+                            {canReviewDocuments && !traveler.documentsReviewed && (
+                              <li>
+                                <button
+                                  type="button"
+                                  className="dropdown-item text-success"
+                                  disabled={reviewingTravelerId === traveler.id}
+                                  onClick={() => void handleMarkDocumentsReviewed(traveler.id)}
+                                >
+                                  {reviewingTravelerId === traveler.id ? "جاري التدقيق..." : "تم التدقيق"}
+                                </button>
+                              </li>
+                            )}
 
-                            {traveler.isBlocked ? (
+                            {(canBlockTraveler || canUnblockTraveler || canArchiveTraveler) && <li><hr className="dropdown-divider" /></li>}
+
+                            {traveler.isBlocked && canUnblockTraveler && (
                               <li>
                                 <button type="button" className="dropdown-item text-success" onClick={() => void handleUnblock(traveler.id)}>
                                   رفع الحظر
                                 </button>
                               </li>
-                            ) : (
+                            )}
+
+                            {!traveler.isBlocked && canBlockTraveler && (
                               <li>
                                 <button type="button" className="dropdown-item text-warning" onClick={() => onNavigate(`/travelers/${traveler.id}/block`)}>
                                   حظر المسافر
@@ -287,11 +358,13 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
                               </li>
                             )}
 
-                            <li>
-                              <button type="button" className="dropdown-item text-danger" onClick={() => void handleDelete(traveler.id)}>
-                                حذف / أرشفة
-                              </button>
-                            </li>
+                            {canArchiveTraveler && (
+                              <li>
+                                <button type="button" className="dropdown-item text-danger" onClick={() => void handleDelete(traveler.id)}>
+                                  حذف / أرشفة
+                                </button>
+                              </li>
+                            )}
                           </ul>
                         </div>
                       </td>

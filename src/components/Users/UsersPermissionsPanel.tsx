@@ -11,126 +11,147 @@ type UsersPermissionsPanelProps = {
   onLogout: () => void;
 };
 
-type PermissionFieldKey = Exclude<
-  keyof UserPermissions,
-  "id" | "userId" | "userFullName" | "userEmail"
->;
+type PermissionFieldKey = Exclude<keyof UserPermissions, "id" | "userId" | "userFullName" | "userEmail">;
 
-type PermissionField = {
-  key: PermissionFieldKey;
-  title: string;
-  note: string;
-  danger?: boolean;
+type PermissionAction = {
+  key: string;
+  label: string;
 };
 
-type PermissionGroup = {
+type PermissionUnit = {
+  key: string;
   title: string;
   description: string;
-  fields: PermissionField[];
+  icon: string;
+  fields: Partial<Record<string, PermissionFieldKey>>;
 };
 
-const PERMISSION_GROUPS: PermissionGroup[] = [
+const ACTIONS: PermissionAction[] = [
+  { key: "view", label: "عرض" },
+  { key: "add", label: "إضافة" },
+  { key: "edit", label: "تعديل" },
+  { key: "delete", label: "حذف" },
+  { key: "archive", label: "أرشفة" },
+  { key: "restore", label: "استرجاع" },
+  { key: "export", label: "تصدير" }
+];
+
+const PERMISSION_UNITS: PermissionUnit[] = [
   {
+    key: "dashboard",
+    title: "لوحة التحكم",
+    description: "الوصول إلى مؤشرات النظام والملخصات.",
+    icon: "لو",
+    fields: { view: "canAccessDashboard" }
+  },
+  {
+    key: "travelers",
     title: "المسافرون",
-    description: "التحكم في عرض، إضافة، تعديل، أرشفة واسترجاع بيانات المسافرين.",
-    fields: [
-      { key: "canViewTravelers", title: "مشاهدة المسافرين", note: "السماح بالدخول إلى شاشة المسافرين وتفاصيلهم." },
-      { key: "canCreateTravelers", title: "إضافة مسافر", note: "تسجيل مسافر جديد وقراءة بيانات الجواز." },
-      { key: "canEditTravelers", title: "تعديل مسافر", note: "تعديل البيانات الشخصية وبيانات الجواز." },
-      {
-        key: "canArchiveTravelers",
-        title: "أرشفة مسافر",
-        note: "نقل المسافر إلى الأرشيف بدون حذف نهائي.",
-        danger: true
-      },
-      { key: "canRestoreTravelers", title: "استرجاع مسافر", note: "إعادة المسافر من الأرشيف إلى السجلات النشطة." }
-    ]
+    description: "إدارة بيانات المسافرين.",
+    icon: "مس",
+    fields: {
+      view: "canViewTravelers",
+      add: "canCreateTravelers",
+      edit: "canEditTravelers",
+      archive: "canArchiveTravelers",
+      restore: "canRestoreTravelers"
+    }
   },
   {
+    key: "trips",
     title: "الرحلات",
-    description: "إدارة رحلات العمرة وربطها بملفات المسافرين.",
-    fields: [
-      { key: "canViewTrips", title: "مشاهدة الرحلات", note: "عرض سجل الرحلات والبيانات المرتبطة بها." },
-      { key: "canCreateTrips", title: "إضافة رحلة", note: "إضافة رحلة عمرة جديدة لمسافر مسموح." }
-    ]
+    description: "إدارة رحلات العمرة.",
+    icon: "رح",
+    fields: {
+      view: "canViewTrips",
+      add: "canCreateTrips",
+      archive: "canArchiveTrips",
+      restore: "canRestoreTrips"
+    }
   },
   {
+    key: "documents",
     title: "الوثائق",
-    description: "صلاحيات التعامل مع المستندات والصور المرفوعة لملفات المسافرين.",
-    fields: [
-      { key: "canViewDocuments", title: "مشاهدة الوثائق", note: "عرض الوثائق المرتبطة بالمسافر." },
-      { key: "canUploadDocuments", title: "رفع وثائق", note: "رفع صورة شخصية، تأشيرة، نسخة جواز أو ملف PDF." },
-      {
-        key: "canArchiveDocuments",
-        title: "أرشفة وثائق",
-        note: "نقل الوثائق إلى الأرشيف.",
-        danger: true
-      },
-      { key: "canRestoreDocuments", title: "استرجاع وثائق", note: "إعادة الوثائق المؤرشفة إلى ملف المسافر." }
-    ]
+    description: "إدارة المستندات والوثائق.",
+    icon: "وث",
+    fields: {
+      view: "canViewDocuments",
+      add: "canUploadDocuments",
+      archive: "canArchiveDocuments",
+      restore: "canRestoreDocuments"
+    }
   },
   {
+    key: "blocks",
     title: "الحظر والشكاوى",
-    description: "صلاحيات حساسة مرتبطة بمنع المسافر أو رفع المنع عنه.",
-    fields: [
-      { key: "canViewBlocks", title: "مشاهدة المحظورين", note: "عرض قائمة المسافرين المحظورين وأسباب الحظر." },
-      {
-        key: "canBlockTravelers",
-        title: "حظر مسافر",
-        note: "منع مسافر من المتابعة داخل النظام.",
-        danger: true
-      },
-      { key: "canUnblockTravelers", title: "رفع الحظر", note: "إلغاء حالة الحظر عن مسافر." }
-    ]
+    description: "صلاحيات حساسة متعلقة بمنع أو رفع المنع.",
+    icon: "حظ",
+    fields: {
+      view: "canViewBlocks",
+      add: "canBlockTravelers",
+      delete: "canUnblockTravelers"
+    }
   },
   {
+    key: "reports",
     title: "التقارير والرقابة",
-    description: "التحكم في التقارير الرسمية وسجل العمليات.",
-    fields: [
-      { key: "canViewReports", title: "مشاهدة التقارير", note: "عرض تقارير النظام والإحصائيات." },
-      {
-        key: "canExportReports",
-        title: "تصدير التقارير",
-        note: "تصدير Excel و PDF للبيانات.",
-        danger: true
-      },
-      {
-        key: "canViewAuditLogs",
-        title: "مشاهدة سجل العمليات",
-        note: "عرض جميع العمليات التي تمت داخل النظام.",
-        danger: true
-      }
-    ]
+    description: "عرض التقارير وسجل العمليات.",
+    icon: "تق",
+    fields: {
+      view: "canViewReports",
+      export: "canExportReports",
+      archive: "canViewAuditLogs"
+    }
   },
   {
+    key: "notifications",
+    title: "الإشعارات",
+    description: "الوصول إلى إشعارات النظام الخاصة بالمستخدم.",
+    icon: "إش",
+    fields: { view: "canViewNotifications" }
+  },
+  {
+    key: "accounting",
     title: "المحاسبة والمالية",
-    description: "صلاحيات فريق المالية والمحاسبة: الحسابات، البنوك، الفواتير، السندات، المصاريف والتقارير المالية.",
-    fields: [
-      { key: "canViewAccounting", title: "مشاهدة المحاسبة", note: "إظهار واجهة المحاسبة والملخصات المالية." },
-      { key: "canManageAccounting", title: "إدارة المحاسبة بالكامل", note: "صلاحية شاملة على كل عمليات المحاسبة والمالية.", danger: true },
-      { key: "canManageChartOfAccounts", title: "دليل الحسابات", note: "عرض وإدارة شجرة الحسابات." },
-      { key: "canManageJournalEntries", title: "القيود اليومية", note: "إدارة القيود اليومية والترحيلات المحاسبية." },
-      { key: "canManageInvoices", title: "الفواتير", note: "إنشاء ومتابعة فواتير العملاء والمسافرين." },
-      { key: "canManageReceiptVouchers", title: "سندات القبض", note: "تسجيل سندات القبض وربطها بالفواتير والبنوك." },
-      { key: "canManagePaymentVouchers", title: "سندات الصرف", note: "تسجيل سندات الصرف والمدفوعات." },
-      { key: "canManageExpenses", title: "المصاريف", note: "إدارة مصاريف الرحلات والعمليات." },
-      { key: "canManageBanks", title: "البنوك", note: "إدارة الحسابات البنكية والحركات المرتبطة بها." },
-      { key: "canViewFinancialReports", title: "التقارير المالية", note: "عرض تقارير المالية والتحليلات." }
-    ]
+    description: "إدارة الحسابات والفواتير والمصاريف.",
+    icon: "ما",
+    fields: {
+      view: "canViewAccounting",
+      add: "canManageAccounting",
+      edit: "canManageInvoices",
+      delete: "canManageExpenses",
+      restore: "canManageReceiptVouchers",
+      archive: "canManagePaymentVouchers",
+      export: "canViewFinancialReports"
+    }
   },
   {
+    key: "accounting-details",
+    title: "تفاصيل المحاسبة",
+    description: "البنوك، القيود اليومية ودليل الحسابات.",
+    icon: "حس",
+    fields: {
+      view: "canManageChartOfAccounts",
+      edit: "canManageJournalEntries",
+      archive: "canManageBanks"
+    }
+  },
+  {
+    key: "system",
     title: "إدارة النظام",
-    description: "صلاحيات إدارية عالية يجب أن تمنح للمديرين فقط.",
-    fields: [
-      {
-        key: "canManageUsers",
-        title: "إدارة المستخدمين",
-        note: "إنشاء المستخدمين، تعطيل الحسابات، وتعديل الصلاحيات.",
-        danger: true
-      }
-    ]
+    description: "إعدادات النظام وإدارة المستخدمين.",
+    icon: "نظ",
+    fields: {
+      view: "canManageUsers"
+    }
   }
 ];
+
+const EMPTY_FILTER = "all";
+
+const ALL_PERMISSION_FIELDS = Array.from(
+  new Set(PERMISSION_UNITS.flatMap((unit) => Object.values(unit.fields).filter(Boolean)))
+) as PermissionFieldKey[];
 
 function createEmptyPermissions(): UserPermissions {
   return {
@@ -138,6 +159,8 @@ function createEmptyPermissions(): UserPermissions {
     userId: "",
     userFullName: "",
     userEmail: "",
+    canAccessDashboard: false,
+    canViewNotifications: false,
     canManageUsers: false,
     canViewTravelers: false,
     canCreateTravelers: false,
@@ -174,7 +197,54 @@ function createEmptyPermissions(): UserPermissions {
 type SelectedUser = {
   fullName: string;
   email: string;
+  isActive?: boolean;
 };
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle cx="11" cy="11" r="7" />
+      <path d="m16.5 16.5 4 4" />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M20 21a8 8 0 0 0-16 0" />
+      <circle cx="12" cy="8" r="4" />
+    </svg>
+  );
+}
+
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m4 7 8 6 8-6" />
+    </svg>
+  );
+}
+
+function ResetIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M4 12a8 8 0 1 0 2.3-5.6" />
+      <path d="M4 4v6h6" />
+    </svg>
+  );
+}
+
+function SaveIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+      <path d="M17 21v-8H7v8" />
+      <path d="M7 3v5h8" />
+    </svg>
+  );
+}
 
 export function UsersPermissionsPanel({
   user,
@@ -184,19 +254,36 @@ export function UsersPermissionsPanel({
   onLogout
 }: UsersPermissionsPanelProps) {
   const [permissions, setPermissions] = useState<UserPermissions | null>(null);
+  const [initialPermissions, setInitialPermissions] = useState<UserPermissions | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [busyMessage, setBusyMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<SelectedUser | null>(null);
+  const [query, setQuery] = useState("");
+  const [unitFilter, setUnitFilter] = useState(EMPTY_FILTER);
 
-  const selectedUserLabel = useMemo(() => {
-    if (!selectedUser) {
-      return "—";
+  const selectedUserLabel = selectedUser?.fullName || permissions?.userFullName || "—";
+  const selectedUserEmail = selectedUser?.email || permissions?.userEmail || "—";
+
+  const filteredUnits = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return PERMISSION_UNITS.filter((unit) => {
+      const matchesUnit = unitFilter === EMPTY_FILTER || unit.key === unitFilter;
+      const searchableText = `${unit.title} ${unit.description}`.toLowerCase();
+      return matchesUnit && (!normalizedQuery || searchableText.includes(normalizedQuery));
+    });
+  }, [query, unitFilter]);
+
+  const selectedCount = useMemo(() => {
+    if (!permissions) {
+      return 0;
     }
 
-    return selectedUser.fullName;
-  }, [selectedUser]);
+    return ALL_PERMISSION_FIELDS.filter((field) => permissions[field]).length;
+  }, [permissions]);
 
   useEffect(() => {
     let cancelled = false;
@@ -212,11 +299,17 @@ export function UsersPermissionsPanel({
           return;
         }
 
+        const foundUser = users.find((item) => item.id === userId);
         setPermissions(permissionsData);
-        setSelectedUser(users.find((item) => item.id === userId) ? {
-          fullName: users.find((item) => item.id === userId)!.fullName,
-          email: users.find((item) => item.id === userId)!.email
-        } : { fullName: permissionsData.userFullName, email: permissionsData.userEmail });
+        setInitialPermissions(permissionsData);
+        setSelectedUser(foundUser ? {
+          fullName: foundUser.fullName,
+          email: foundUser.email,
+          isActive: foundUser.isActive
+        } : {
+          fullName: permissionsData.userFullName,
+          email: permissionsData.userEmail
+        });
       } catch (error) {
         if (cancelled) {
           return;
@@ -247,6 +340,28 @@ export function UsersPermissionsPanel({
     setPermissions((current) => (current ? ({ ...current, [field]: checked } as UserPermissions) : current));
   }
 
+  function handleUnitToggle(unit: PermissionUnit, checked: boolean) {
+    setPermissions((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const next = { ...current } as UserPermissions;
+      Object.values(unit.fields).forEach((field) => {
+        if (field) {
+          next[field] = checked;
+        }
+      });
+      return next;
+    });
+  }
+
+  function handleReset() {
+    setPermissions(initialPermissions ?? createEmptyPermissions());
+    setMessage(null);
+    setError(null);
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!permissions) {
@@ -254,13 +369,16 @@ export function UsersPermissionsPanel({
     }
 
     setSaving(true);
+    setBusyMessage("جاري حفظ الصلاحيات...");
     setError(null);
     setMessage(null);
 
     try {
       const updated = await updateUserPermissions(userId, permissions);
       setPermissions(updated);
+      setInitialPermissions(updated);
       setMessage("تم حفظ الصلاحيات.");
+      onNavigate("/users");
     } catch (error) {
       if (error instanceof Error && error.message === "UNAUTHORIZED") {
         onLogout();
@@ -270,48 +388,57 @@ export function UsersPermissionsPanel({
       setError(error instanceof Error ? error.message : "Failed to save permissions");
     } finally {
       setSaving(false);
+      setBusyMessage("");
     }
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell permissions-page-shell">
       <SignedInSidebar user={user} activePath={activePath} onNavigate={onNavigate} onLogout={onLogout} />
 
       <main className="main-panel">
-        <div className="page-card">
-          <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        {busyMessage && (
+          <div className="rowad-loading-overlay" role="status" aria-live="polite">
+            <span className="rowad-loading-spinner" />
+            <strong>{busyMessage}</strong>
+          </div>
+        )}
+
+        <div className="page-card permissions-manager" dir="rtl">
+          <div className="permissions-header">
             <div>
+              <div className="permissions-breadcrumb">إدارة النظام / المستخدمون / صلاحيات المستخدم</div>
               <h1 className="page-title mb-1">صلاحيات المستخدم</h1>
               <p className="rowad-text-muted mb-0">
-                إدارة دقيقة لصلاحيات الموظف حسب الشاشات والعمليات الحساسة داخل النظام.
+                إدارة دقيقة لصلاحيات الموظف حسب الوحدات والعمليات داخل النظام.
               </p>
             </div>
 
-            <button type="button" className="btn btn-outline-secondary" onClick={() => onNavigate("/users")}>
+            <button type="button" className="btn btn-outline-gold permissions-back-button" onClick={() => onNavigate("/users")}>
               رجوع
             </button>
           </div>
 
-          <div className="filter-panel mb-4">
-            <div className="row align-items-center">
-              <div className="col-md-6 mb-3 mb-md-0">
-                <small className="rowad-text-muted d-block mb-1">اسم الموظف</small>
-                <div className="permission-user-name">{selectedUserLabel}</div>
-              </div>
-
-              <div className="col-md-6">
-                <small className="rowad-text-muted d-block mb-1">البريد الإلكتروني</small>
-                <div className="permission-user-email">{selectedUser?.email ?? permissions?.userEmail ?? "—"}</div>
+          <div className="permissions-user-strip">
+            <div className="permissions-user-cell">
+              <span className="permissions-user-icon"><UserIcon /></span>
+              <div>
+                <small>اسم الموظف</small>
+                <strong>{selectedUserLabel}</strong>
               </div>
             </div>
-          </div>
-
-          <div className="permission-guidance mb-4">
-            <div>
-              <strong>ملاحظة مهمة:</strong>
-              الصلاحيات هنا تحدد ما يستطيع الموظف مشاهدته أو تنفيذه. العمليات الحساسة مثل الحظر، الأرشفة، التصدير،
-              وسجل العمليات يجب أن تعطى فقط للموظفين المصرح لهم.
+            <div className="permissions-user-cell">
+              <span className="permissions-user-icon"><MailIcon /></span>
+              <div>
+                <small>البريد الإلكتروني</small>
+                <strong>{selectedUserEmail}</strong>
+              </div>
             </div>
+            <div className="permissions-status-chip">
+              <span />
+              {selectedUser?.isActive === false ? "غير نشط" : "نشط"}
+            </div>
+            <div className="permissions-count-chip">{selectedCount} صلاحية</div>
           </div>
 
           {error && <div className="alert alert-danger">{error}</div>}
@@ -323,51 +450,113 @@ export function UsersPermissionsPanel({
               <input type="hidden" name="id" value={permissions.id} />
               <input type="hidden" name="userId" value={permissions.userId} />
 
-              {PERMISSION_GROUPS.map((group) => (
-                <div className="permission-section mb-4" key={group.title}>
-                  <div className="permission-section-header">
-                    <div>
-                      <h4>{group.title}</h4>
-                      <p>{group.description}</p>
-                    </div>
-                  </div>
-
-                  <div className="permission-grid">
-                    {group.fields.map((field) => (
-                      <label key={field.key} className={field.danger ? "permission-card danger-zone" : "permission-card"}>
-                        <input
-                          type="checkbox"
-                          checked={permissions[field.key]}
-                          onChange={(event) => handlePermissionChange(field.key, event.target.checked)}
-                          disabled={saving}
-                        />
-                        <span>
-                          <strong>{field.title}</strong>
-                          <small>{field.note}</small>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-
-              <div className="permission-save-panel">
-                <div>
-                  <h5 className="mb-1">حفظ الصلاحيات</h5>
-                  <small className="rowad-text-muted">
-                    سيتم تطبيق الصلاحيات بعد حفظها، وقد يحتاج الموظف إلى تسجيل الدخول من جديد.
-                  </small>
+              <div className="permissions-toolbar">
+                <div className="permissions-search">
+                  <SearchIcon />
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="البحث في الوحدات..."
+                  />
                 </div>
 
-                <div className="action-bar mb-0">
-                  <button type="submit" className="btn btn-gold" disabled={saving}>
-                    حفظ الصلاحيات
-                  </button>
+                <select value={unitFilter} onChange={(event) => setUnitFilter(event.target.value)} aria-label="تصفية الوحدات">
+                  <option value={EMPTY_FILTER}>جميع الوحدات</option>
+                  {PERMISSION_UNITS.map((unit) => (
+                    <option key={unit.key} value={unit.key}>{unit.title}</option>
+                  ))}
+                </select>
 
-                  <button type="button" className="btn btn-outline-secondary" onClick={() => onNavigate("/users")}>
-                    إلغاء
-                  </button>
-                </div>
+                <button type="button" className="btn btn-outline-gold permissions-reset-button" onClick={handleReset} disabled={saving}>
+                  <ResetIcon />
+                  إعادة تعيين
+                </button>
+              </div>
+
+              <div className="permissions-table-wrap">
+                <table className="permissions-table">
+                  <thead>
+                    <tr>
+                      <th className="permissions-unit-col">الوحدة</th>
+                      <th>الوصف</th>
+                      {ACTIONS.map((action) => (
+                        <th key={action.key}>{action.label}</th>
+                      ))}
+                      <th>الكل</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUnits.map((unit) => {
+                      const unitFields = Object.values(unit.fields).filter(Boolean) as PermissionFieldKey[];
+                      const canToggleAll = unitFields.length > 1;
+                      const allChecked = canToggleAll && unitFields.every((field) => permissions[field]);
+
+                      return (
+                        <tr key={unit.key}>
+                          <td className="permissions-unit-name">
+                            <strong>{unit.title}</strong>
+                          </td>
+                          <td className="permissions-unit-description">{unit.description}</td>
+                          {ACTIONS.map((action) => {
+                            const field = unit.fields[action.key];
+                            return (
+                              <td key={action.key} className="permissions-check-cell">
+                                {field ? (
+                                  <label className="permissions-checkbox">
+                                    <input
+                                      type="checkbox"
+                                      checked={permissions[field]}
+                                      onChange={(event) => handlePermissionChange(field, event.target.checked)}
+                                      disabled={saving}
+                                      aria-label={`${unit.title} - ${action.label}`}
+                                    />
+                                    <span />
+                                  </label>
+                                ) : (
+                                  <span className="permissions-empty-cell" aria-hidden="true" />
+                                )}
+                              </td>
+                            );
+                          })}
+                          <td className="permissions-check-cell">
+                            <label className="permissions-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={allChecked}
+                                onChange={(event) => handleUnitToggle(unit, event.target.checked)}
+                                disabled={saving || !canToggleAll}
+                                aria-label={`${unit.title} - الكل`}
+                              />
+                              <span />
+                            </label>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {filteredUnits.length === 0 && (
+                <div className="state-box">لا توجد وحدات مطابقة للبحث.</div>
+              )}
+
+              <div className="permission-guidance permissions-note">
+                <strong>ملاحظة مهمة:</strong>
+                <span>
+                  بعض الصلاحيات حساسة مثل الحظر، الأرشفة، التصدير، وسجل العمليات. يجب أن تعطى فقط للمستخدمين المصرح لهم.
+                </span>
+              </div>
+
+              <div className="permissions-actions">
+                <button type="submit" className="btn btn-gold" disabled={saving}>
+                  <SaveIcon />
+                  {saving ? "جاري الحفظ..." : "حفظ الصلاحيات"}
+                </button>
+                <button type="button" className="btn btn-outline-secondary" onClick={() => onNavigate("/users")} disabled={saving}>
+                  إلغاء
+                </button>
               </div>
             </form>
           )}

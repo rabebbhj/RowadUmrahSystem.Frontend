@@ -19,6 +19,11 @@ type SidebarItem = {
   icon: (props: IconProps) => JSX.Element;
 };
 
+type PageTitle = {
+  eyebrow: string;
+  title: string;
+};
+
 const iconProps = {
   viewBox: "0 0 24 24",
   fill: "none",
@@ -142,11 +147,13 @@ const sidebarItems: SidebarItem[] = [
   { label: "المسافرون", path: "/travelers", canShow: (user) => Boolean(user.permissions?.canViewTravelers), icon: UsersRoundIcon },
   { label: "الرحلات", path: "/trips", canShow: (user) => Boolean(user.permissions?.canViewTrips), icon: BusFrontIcon },
   { label: "المحاسبة", path: "/accounting", canShow: (user) => Boolean(user.permissions?.canViewAccounting), icon: CalculatorIcon },
-  { label: "الباقات", path: "/settings", canShow: (user) => user.roles.some((role) => role.toLowerCase() === "admin"), icon: LandmarkIcon },
-  { label: "قواعد التسعير", path: "/pricing-rules", canShow: (user) => user.roles.some((role) => role.toLowerCase() === "admin"), icon: SettingsIcon },
-  { label: "الاستثناءات", path: "/pricing-exceptions", canShow: (user) => user.roles.some((role) => role.toLowerCase() === "admin"), icon: SettingsIcon },
-  { label: "مجموعات الجنسيات", path: "/nationality-groups", canShow: (user) => user.roles.some((role) => role.toLowerCase() === "admin"), icon: UsersRoundIcon },
-  { label: "الخدمات والإضافات", path: "/services-addons", canShow: (user) => user.roles.some((role) => role.toLowerCase() === "admin"), icon: SettingsIcon },
+  {
+    label: "الباقات",
+    path: "/settings",
+    activePaths: ["/settings", "/pricing-rules", "/pricing-exceptions", "/nationality-groups", "/services-addons"],
+    canShow: (user) => user.roles.some((role) => role.toLowerCase() === "admin"),
+    icon: LandmarkIcon
+  },
   { label: "الوثائق", path: "/documents", canShow: (user) => Boolean(user.permissions?.canViewDocuments), icon: FileTextIcon },
   {
     label: "الشكاوى والحظر",
@@ -158,7 +165,42 @@ const sidebarItems: SidebarItem[] = [
   { label: "سجل العمليات", path: "/audit-logs", canShow: (user) => Boolean(user.permissions?.canViewAuditLogs), icon: ClockIcon },
   { label: "المستخدمون", path: "/users", canShow: (user) => user.roles.some((role) => role.toLowerCase() === "admin"), icon: UsersRoundIcon },
   { label: "الإعدادات", path: "/settings/general", activePaths: ["/settings/general"], canShow: (user) => user.roles.some((role) => role.toLowerCase() === "admin"), icon: SettingsIcon },
-  { label: "الإشعارات", path: "/notifications", canShow: () => true, icon: BellIcon }
+  { label: "الإشعارات", path: "/notifications", canShow: (user) => Boolean(user.permissions?.canViewNotifications), icon: BellIcon }
+];
+
+const rowadLogoSrc = `${import.meta.env.BASE_URL}landingpage/company-logo.png`;
+
+const pageTitles: { match: (path: string) => boolean; title: PageTitle }[] = [
+  { match: (path) => path === "/admin", title: { eyebrow: "Dashboard", title: "لوحة التحكم" } },
+  { match: (path) => path.startsWith("/travelers/blocked"), title: { eyebrow: "Travelers", title: "الشكاوى والحظر" } },
+  { match: (path) => path.startsWith("/travelers/deleted"), title: { eyebrow: "Travelers", title: "أرشيف المسافرين" } },
+  { match: (path) => path.startsWith("/travelers/create"), title: { eyebrow: "Travelers", title: "تسجيل مسافر جديد" } },
+  { match: (path) => path.startsWith("/travelers"), title: { eyebrow: "Travelers", title: "المسافرون" } },
+  { match: (path) => path.startsWith("/trips/create"), title: { eyebrow: "Trips", title: "إضافة رحلة" } },
+  { match: (path) => path.startsWith("/trips/deleted"), title: { eyebrow: "Trips", title: "أرشيف الرحلات" } },
+  { match: (path) => path.startsWith("/trips"), title: { eyebrow: "Trips", title: "الرحلات" } },
+  { match: (path) => path.startsWith("/users/create"), title: { eyebrow: "Users", title: "إضافة موظف جديد" } },
+  { match: (path) => path.startsWith("/users") && path.includes("/permissions"), title: { eyebrow: "Users", title: "صلاحيات المستخدم" } },
+  { match: (path) => path.startsWith("/users"), title: { eyebrow: "Users", title: "إدارة المستخدمين" } },
+  { match: (path) => path.startsWith("/accounting"), title: { eyebrow: "Accounting", title: "المحاسبية" } },
+  { match: (path) => path.startsWith("/financial-reports"), title: { eyebrow: "Reports", title: "التقارير المالية" } },
+  { match: (path) => path.startsWith("/accounts"), title: { eyebrow: "Accounting", title: "دليل الحسابات" } },
+  { match: (path) => path.startsWith("/bank-accounts"), title: { eyebrow: "Accounting", title: "الحسابات البنكية" } },
+  { match: (path) => path.startsWith("/customers"), title: { eyebrow: "Accounting", title: "العملاء" } },
+  { match: (path) => path.startsWith("/invoices"), title: { eyebrow: "Accounting", title: "الفواتير" } },
+  { match: (path) => path.startsWith("/expenses"), title: { eyebrow: "Accounting", title: "المصاريف" } },
+  { match: (path) => path.startsWith("/journal-entries"), title: { eyebrow: "Accounting", title: "القيود اليومية" } },
+  { match: (path) => path.startsWith("/receipt-vouchers"), title: { eyebrow: "Accounting", title: "سندات القبض" } },
+  { match: (path) => path.startsWith("/payment-vouchers"), title: { eyebrow: "Accounting", title: "سندات الصرف" } },
+  { match: (path) => path.startsWith("/settings/general"), title: { eyebrow: "Settings", title: "الإعدادات" } },
+  { match: (path) => path.startsWith("/settings"), title: { eyebrow: "Packages", title: "الباقات" } },
+  { match: (path) => path.startsWith("/nationality-groups"), title: { eyebrow: "Pricing", title: "مجموعات الجنسيات" } },
+  { match: (path) => path.startsWith("/pricing-rules"), title: { eyebrow: "Pricing", title: "قواعد التسعير" } },
+  { match: (path) => path.startsWith("/pricing-exceptions"), title: { eyebrow: "Pricing", title: "الاستثناءات" } },
+  { match: (path) => path.startsWith("/services-addons"), title: { eyebrow: "Services", title: "الخدمات والإضافات" } },
+  { match: (path) => path.startsWith("/documents"), title: { eyebrow: "Documents", title: "الوثائق" } },
+  { match: (path) => path.startsWith("/audit"), title: { eyebrow: "Audit", title: "سجل العمليات" } },
+  { match: (path) => path.startsWith("/notifications"), title: { eyebrow: "Notifications", title: "الإشعارات" } }
 ];
 
 function isItemActive(item: SidebarItem, activePath: string) {
@@ -169,11 +211,15 @@ function isItemActive(item: SidebarItem, activePath: string) {
 export function SignedInSidebar({ user, activePath, onNavigate, onLogout }: SignedInSidebarProps) {
   const userName = user.fullName || user.email || "مستخدم";
   const initial = userName.trim().charAt(0) || "ر";
+  const headerTitle = pageTitles.find((item) => item.match(activePath))?.title ?? { eyebrow: "Rowad", title: "رواد العمرة" };
 
   return (
+    <>
     <aside className="rowad-sidebar" aria-label="القائمة الرئيسية">
       <div className="rowad-brand">
-        <div className="rowad-brand-mark">ر</div>
+        <div className="rowad-brand-logo">
+          <img src={rowadLogoSrc} alt="رواد العمرة" />
+        </div>
         <div className="rowad-brand-copy">
           <div className="rowad-brand-title">رواد العمرة</div>
           <div className="rowad-brand-subtitle">نظام الإدارة الذكي</div>
@@ -215,5 +261,19 @@ export function SignedInSidebar({ user, activePath, onNavigate, onLogout }: Sign
         تسجيل الخروج
       </button>
     </aside>
+      <header className="rowad-app-header">
+        <div className="rowad-app-header-title">
+          <span>{headerTitle.eyebrow}</span>
+          <h1>{headerTitle.title}</h1>
+        </div>
+        <div className="rowad-app-header-user">
+          <div>
+            <strong>{userName}</strong>
+            <small>{user.email}</small>
+          </div>
+          <div className="rowad-app-header-avatar">{initial}</div>
+        </div>
+      </header>
+    </>
   );
 }

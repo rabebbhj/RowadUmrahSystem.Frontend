@@ -16,6 +16,8 @@
   passportImagePath: string | null;
   passportExpiryDate: string | null;
   createdAt: string;
+  documentsReviewed: boolean;
+  documentsReviewedAt: string | null;
   tripCount: number;
   deletedAt: string | null;
   deletedBy: string | null;
@@ -39,7 +41,20 @@ export interface TravelerDocumentItem {
 
 export interface TravelerDetail extends TravelerListItem {
   passportImagePath: string | null;
+  firstNameArabic: string | null;
+  fatherNameArabic: string | null;
+  grandFatherNameArabic: string | null;
+  familyNameArabic: string | null;
+  firstNameEnglish: string | null;
+  fatherNameEnglish: string | null;
+  grandFatherNameEnglish: string | null;
+  familyNameEnglish: string | null;
+  profession: string | null;
+  birthCountry: string | null;
+  birthCity: string | null;
+  maritalStatus: string | null;
   residenceNumber: string | null;
+  residenceExpiryDate: string | null;
   blockReason: string | null;
   blockedAt: string | null;
   isDeleted: boolean;
@@ -53,11 +68,24 @@ export interface TravelerUpsertRequest {
   passportNumber: string;
   passportImagePath?: string | null;
   fullName: string;
+  firstNameArabic?: string | null;
+  fatherNameArabic?: string | null;
+  grandFatherNameArabic?: string | null;
+  familyNameArabic?: string | null;
+  firstNameEnglish?: string | null;
+  fatherNameEnglish?: string | null;
+  grandFatherNameEnglish?: string | null;
+  familyNameEnglish?: string | null;
   nationality: string;
   gender: string;
+  profession?: string | null;
+  birthCountry?: string | null;
+  birthCity?: string | null;
+  maritalStatus?: string | null;
   dateOfBirth: string;
   email?: string | null;
   residenceNumber?: string | null;
+  residenceExpiryDate?: string | null;
   passportExpiryDate?: string | null;
   phoneNumber: string;
   notes?: string | null;
@@ -72,9 +100,23 @@ export interface TravelerBlockRequest {
 export interface PassportOcrResult {
   passportNumber: string;
   fullName: string;
+  firstNameArabic: string;
+  fatherNameArabic: string;
+  grandFatherNameArabic: string;
+  familyNameArabic: string;
+  firstNameEnglish: string;
+  fatherNameEnglish: string;
+  grandFatherNameEnglish: string;
+  familyNameEnglish: string;
   nationality: string;
   gender: string;
+  profession: string;
+  birthCountry: string;
+  birthCity: string;
+  maritalStatus: string;
   dateOfBirth: string | null;
+  residenceNumber: string;
+  residenceExpiryDate: string | null;
   passportExpiryDate: string | null;
   mode: "ready" | "demo";
   message: string;
@@ -211,7 +253,8 @@ async function requestJson<T>(response: Response): Promise<T> {
 export async function getTravelers(
   search = "",
   includeDeleted = true,
-  onlyActive = false
+  onlyActive = false,
+  documentsReviewedOnly = false
 ): Promise<TravelerListItem[]> {
   const params = new URLSearchParams({
     includeDeleted: String(includeDeleted)
@@ -223,6 +266,10 @@ export async function getTravelers(
 
   if (onlyActive) {
     params.set("onlyActive", "true");
+  }
+
+  if (documentsReviewedOnly) {
+    params.set("documentsReviewedOnly", "true");
   }
 
   const query = `?${params.toString()}`;
@@ -306,6 +353,15 @@ export async function readPassportOcr(passportImage: File): Promise<PassportOcrR
   });
 
   return requestJson<PassportOcrResult>(response);
+}
+
+export async function markTravelerDocumentsReviewed(id: number): Promise<TravelerDetail> {
+  const response = await fetch(`/api/travelers/${id}/documents-reviewed`, {
+    method: "POST",
+    credentials: "include"
+  });
+
+  return requestJson<TravelerDetail>(response);
 }
 
 export async function readCivilIdOcr(civilIdImage: File): Promise<CivilIdOcrResult> {

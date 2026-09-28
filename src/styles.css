@@ -1,4 +1,4 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap");
 
 :root {
   --bg-main: #080909;
@@ -689,6 +689,477 @@ img {
   gap: 28px;
 }
 
+/* Final reservation popup overrides: keep this after legacy responsive blocks. */
+.gv-reservation-modal {
+  background:
+    linear-gradient(rgba(14, 12, 9, 0.42), rgba(14, 12, 9, 0.44)),
+    url("/landingpage/hero-kaaba-premium.png") center / cover no-repeat !important;
+  backdrop-filter: blur(8px);
+}
+
+.gv-reservation {
+  width: min(1540px, calc(100vw - 56px)) !important;
+  max-height: calc(100vh - 52px) !important;
+  padding: 18px 18px 0 !important;
+  border: 1px solid rgba(203, 145, 45, 0.54) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(210, 153, 52, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(255, 250, 240, 0.97), rgba(249, 244, 234, 0.94)) !important;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34) !important;
+  color: #1e2430 !important;
+}
+
+.gv-reservation__close {
+  top: 18px !important;
+  left: 18px !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  color: #1e2430 !important;
+}
+
+.gv-reservation__header {
+  margin: 0 54px 6px !important;
+  display: grid !important;
+  justify-items: center !important;
+  gap: 2px !important;
+  color: #151b25 !important;
+}
+
+.gv-reservation__header > .icon,
+.gv-reservation__header h2 {
+  color: #151b25 !important;
+}
+
+.gv-reservation__header > .icon {
+  color: #c48a25 !important;
+}
+
+.gv-reservation-steps--icons {
+  width: min(360px, 72vw) !important;
+  margin: 4px auto 16px !important;
+}
+
+.gv-reservation__foot {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 4 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  min-height: 58px !important;
+  margin: 12px -18px 0 !important;
+  padding: 8px 18px !important;
+  border-top: 1px solid rgba(207, 160, 78, 0.26) !important;
+  border-radius: 0 0 18px 18px !important;
+  background: rgba(255, 252, 246, 0.94) !important;
+  color: #665b4b !important;
+}
+
+/* Premium reservation data popup */
+.gv-reservation-modal {
+  background:
+    linear-gradient(rgba(14, 12, 9, 0.42), rgba(14, 12, 9, 0.44)),
+    url("/landingpage/hero-kaaba-premium.png") center / cover no-repeat;
+  backdrop-filter: blur(8px);
+}
+
+.gv-reservation {
+  width: min(1540px, calc(100vw - 56px));
+  max-height: calc(100vh - 52px);
+  padding: 18px 18px 0;
+  border: 1px solid rgba(203, 145, 45, 0.54);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(210, 153, 52, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(255, 250, 240, 0.97), rgba(249, 244, 234, 0.94));
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
+  color: #1e2430;
+}
+
+.gv-reservation__close {
+  top: 18px;
+  left: 18px;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #1e2430;
+  box-shadow: 0 12px 28px rgba(48, 34, 16, 0.14);
+}
+
+.gv-reservation__header {
+  margin: 0 54px 6px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  color: #151b25;
+}
+
+.gv-reservation__header > .icon {
+  color: #c48a25;
+}
+
+.gv-reservation__header h2 {
+  margin: 0;
+  font-size: 1.55rem;
+  color: #151b25;
+}
+
+.gv-reservation-steps--icons {
+  width: min(360px, 72vw);
+  margin: 4px auto 16px;
+}
+
+.gv-reservation-steps--icons button span {
+  background: #fffaf0;
+  border-color: rgba(171, 118, 35, 0.42);
+  color: #6f521f;
+}
+
+.gv-reservation-steps--icons button.is-active span,
+.gv-reservation-steps--icons button.is-done span {
+  background: linear-gradient(135deg, #d7a646, #b9791c);
+  color: #fff;
+}
+
+.gv-reservation-ui {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 370px;
+  gap: 16px;
+  align-items: start;
+  min-height: 0;
+  padding-bottom: 74px;
+}
+
+.gv-reservation-form-panel,
+.gv-doc-panel {
+  min-height: 0;
+  border: 1px solid rgba(204, 164, 91, 0.28);
+  border-radius: 14px;
+  background: rgba(255, 253, 247, 0.76);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
+}
+
+.gv-reservation-form-panel {
+  display: grid;
+  gap: 8px;
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+  padding: 12px;
+}
+
+.gv-doc-panel {
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+  padding: 12px;
+}
+
+.gv-reservation-section-head,
+.gv-doc-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  text-align: right;
+}
+
+.gv-reservation-section-head > span,
+.gv-doc-panel__head > span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  color: #c48a25;
+  background: rgba(216, 166, 70, 0.13);
+}
+
+.gv-reservation-section-head strong,
+.gv-doc-panel__head strong {
+  display: block;
+  color: #161b25;
+  font-size: 1.02rem;
+  font-weight: 900;
+}
+
+.gv-reservation-section-head p,
+.gv-doc-panel__head p {
+  margin: 2px 0 0;
+  color: #7b7468;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.gv-reservation-section-head--inner {
+  margin-bottom: 8px;
+}
+
+.gv-reservation-card {
+  padding: 10px;
+  border: 1px solid rgba(219, 190, 139, 0.42);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.gv-reservation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+.gv-reservation-grid label {
+  display: grid;
+  gap: 5px;
+  color: #625b50;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-align: right;
+}
+
+.gv-reservation-grid label em,
+.gv-upload-error {
+  color: #b23b2d;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.gv-reservation-grid .gv-field {
+  min-height: 38px;
+  border-color: rgba(112, 103, 88, 0.22);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.gv-reservation-grid input,
+.gv-reservation-grid select {
+  min-height: 38px;
+  color: #3e4654;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.gv-doc-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.gv-doc-card {
+  padding: 10px;
+  border: 1px solid rgba(217, 184, 128, 0.42);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.gv-doc-card__head {
+  display: grid;
+  grid-template-columns: 38px 1fr 42px;
+  align-items: center;
+  gap: 10px;
+  text-align: right;
+}
+
+.gv-doc-card__head > span {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #e7c168, #c68a25);
+  color: #22180a;
+  font-weight: 900;
+}
+
+.gv-doc-card__head > .icon {
+  width: 42px;
+  height: 42px;
+  padding: 10px;
+  border-radius: 10px;
+  color: #188344;
+  background: rgba(25, 141, 72, 0.12);
+}
+
+.gv-doc-card__head strong {
+  display: block;
+  color: #1d2430;
+  font-weight: 900;
+}
+
+.gv-doc-card__head p {
+  margin: 2px 0 0;
+  color: #766f63;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.gv-doc-dropzone {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  min-height: 86px;
+  margin-top: 8px;
+  border: 1px dashed rgba(200, 144, 47, 0.55);
+  border-radius: 11px;
+  background: rgba(255, 250, 241, 0.76);
+  color: #5d5548;
+  text-align: center;
+  cursor: pointer;
+}
+
+.gv-doc-dropzone input {
+  display: none;
+}
+
+.gv-doc-dropzone__icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  color: #d09a36;
+  background: rgba(208, 154, 54, 0.12);
+}
+
+.gv-doc-dropzone b {
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.gv-doc-dropzone small {
+  color: #8a8173;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.gv-doc-file {
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: #3f4651;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.gv-doc-file img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.gv-doc-file button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(124, 97, 51, 0.2);
+  border-radius: 999px;
+  background: #fff;
+  color: #7e3c2f;
+  cursor: pointer;
+}
+
+.gv-doc-ready {
+  display: block;
+  margin-top: 6px;
+  color: #208348;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.gv-smart-extract--panel {
+  width: 100%;
+  min-height: 56px;
+  border-color: rgba(205, 146, 45, 0.42);
+  border-radius: 12px;
+  color: #4f3511;
+  background: rgba(255, 247, 232, 0.9);
+}
+
+.gv-reservation__foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 58px;
+  margin: 12px -18px 0;
+  padding: 8px 18px;
+  border-top: 1px solid rgba(207, 160, 78, 0.26);
+  border-radius: 0 0 18px 18px;
+  background: rgba(255, 252, 246, 0.94);
+  color: #665b4b;
+  font-weight: 800;
+}
+
+.gv-reservation__foot > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gv-reservation__foot-actions {
+  margin-inline-start: auto;
+}
+
+.gv-reservation__foot-actions .gv-smart-extract,
+.gv-reservation__foot-actions .gv-confirm-booking {
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+}
+
+.gv-reservation__foot-actions .gv-confirm-booking {
+  min-width: 220px;
+  color: #fff;
+  background: linear-gradient(135deg, #d8a646, #b8781b);
+}
+
+@media (max-width: 1100px) {
+  .gv-reservation-ui {
+    grid-template-columns: 1fr;
+  }
+
+  .gv-reservation-form-panel,
+  .gv-doc-panel {
+    max-height: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .gv-reservation {
+    width: calc(100vw - 18px);
+    max-height: calc(100vh - 18px);
+    padding: 14px 10px 0;
+  }
+
+  .gv-reservation__header {
+    margin-inline: 44px;
+  }
+
+  .gv-reservation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gv-reservation__foot {
+    margin-inline: -10px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gv-reservation__foot-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
 .gv-brand {
   display: inline-flex;
   align-items: center;
@@ -1275,7 +1746,7 @@ img {
   width: 100%;
   max-width: none;
   overflow: hidden;
-  padding: 70px max(38px, calc((100% - 1750px) / 2)) 80px;
+  padding: 70px max(20px, calc((100% - 1840px) / 2)) 80px;
   background:
     radial-gradient(circle at 50% 8%, rgba(216, 163, 62, 0.13), transparent 34%),
     radial-gradient(circle at 12% 22%, rgba(216, 163, 62, 0.09), transparent 26%),
@@ -1524,6 +1995,16 @@ img {
     linear-gradient(180deg, #091016 0%, #06090d 100%);
 }
 
+.gv-travel-card--standard .gv-travel-card__body {
+  margin: -10px 12px 12px;
+  padding: 14px 16px 14px;
+  border: 1px solid rgba(233, 190, 96, 0.56);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 50% 118%, rgba(216, 163, 62, 0.14), transparent 42%),
+    linear-gradient(180deg, rgba(8, 20, 29, 0.98) 0%, rgba(4, 9, 14, 0.99) 100%);
+}
+
 .gv-card__features,
 .gv-travel-card__features {
   display: grid;
@@ -1552,12 +2033,19 @@ img {
 }
 
 .gv-travel-card__features--controls {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   align-items: stretch;
+  row-gap: 18px;
+}
+
+.gv-travel-card--standard .gv-travel-card__features--controls {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  row-gap: 6px;
 }
 
 .gv-travel-card__features--controls label {
   display: grid;
+  grid-column: span 2;
   justify-items: center;
   align-content: start;
   gap: 8px;
@@ -1567,18 +2055,60 @@ img {
   border-inline-start: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.gv-travel-card__features--controls label:last-child {
+.gv-travel-card__features--controls label:nth-child(4),
+.gv-travel-card__features--controls label:nth-child(5) {
+  grid-column: span 3;
+}
+
+.gv-travel-card--standard .gv-travel-card__features--controls label {
+  grid-column: auto;
+  gap: 5px;
+  min-height: 50px;
+  padding: 0 12px;
+}
+
+.gv-travel-card--standard .gv-travel-card__features--controls label:nth-child(4),
+.gv-travel-card--standard .gv-travel-card__features--controls label:nth-child(5) {
+  grid-column: auto;
+}
+
+.gv-travel-card__features--controls label:nth-child(3),
+.gv-travel-card__features--controls label:nth-child(5),
+.gv-travel-card--standard .gv-travel-card__features--controls label:nth-child(3n) {
   border-inline-start: 0;
 }
 
-.gv-travel-card__features--controls strong {
+.gv-travel-field-title {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  justify-content: center;
+  gap: 8px;
   color: #fff4df;
   font-size: clamp(0.86rem, 0.82vw, 1rem);
   font-weight: 900;
 }
 
+.gv-travel-card--standard .gv-travel-field-title {
+  display: inline-flex;
+  gap: 7px;
+  font-size: clamp(0.72rem, 0.68vw, 0.84rem);
+}
+
+.gv-travel-field-title .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.gv-travel-card__features--controls strong {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
 .gv-travel-card__features--controls input,
-.gv-travel-card__features--controls select {
+.gv-travel-card__features--controls select,
+.gv-travel-card__features--controls .gv-fixed-select {
   width: min(100%, 180px);
   min-height: 36px;
   padding: 0 12px;
@@ -1592,8 +2122,36 @@ img {
   outline: 0;
 }
 
+.gv-travel-card--standard .gv-travel-card__features--controls input,
+.gv-travel-card--standard .gv-travel-card__features--controls select,
+.gv-travel-card--standard .gv-travel-card__features--controls .gv-fixed-select {
+  width: min(100%, 195px);
+  min-height: 32px;
+  padding: 0 12px;
+  border-color: rgba(223, 173, 75, 0.58);
+  background: linear-gradient(180deg, rgba(22, 34, 43, 0.96), rgba(8, 16, 24, 0.96));
+  font-size: clamp(0.66rem, 0.64vw, 0.78rem);
+}
+
+.gv-travel-card__features--controls .gv-fixed-select {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
 .gv-travel-card__features--controls input {
   direction: ltr;
+}
+
+.gv-travel-card__features--controls .gv-custom-travelers-input {
+  width: min(100%, 110px);
+  min-height: 32px;
+}
+
+.gv-travel-card--standard .gv-travel-card__features--controls .gv-custom-travelers-input {
+  width: min(100%, 195px);
+  min-height: 32px;
 }
 
 .gv-travel-card__features--controls select {
@@ -1634,12 +2192,53 @@ img {
   background: linear-gradient(90deg, transparent, rgba(233, 190, 96, 0.82), transparent);
 }
 
+.gv-travel-card--standard .gv-travel-card__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: auto;
+  margin: 8px 0 8px;
+  color: #f2c86b;
+  background: none;
+}
+
+.gv-travel-card--standard .gv-travel-card__divider::before,
+.gv-travel-card--standard .gv-travel-card__divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(233, 190, 96, 0.78), transparent);
+}
+
+.gv-travel-card__divider span {
+  display: none;
+}
+
+.gv-travel-card--standard .gv-travel-card__divider span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gv-travel-card__divider .icon {
+  width: 18px;
+  height: 18px;
+}
+
 .gv-card__footer,
 .gv-travel-card__footer {
   display: flex;
   align-items: end;
   justify-content: space-between;
   gap: 18px;
+}
+
+.gv-travel-card--standard .gv-travel-card__footer {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.88fr) 1px minmax(185px, 0.44fr);
+  align-items: center;
+  gap: clamp(12px, 1.2vw, 20px);
+  direction: ltr;
 }
 
 .gv-card__footer p,
@@ -1651,11 +2250,58 @@ img {
   text-align: right;
 }
 
+.gv-travel-card__footer-separator {
+  width: 1px;
+  align-self: stretch;
+  min-height: 42px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.gv-travel-card--standard .gv-travel-card__footer-separator {
+  grid-column: 2;
+  justify-self: center;
+}
+
+.gv-travel-card__price {
+  display: grid;
+  grid-template-columns: 1fr 34px;
+  column-gap: 8px;
+  align-items: end;
+  position: relative;
+  min-width: 170px;
+  padding-inline-end: 0;
+}
+
+.gv-travel-card--standard .gv-travel-card__price {
+  grid-column: 3;
+  justify-self: end;
+  direction: rtl;
+}
+
+.gv-travel-card__price span,
+.gv-travel-card__price small {
+  display: block;
+  grid-column: 1;
+}
+
+.gv-travel-card__price b {
+  grid-column: 1;
+}
+
+.gv-travel-card__price .icon {
+  grid-column: 2;
+  grid-row: 2 / 4;
+  position: static;
+  width: 30px;
+  height: 30px;
+  color: #f2c86b;
+}
+
 .gv-card__footer b,
 .gv-travel-card__footer b {
   display: block;
   color: #f3c863;
-  font-size: clamp(2.4rem, 3.1vw, 3.35rem);
+  font-size: clamp(1.7rem, 2.1vw, 2.35rem);
   font-weight: 900;
   line-height: 0.98;
 }
@@ -1679,6 +2325,23 @@ img {
   box-shadow: 0 12px 24px rgba(216, 163, 62, 0.18);
 }
 
+.gv-travel-card--standard .gv-travel-card__footer button {
+  grid-column: 1;
+  justify-self: start;
+  width: min(100%, 280px);
+  gap: 12px;
+  min-width: min(100%, 280px);
+  min-height: 42px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #ffe997 0%, #d8a33e 100%);
+  font-size: clamp(0.84rem, 0.82vw, 1rem);
+}
+
+.gv-travel-card__footer button .icon {
+  width: 22px;
+  height: 22px;
+}
+
 .gv-card__footer button:hover,
 .gv-travel-card__footer button:hover {
   transform: translateY(-2px);
@@ -1689,7 +2352,7 @@ img {
 .gv-travel-packages {
   position: relative;
   overflow: hidden;
-  padding: 54px max(44px, calc((100% - 1450px) / 2)) 64px;
+  padding: 36px max(32px, calc((100% - 1450px) / 2)) 44px;
   background:
     radial-gradient(circle at 10% 8%, rgba(216, 163, 62, 0.1), transparent 26%),
     linear-gradient(180deg, #fbf6ed 0%, #f6eedf 100%);
@@ -1697,7 +2360,7 @@ img {
 }
 
 .gv-travel-packages h2 {
-  margin: 0 0 28px;
+  margin: 0 0 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1718,7 +2381,7 @@ img {
 
 .gv-rowad-travel {
   position: relative;
-  max-width: 1160px;
+  max-width: 1680px;
   margin: 0 auto 32px;
   padding: 24px;
   overflow: hidden;
@@ -1799,7 +2462,7 @@ img {
 }
 
 .gv-travel-grid--rowad {
-  max-width: 1090px;
+  max-width: 1620px;
   gap: 22px;
 }
 
@@ -1823,7 +2486,7 @@ img {
 }
 
 .gv-travel-card--rowad .gv-travel-card__media {
-  min-height: 205px;
+  min-height: 245px;
 }
 
 .gv-travel-card--rowad .gv-travel-card__media::before {
@@ -1859,10 +2522,25 @@ img {
     linear-gradient(180deg, #071014 0%, #040608 100%);
 }
 
+.gv-travel-card--rowad .gv-travel-card__features--controls {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  row-gap: 0;
+}
+
 .gv-travel-card--rowad .gv-travel-card__features--controls label {
+  grid-column: auto;
   min-height: 74px;
   gap: 5px;
   padding: 0 8px;
+}
+
+.gv-travel-card--rowad .gv-travel-card__features--controls label:nth-child(3),
+.gv-travel-card--rowad .gv-travel-card__features--controls label:nth-child(5) {
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gv-travel-card--rowad .gv-travel-card__features--controls label:last-child {
+  border-inline-start: 0;
 }
 
 .gv-travel-card--rowad .gv-travel-card__features--controls strong {
@@ -1870,7 +2548,8 @@ img {
 }
 
 .gv-travel-card--rowad .gv-travel-card__features--controls input,
-.gv-travel-card--rowad .gv-travel-card__features--controls select {
+.gv-travel-card--rowad .gv-travel-card__features--controls select,
+.gv-travel-card--rowad .gv-travel-card__features--controls .gv-fixed-select {
   width: min(100%, 150px);
   min-height: 32px;
   padding: 0 9px;
@@ -1902,7 +2581,7 @@ img {
 }
 
 .gv-travel-packages__standard {
-  max-width: 1320px;
+  max-width: 1680px;
   margin: 0 auto;
 }
 
@@ -1913,19 +2592,22 @@ img {
 .gv-travel-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(22px, 2vw, 34px);
-  max-width: 1320px;
+  gap: clamp(18px, 1.6vw, 26px);
+  max-width: 1680px;
   margin: 0 auto;
 }
 
 .gv-travel-card__media {
-  min-height: 245px;
+  min-height: 180px;
 }
 
 .gv-travel-card__media span {
-  right: 26px;
-  min-width: 118px;
-  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  right: 24px;
+  min-width: 108px;
+  min-height: 42px;
 }
 
 @media (max-width: 1279px) {
@@ -1942,7 +2624,7 @@ img {
   }
 
   .gv-travel-grid {
-    max-width: 980px;
+    max-width: 100%;
   }
 }
 
@@ -2459,6 +3141,10 @@ img {
   margin-bottom: 16px;
 }
 
+.gv-hotel-tabs {
+  grid-template-columns: 1fr;
+}
+
 .gv-hotel-tabs button,
 .gv-payment-tabs button,
 .gv-payment-options button,
@@ -2482,6 +3168,7 @@ img {
 
 .gv-hotel-list {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   min-height: 0;
   overflow-y: auto;
@@ -2507,8 +3194,8 @@ img {
 
 .gv-hotel-list article {
   display: grid;
-  grid-template-columns: 230px minmax(0, 1fr) 180px;
-  gap: 16px;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: 12px;
   align-items: center;
   padding: 12px;
   border: 1px solid rgba(217, 162, 61, 0.28);
@@ -2522,7 +3209,7 @@ img {
 }
 
 .gv-hotel-image {
-  min-height: 135px;
+  min-height: 122px;
   border-radius: 12px;
   background-size: cover;
   background-position: center;
@@ -2531,7 +3218,7 @@ img {
 .gv-hotel-copy h4 {
   margin: 0 0 4px;
   color: #071015;
-  font-size: 1.18rem;
+  font-size: 1rem;
   font-weight: 900;
 }
 
@@ -2565,18 +3252,36 @@ img {
 }
 
 .gv-hotel-price {
+  grid-column: 1 / -1;
   display: grid;
-  gap: 5px;
-  text-align: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 12px;
+  text-align: right;
+}
+
+.gv-hotel-price small,
+.gv-hotel-price strong,
+.gv-hotel-price span {
+  margin: 0;
 }
 
 .gv-hotel-price strong {
   color: #071015;
-  font-size: 1.45rem;
+  font-size: 1.35rem;
   font-weight: 900;
 }
 
+.gv-hotel-price small {
+  justify-self: start;
+}
+
+.gv-hotel-price span {
+  justify-self: end;
+}
+
 .gv-hotel-price button {
+  grid-column: 1 / -1;
   min-height: 44px;
   border: 0;
   border-radius: 10px;
@@ -5456,7 +6161,7 @@ main {
 }
 
 .program-card__detail::before {
-  content: "â€¢";
+  content: "•";
   color: var(--gold-light);
 }
 
@@ -6234,7 +6939,7 @@ main {
 }
 
 .booking-page .booking-program-card__facts span::before {
-  content: "â€¢";
+  content: "•";
   margin-left: 6px;
   color: var(--gold-light);
 }
@@ -7617,7 +8322,7 @@ main {
 }
 
 .corporate-page .corporate-program-card__facts span::before {
-  content: "â€¢";
+  content: "•";
   margin-left: 6px;
   color: var(--gold-light);
 }
@@ -9286,10 +9991,14 @@ main {
   }
 
   .gv-hotel-list article {
-    grid-template-columns: clamp(128px, 11vw, 165px) minmax(0, 1fr) clamp(104px, 8.8vw, 132px);
+    grid-template-columns: clamp(108px, 8.2vw, 132px) minmax(0, 1fr);
     gap: clamp(8px, 0.7vw, 11px);
     padding: clamp(6px, 0.62vw, 9px);
     border-radius: 12px;
+  }
+
+  .gv-hotel-price {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .gv-hotel-image {
@@ -9687,10 +10396,6 @@ main {
     border-radius: 12px;
   }
 
-  .gv-travel-packages {
-    padding: clamp(38px, 4vw, 54px) max(32px, calc((100% - 1320px) / 2)) clamp(44px, 4.4vw, 62px);
-  }
-
   .gv-travel-grid {
     max-width: 1180px;
   }
@@ -9904,10 +10609,6 @@ main {
     gap: 8px;
     border-radius: 10px;
     font-size: clamp(0.76rem, 0.82vw, 0.95rem);
-  }
-
-  .gv-travel-packages {
-    padding: clamp(28px, 3vw, 42px) max(22px, calc((100% - 1180px) / 2)) clamp(34px, 3.4vw, 48px);
   }
 
   .gv-travel-packages h2 {
@@ -10781,48 +11482,75 @@ main {
 
 .package-admin {
   min-height: 100vh;
-  padding: 32px;
+  padding: 16px 24px 28px;
   background:
     radial-gradient(circle at 18% 0%, rgba(217, 162, 61, 0.14), transparent 28%),
     linear-gradient(180deg, #fbf5ea 0%, #f4eadc 100%);
   color: #15120f;
 }
 
+.admin-welcome-banner,
 .package-admin-hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  min-height: 170px;
-  padding: 30px 36px;
+  gap: 22px;
+  min-height: 156px;
+  padding: 28px 38px;
   border: 1px solid rgba(217, 162, 61, 0.18);
-  border-radius: 26px;
+  border-radius: 18px;
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.96), rgba(255, 250, 242, 0.84)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 250, 242, 0.82) 44%, rgba(255, 255, 255, 0.94) 100%),
     url("/landingpage/hero-kaaba-premium.png") center 46% / cover no-repeat;
-  box-shadow: 0 18px 40px rgba(86, 54, 17, 0.08);
+  box-shadow: 0 14px 34px rgba(86, 54, 17, 0.07);
 }
 
+.admin-welcome-banner__copy,
+.package-admin-hero > div:first-child {
+  flex: 1;
+  text-align: right;
+}
+
+.admin-welcome-banner__copy::before {
+  content: "";
+  display: block;
+  width: 82px;
+  height: 4px;
+  margin: 0 0 26px auto;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #c58d29, #e5b454);
+}
+
+.admin-welcome-banner__action {
+  flex: 0 0 270px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.admin-welcome-banner h1,
 .package-admin-hero h1 {
   margin: 4px 0 8px;
   color: #111820;
-  font-size: clamp(2rem, 3.2vw, 3.5rem);
+  font-size: clamp(2.3rem, 3.15vw, 3.75rem);
   font-weight: 900;
+  line-height: 1.04;
 }
 
+.admin-welcome-banner p,
 .package-admin-hero p {
   margin: 0;
   color: #67533e;
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
 }
 
 .package-primary-action,
 .package-outline-action,
 .package-mini-button {
-  min-height: 44px;
-  border-radius: 12px;
-  padding: 0 18px;
+  min-height: 42px;
+  border-radius: 10px;
+  padding: 0 22px;
   border: 1px solid rgba(184, 134, 47, 0.28);
   font-weight: 900;
 }
@@ -10852,13 +11580,13 @@ main {
 
 .package-admin-tabs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0;
-  margin-top: -18px;
-  padding: 0 18px;
-  min-height: 84px;
+  margin-top: 16px;
+  padding: 0 8px;
+  min-height: 64px;
   align-items: stretch;
-  border-radius: 0 0 22px 22px;
+  border-radius: 16px;
   overflow: hidden;
 }
 
@@ -10868,7 +11596,10 @@ main {
   background: transparent;
   color: #5e4c39;
   font-weight: 900;
-  font-size: 1rem;
+  font-size: clamp(0.82rem, 0.9vw, 1rem);
+  line-height: 1.2;
+  white-space: nowrap;
+  padding: 0 8px;
 }
 
 .package-admin-tabs button.is-active {
@@ -10880,9 +11611,9 @@ main {
   display: grid;
   grid-template-columns: 1.4fr repeat(3, minmax(170px, 0.65fr));
   gap: 12px;
-  margin: 22px 0 18px;
-  padding: 16px;
-  border-radius: 18px;
+  margin: 16px 0 16px;
+  padding: 14px;
+  border-radius: 16px;
 }
 
 .package-filters label,
@@ -10905,7 +11636,7 @@ main {
 .condition-row select,
 .package-editor-head input {
   width: 100%;
-  min-height: 42px;
+  min-height: 40px;
   border: 1px solid #e2cfb2;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.96);
@@ -10923,20 +11654,22 @@ main {
 
 .package-admin-list {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .package-admin-card {
   display: grid;
-  grid-template-columns: 210px minmax(0, 1fr);
+  grid-template-columns: minmax(150px, 0.32fr) minmax(0, 1fr) 236px;
   gap: 18px;
-  padding: 14px;
+  padding: 14px 16px;
   border-radius: 18px;
+  align-items: center;
+  min-height: 174px;
 }
 
 .package-admin-card__media {
   position: relative;
-  min-height: 150px;
+  min-height: 144px;
   border-radius: 14px;
   background-size: cover;
   background-position: center;
@@ -10965,10 +11698,33 @@ main {
   font-weight: 900;
 }
 
+.package-admin-card__summary {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 8px;
+  min-height: 134px;
+}
+
+.package-admin-card__summary strong {
+  color: #6a3a07;
+  font-size: 2.15rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.package-admin-card__summary small,
+.package-admin-card__summary em {
+  color: #6f6254;
+  font-style: normal;
+  font-weight: 800;
+}
+
 .package-admin-card__body {
   display: grid;
   align-content: center;
-  gap: 12px;
+  justify-items: end;
+  gap: 10px;
 }
 
 .package-admin-card__title {
@@ -10980,7 +11736,7 @@ main {
 .package-admin-card__title h3 {
   margin: 0;
   color: #2a1a0e;
-  font-size: 1.45rem;
+  font-size: 1.48rem;
   font-weight: 900;
 }
 
@@ -10996,7 +11752,6 @@ main {
 }
 
 .package-status {
-  margin-right: auto;
   padding: 6px 10px;
   border-radius: 999px;
   background: #f4eadc;
@@ -11051,6 +11806,7 @@ main {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: flex-end;
 }
 
 .package-card-actions button {
@@ -12007,7 +12763,7 @@ main {
 
 .pricing-admin-page {
   min-height: 100vh;
-  padding: 30px;
+  padding: 16px 24px 28px;
   background:
     radial-gradient(circle at 18% 0%, rgba(196, 146, 61, 0.14), transparent 30%),
     linear-gradient(180deg, #fbf6ed 0%, #f3eadc 100%);
@@ -12952,4 +13708,73 @@ main {
     min-height: 28px !important;
     padding-bottom: 4px !important;
   }
+}
+
+/* Final reservation popup overrides: keep this after legacy responsive blocks. */
+.gv-reservation-modal {
+  background:
+    linear-gradient(rgba(14, 12, 9, 0.42), rgba(14, 12, 9, 0.44)),
+    url("/landingpage/hero-kaaba-premium.png") center / cover no-repeat !important;
+  backdrop-filter: blur(8px);
+}
+
+.gv-reservation {
+  width: min(1540px, calc(100vw - 56px)) !important;
+  max-height: calc(100vh - 52px) !important;
+  padding: 18px 18px 0 !important;
+  border: 1px solid rgba(203, 145, 45, 0.54) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(210, 153, 52, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(255, 250, 240, 0.97), rgba(249, 244, 234, 0.94)) !important;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34) !important;
+  color: #1e2430 !important;
+}
+
+.gv-reservation__close {
+  top: 18px !important;
+  left: 18px !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  color: #1e2430 !important;
+}
+
+.gv-reservation__header {
+  margin: 0 54px 6px !important;
+  display: grid !important;
+  justify-items: center !important;
+  gap: 2px !important;
+  color: #151b25 !important;
+}
+
+.gv-reservation__header h2 {
+  color: #151b25 !important;
+}
+
+.gv-reservation__header > .icon {
+  color: #c48a25 !important;
+}
+
+.gv-reservation-steps--icons {
+  width: min(360px, 72vw) !important;
+  margin: 4px auto 16px !important;
+}
+
+.gv-reservation__foot {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 4 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  min-height: 58px !important;
+  margin: 12px -18px 0 !important;
+  padding: 8px 18px !important;
+  border-top: 1px solid rgba(207, 160, 78, 0.26) !important;
+  border-radius: 0 0 18px 18px !important;
+  background: rgba(255, 252, 246, 0.94) !important;
+  color: #665b4b !important;
 }

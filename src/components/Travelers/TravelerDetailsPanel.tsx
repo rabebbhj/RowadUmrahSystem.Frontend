@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import type { AuthUser } from "../../api/auth";
-import { getTraveler, type TravelerDetail } from "../../api/travelers";
+import { getTraveler, markTravelerDocumentsReviewed, type TravelerDetail } from "../../api/travelers";
 import { formatDate } from "../../utils/dates";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
 
@@ -8,6 +8,7 @@ type TravelerDetailsPanelProps = {
   user: AuthUser;
   activePath: string;
   travelerId: number;
+  readOnly?: boolean;
   onNavigate: (path: string) => void;
   onLogout: () => void;
 };
@@ -51,10 +52,19 @@ function documentTypeLabel(type: string) {
   return labels[type] ?? normalizeDisplayText(type);
 }
 
+function isMainAdmin(user: AuthUser) {
+  return user.email?.toLowerCase() === "admin@rowad.local";
+}
+
+function can(user: AuthUser, permission: keyof NonNullable<AuthUser["permissions"]>) {
+  return isMainAdmin(user) || Boolean(user.permissions?.[permission]);
+}
+
 export function TravelerDetailsPanel({
   user,
   activePath,
   travelerId,
+  readOnly = false,
   onNavigate,
   onLogout
 }: TravelerDetailsPanelProps) {
@@ -69,6 +79,15 @@ export function TravelerDetailsPanel({
   const [documentSuccess, setDocumentSuccess] = useState<string | null>(null);
   const [documentSubmitting, setDocumentSubmitting] = useState(false);
   const [documentDeletingId, setDocumentDeletingId] = useState<number | null>(null);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const canEditTraveler = can(user, "canEditTravelers");
+  const canCreateTrip = can(user, "canCreateTrips");
+  const canViewTrips = can(user, "canViewTrips");
+  const canViewDocuments = can(user, "canViewDocuments");
+  const canUploadDocuments = can(user, "canUploadDocuments");
+  const canArchiveDocuments = can(user, "canArchiveDocuments");
+  const canExportReports = can(user, "canExportReports");
+  const canReviewDocuments = canViewDocuments && canUploadDocuments;
 
   useEffect(() => {
     let cancelled = false;
@@ -215,6 +234,62 @@ export function TravelerDetailsPanel({
     }
   }
 
+  async function handleMarkDocumentsReviewed() {
+    if (!traveler || reviewSubmitting) {
+      return;
+    }
+
+    setReviewSubmitting(true);
+    setDocumentError(null);
+    setDocumentSuccess(null);
+
+    try {
+      await markTravelerDocumentsReviewed(traveler.id);
+      onNavigate("/documents");
+    } catch (error) {
+      if (error instanceof Error && error.message === "UNAUTHORIZED") {
+        onLogout();
+        return;
+      }
+
+      setDocumentError(error instanceof Error ? error.message : "تعذر تأكيد تدقيق الوثائق.");
+    } finally {
+      setReviewSubmitting(false);
+    }
+  }
+
+  const documentRows = traveler
+    ? [
+        ...(traveler.passportImagePath
+          ? [
+              {
+                key: "passport",
+                documentType: "صورة الجواز",
+                fileName: traveler.passportNumber ? `Passport-${traveler.passportNumber}` : "Passport",
+                notes: "الصورة الأساسية للجواز",
+                uploadedAt: traveler.createdAt,
+                downloadUrl: traveler.passportImagePath,
+                documentId: null as number | null,
+                canArchive: false
+              }
+            ]
+          : []),
+        ...traveler.documents
+          .slice()
+          .sort((left, right) => right.uploadedAt.localeCompare(left.uploadedAt))
+          .map((doc) => ({
+            key: `document-${doc.id}`,
+            documentType: documentTypeLabel(doc.documentType),
+            fileName: normalizeDisplayText(doc.fileName),
+            notes: normalizeDisplayText(doc.notes) || "-",
+            uploadedAt: doc.uploadedAt,
+            downloadUrl: `/TravelerDocuments/Download/${doc.id}`,
+            documentId: doc.id,
+            canArchive: true
+          }))
+      ]
+    : [];
+
   return (
     <div className="app-shell">
       <SignedInSidebar user={user} activePath={activePath} onNavigate={onNavigate} onLogout={onLogout} />
@@ -243,87 +318,167 @@ export function TravelerDetailsPanel({
                   <span className="badge badge-soft-warning">عدد العمرات: {traveler.tripCount}</span>
                 </div>
 
-                <div className="action-bar mb-0">
-                  <button type="button" className="btn btn-outline-gold" onClick={() => onNavigate(`/travelers/${traveler.id}/edit`)}>
-                    تعديل
-                  </button>
+                <div className="action-bar traveler-detail-actions mb-0">
+                  {canEditTraveler && (
+                    <button type="button" className="btn btn-outline-gold" onClick={() => onNavigate(`/travelers/${traveler.id}/edit`)}>
+                      تعديل
+                    </button>
+                  )}
 
-                  <button type="button" className="btn btn-gold" onClick={() => onNavigate(`/trips/create?travelerId=${traveler.id}`)}>
-                    + إضافة عمرة
-                  </button>
+                  {!readOnly && (
+                    <>
+                      {canCreateTrip && (
+                        <button type="button" className="btn btn-gold" onClick={() => onNavigate(`/trips/create?travelerId=${traveler.id}`)}>
+                          + إضافة عمرة
+                        </button>
+                      )}
 
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={() => window.location.assign(`/Travelers/TravelerPdf/${traveler.id}`)}
-                  >
-                    PDF
-                  </button>
+                      {canExportReports && (
+                        <button
+                          type="button"
+                          className="btn btn-outline-secondary"
+                          onClick={() => window.location.assign(`/Travelers/TravelerPdf/${traveler.id}`)}
+                        >
+                          PDF
+                        </button>
+                      )}
 
-                  <button type="button" className="btn btn-outline-secondary" onClick={() => onNavigate("/travelers")}>
-                    رجوع
-                  </button>
+                      {canReviewDocuments && (
+                        <button
+                          type="button"
+                          className="btn btn-outline-gold"
+                          disabled={reviewSubmitting || traveler.documentsReviewed}
+                          onClick={handleMarkDocumentsReviewed}
+                        >
+                          {traveler.documentsReviewed ? "تم التدقيق" : reviewSubmitting ? "جاري التدقيق..." : "تم التدقيق"}
+                        </button>
+                      )}
+
+                      <button type="button" className="btn btn-outline-secondary" onClick={() => onNavigate("/travelers")}>
+                        رجوع
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
-              <div className="row">
-                <div className="col-lg-4 mb-4">
-                  <div className="page-card h-100">
-                    <h4 className="section-title">صورة الجواز</h4>
+              <div className="page-card traveler-data-card mb-4">
+                <h4 className="section-title">البيانات الأساسية</h4>
 
-                    {traveler.passportImagePath ? (
-                      <img src={traveler.passportImagePath} alt="صورة الجواز" className="img-fluid rounded border" />
-                    ) : (
-                      <div className="alert alert-info mb-0">لا توجد صورة جواز محفوظة.</div>
-                    )}
+                <div className="traveler-detail-grid">
+                  <div className="traveler-detail-field">
+                    <small>الرقم</small>
+                    <strong>{traveler.id}</strong>
                   </div>
-                </div>
 
-                <div className="col-lg-8 mb-4">
-                  <div className="page-card h-100">
-                    <h4 className="section-title">البيانات الأساسية</h4>
+                  <div className="traveler-detail-field">
+                    <small>رقم الجواز</small>
+                    <strong>{traveler.passportNumber}</strong>
+                  </div>
 
-                    <div className="row">
-                      <div className="col-md-6 mb-3">
-                        <small className="text-muted">الرقم</small>
-                        <div><strong>{traveler.id}</strong></div>
-                      </div>
+                  <div className="traveler-detail-field">
+                    <small>الاسم الكامل</small>
+                    <strong>{normalizeDisplayText(traveler.fullName) || "-"}</strong>
+                  </div>
 
-                      <div className="col-md-6 mb-3">
-                        <small className="text-muted">الاسم الكامل</small>
-                        <div><strong>{normalizeDisplayText(traveler.fullName)}</strong></div>
-                      </div>
+                  <div className="traveler-detail-field">
+                    <small>الاسم الأول (عربي)</small>
+                    <strong>{normalizeDisplayText(traveler.firstNameArabic) || "-"}</strong>
+                  </div>
 
-                      <div className="col-md-6 mb-3">
-                        <small className="text-muted">الجنسية</small>
-                        <div>{normalizeDisplayText(traveler.nationality)}</div>
-                      </div>
+                  <div className="traveler-detail-field">
+                    <small>اسم الأب (عربي)</small>
+                    <strong>{normalizeDisplayText(traveler.fatherNameArabic) || "-"}</strong>
+                  </div>
 
-                      <div className="col-md-6 mb-3">
-                        <small className="text-muted">الجنس</small>
-                        <div>{normalizeDisplayText(traveler.gender)}</div>
-                      </div>
+                  <div className="traveler-detail-field">
+                    <small>اسم الجد (عربي)</small>
+                    <strong>{normalizeDisplayText(traveler.grandFatherNameArabic) || "-"}</strong>
+                  </div>
 
-                      <div className="col-md-6 mb-3">
-                        <small className="text-muted">تاريخ الميلاد</small>
-                        <div>{formatDate(traveler.dateOfBirth)}</div>
-                      </div>
+                  <div className="traveler-detail-field">
+                    <small>اسم العائلة (عربي)</small>
+                    <strong>{normalizeDisplayText(traveler.familyNameArabic) || "-"}</strong>
+                  </div>
 
-                      <div className="col-md-6 mb-3">
-                        <small className="text-muted">رقم الهاتف</small>
-                        <div>{traveler.phoneNumber}</div>
-                      </div>
+                  <div className="traveler-detail-field">
+                    <small>الاسم الأول</small>
+                    <strong>{normalizeDisplayText(traveler.firstNameEnglish) || "-"}</strong>
+                  </div>
 
-                      <div className="col-md-6 mb-3">
-                        <small className="text-muted">البريد الإلكتروني</small>
-                        <div>{traveler.email || "-"}</div>
-                      </div>
+                  <div className="traveler-detail-field">
+                    <small>اسم الأب</small>
+                    <strong>{normalizeDisplayText(traveler.fatherNameEnglish) || "-"}</strong>
+                  </div>
 
-                      <div className="col-md-6 mb-3">
-                        <small className="text-muted">تاريخ انتهاء الجواز</small>
-                        <div>{traveler.passportExpiryDate ? formatDate(traveler.passportExpiryDate) : <span className="text-muted">غير مسجل</span>}</div>
-                      </div>
-                    </div>
+                  <div className="traveler-detail-field">
+                    <small>اسم الجد</small>
+                    <strong>{normalizeDisplayText(traveler.grandFatherNameEnglish) || "-"}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>اسم العائلة</small>
+                    <strong>{normalizeDisplayText(traveler.familyNameEnglish) || "-"}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>الجنسية</small>
+                    <strong>{normalizeDisplayText(traveler.nationality) || "-"}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>الجنس</small>
+                    <strong>{normalizeDisplayText(traveler.gender) || "-"}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>المهنة</small>
+                    <strong>{normalizeDisplayText(traveler.profession) || "-"}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>دولة الميلاد</small>
+                    <strong>{normalizeDisplayText(traveler.birthCountry) || "-"}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>مدينة الميلاد</small>
+                    <strong>{normalizeDisplayText(traveler.birthCity) || "-"}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>الحالة الاجتماعية</small>
+                    <strong>{normalizeDisplayText(traveler.maritalStatus) || "-"}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>تاريخ الميلاد</small>
+                    <strong>{formatDate(traveler.dateOfBirth)}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>رقم الإقامة</small>
+                    <strong>{traveler.residenceNumber || "-"}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>تاريخ انتهاء الإقامة</small>
+                    <strong>{traveler.residenceExpiryDate ? formatDate(traveler.residenceExpiryDate) : "-"}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>رقم الهاتف</small>
+                    <strong>{traveler.phoneNumber || "-"}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>البريد الإلكتروني</small>
+                    <strong>{traveler.email || "-"}</strong>
+                  </div>
+
+                  <div className="traveler-detail-field">
+                    <small>تاريخ انتهاء الجواز</small>
+                    <strong>{traveler.passportExpiryDate ? formatDate(traveler.passportExpiryDate) : "-"}</strong>
                   </div>
                 </div>
               </div>
@@ -356,19 +511,23 @@ export function TravelerDetailsPanel({
                 )}
               </div>
 
+              {canViewDocuments && (
               <div className="page-card mb-4">
                 <div className="d-flex flex-wrap justify-content-between align-items-center mb-3">
                   <h4 className="section-title mb-0">مركز الوثائق</h4>
 
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-gold"
-                    onClick={() => window.location.assign("/TravelerDocuments/ExportToExcel")}
-                  >
-                    تصدير جميع الوثائق Excel
-                  </button>
+                  {!readOnly && canExportReports && (
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-gold"
+                      onClick={() => window.location.assign("/TravelerDocuments/ExportToExcel")}
+                    >
+                      تصدير جميع الوثائق Excel
+                    </button>
+                  )}
                 </div>
 
+                {!readOnly && canUploadDocuments && (
                 <form onSubmit={handleDocumentSubmit} className="mb-4">
                   <div className="row g-3">
                     <div className="col-md-3">
@@ -407,8 +566,9 @@ export function TravelerDetailsPanel({
                     </div>
                   </div>
                 </form>
+                )}
 
-                {traveler.documents.length > 0 ? (
+                {documentRows.length > 0 ? (
                   <div className="table-responsive">
                     <table className="table table-bordered table-striped align-middle">
                       <thead>
@@ -422,39 +582,54 @@ export function TravelerDetailsPanel({
                       </thead>
 
                       <tbody>
-                        {traveler.documents
-                          .slice()
-                          .sort((left, right) => right.uploadedAt.localeCompare(left.uploadedAt))
-                          .map((doc) => (
-                            <tr key={doc.id}>
-                              <td>{documentTypeLabel(doc.documentType)}</td>
-                              <td>{normalizeDisplayText(doc.fileName)}</td>
-                              <td>{normalizeDisplayText(doc.notes) || "-"}</td>
+                        {documentRows.map((doc) => (
+                            <tr key={doc.key}>
+                              <td>{doc.documentType}</td>
+                              <td>{doc.fileName}</td>
+                              <td>{doc.notes}</td>
                               <td>{formatDateTime(doc.uploadedAt)}</td>
                               <td>
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-outline-gold me-2"
-                                  onClick={() => window.open(`/TravelerDocuments/Download/${doc.id}`, "_blank", "noreferrer")}
+                                <a
+                                  className="btn btn-sm btn-outline-secondary me-2"
+                                  href={doc.downloadUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
                                 >
-                                  فتح
-                                </button>
+                                  عرض
+                                </a>
 
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-outline-danger"
-                                  disabled={documentDeletingId === doc.id}
-                                  onClick={() => {
-                                    if (window.confirm("هل أنت متأكد من أرشفة هذا المستند؟")) {
-                                      setDocumentDeletingId(doc.id);
-                                      void handleDeleteDocument(doc.id).finally(() => {
-                                        setDocumentDeletingId((current) => (current === doc.id ? null : current));
-                                      });
-                                    }
-                                  }}
+                                <a
+                                  className="btn btn-sm btn-outline-gold me-2"
+                                  href={doc.downloadUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  download
                                 >
-                                  أرشفة
-                                </button>
+                                  تحميل
+                                </a>
+
+                                {!readOnly && canArchiveDocuments && doc.canArchive && doc.documentId !== null && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-danger"
+                                    disabled={documentDeletingId === doc.documentId}
+                                    onClick={() => {
+                                      const documentId = doc.documentId;
+                                      if (documentId === null) {
+                                        return;
+                                      }
+
+                                      if (window.confirm("هل أنت متأكد من أرشفة هذا المستند؟")) {
+                                        setDocumentDeletingId(documentId);
+                                        void handleDeleteDocument(documentId).finally(() => {
+                                          setDocumentDeletingId((current) => (current === documentId ? null : current));
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    أرشفة
+                                  </button>
+                                )}
                               </td>
                             </tr>
                           ))}
@@ -465,7 +640,9 @@ export function TravelerDetailsPanel({
                   <div className="alert alert-warning mb-0">لا توجد مستندات إضافية لهذا المسافر.</div>
                 )}
               </div>
+              )}
 
+              {canViewTrips && (
               <div className="page-card">
                 <h4 className="section-title">سجل الرحلات</h4>
 
@@ -500,6 +677,7 @@ export function TravelerDetailsPanel({
                   <div className="alert alert-warning mb-0">لا توجد رحلات مسجلة لهذا المسافر.</div>
                 )}
               </div>
+              )}
             </>
           )}
         </div>

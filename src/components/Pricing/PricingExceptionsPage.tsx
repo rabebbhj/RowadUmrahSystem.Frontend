@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import type { AuthUser } from "../../api/auth";
+import { AdminWelcomeBanner } from "../Layout/AdminWelcomeBanner";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
+import { PackageSectionsTabs } from "../Settings/PackageSectionsTabs";
 
 type PricingExceptionsPageProps = {
   user: AuthUser;
@@ -84,14 +86,14 @@ export function PricingExceptionsPage({ user, activePath, onNavigate, onLogout }
       <SignedInSidebar user={user} activePath={activePath} onNavigate={onNavigate} onLogout={onLogout} />
 
       <main className="main-panel pricing-admin-page exceptions-page" dir="rtl">
-        <section className="pricing-hero">
-          <div>
-            <span className="eyebrow">محاكي الأسعار</span>
-            <h1>الاستثناءات ومحاكي التسعير</h1>
-            <p>إدارة الحالات الخاصة واختبار النتيجة قبل اعتمادها</p>
-          </div>
-          <button type="button" className="ng-primary">+ إضافة استثناء جديد</button>
-        </section>
+        <AdminWelcomeBanner
+          eyebrow="محاكي الأسعار"
+          title="الاستثناءات ومحاكي التسعير"
+          description="إدارة الحالات الخاصة واختبار النتيجة قبل اعتمادها"
+          action={<button type="button" className="ng-primary">+ إضافة استثناء جديد</button>}
+        />
+
+        <PackageSectionsTabs active="exceptions" onNavigate={onNavigate} />
 
         <section className="exceptions-list-card">
           <header>

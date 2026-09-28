@@ -31,6 +31,7 @@ export interface TravelPackage {
   durationLabel: string;
   imageUrl: string;
   basePrice: number;
+  visaSupplement?: number;
   currency: string;
   priceMode: "fixed" | "rules" | string;
   status: "draft" | "published" | "paused" | string;
@@ -229,9 +230,12 @@ function ruleHasCondition(rule: PricingRule, field: string) {
 
 export function calculatePackagePrice(packageItem: TravelPackage, context: PackagePriceContext) {
   const roomSupplement = getSelectedOptionSupplement(packageItem.roomTypes, context.roomType);
+  const transportSupplement = getSelectedOptionSupplement(packageItem.transportOptions, context.transport);
+  const visaSupplement = context.previousVisa === "yes" ? 0 : (packageItem.visaSupplement ?? 0);
+  const optionSupplement = roomSupplement + transportSupplement + visaSupplement;
 
   if (packageItem.priceMode !== "rules") {
-    return packageItem.basePrice + roomSupplement;
+    return packageItem.basePrice + optionSupplement;
   }
 
   const matchingRules = packageItem.pricingRules
@@ -244,10 +248,13 @@ export function calculatePackagePrice(packageItem: TravelPackage, context: Packa
 
   const selectedRule = matchingRules[0];
   if (selectedRule) {
-    return selectedRule.price + (ruleHasCondition(selectedRule, "roomType") ? 0 : roomSupplement);
+    return selectedRule.price +
+      (ruleHasCondition(selectedRule, "roomType") ? 0 : roomSupplement) +
+      (ruleHasCondition(selectedRule, "transport") ? 0 : transportSupplement) +
+      (ruleHasCondition(selectedRule, "previousVisa") ? 0 : visaSupplement);
   }
 
-  return packageItem.basePrice + roomSupplement;
+  return packageItem.basePrice + optionSupplement;
 }
 
 export function createEmptyPackage(order = 1): TravelPackage {
@@ -262,6 +269,7 @@ export function createEmptyPackage(order = 1): TravelPackage {
     durationLabel: "6 أيام",
     imageUrl: "/landingpage/paysage.png",
     basePrice: 75,
+    visaSupplement: 0,
     currency: "د.ك",
     priceMode: "rules",
     status: "draft",

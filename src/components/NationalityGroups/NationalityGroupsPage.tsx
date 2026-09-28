@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import type { AuthUser } from "../../api/auth";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
+import { PackageSectionsTabs } from "../Settings/PackageSectionsTabs";
 
 type Nationality = {
   code: string;
@@ -548,6 +549,8 @@ export function NationalityGroupsPage({ user, activePath, onNavigate, onLogout }
             <p>تنظيم الجنسيات في مجموعات لتسعير أسرع وأكثر مرونة</p>
           </div>
         </section>
+
+        <PackageSectionsTabs active="groups" onNavigate={onNavigate} />
 
         <section className="ng-stats">
           <article>
