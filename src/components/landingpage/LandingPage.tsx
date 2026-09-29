@@ -183,6 +183,7 @@ const defaultTravelPackageOptions: TravelPackageOptionState = {
 };
 const rowadPackagePrefix = "rowad-company-";
 const rowadFixedTransport = "باص";
+const regularFixedTransport = "سيارة فردية";
 
 function isRowadTravelPackage(packageItem: TravelPackage | null | undefined) {
   return Boolean(packageItem?.id.startsWith(rowadPackagePrefix));
@@ -191,7 +192,7 @@ function isRowadTravelPackage(packageItem: TravelPackage | null | undefined) {
 function getDefaultTransportLabel(packageItem: TravelPackage | null | undefined) {
   if (!packageItem) return "";
   if (isRowadTravelPackage(packageItem)) return rowadFixedTransport;
-  return packageItem.transportOptions.find((item) => item.active)?.label ?? "";
+  return regularFixedTransport;
 }
 const travelerCountOptions = ["1", "2", "3", "4"];
 const customTravelerOption = "custom";
@@ -584,7 +585,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     nationality: fallbackSelectedNationality,
     hasVisa: "no"
   };
-  const selectedTransportType = isRowadTravelPackage(selectedPackage) ? rowadFixedTransport : selectedTravelOptions.transportType;
+  const selectedTransportType = isRowadTravelPackage(selectedPackage) ? rowadFixedTransport : regularFixedTransport;
   const selectedNationality = reservationForm.nationality || selectedTravelOptions.nationality;
   const selectedTravelerCount = Math.max(1, Number(selectedTravelOptions.travelers) || 1);
   const selectedHasVisa = hasExistingVisa(selectedTravelOptions.hasVisa);
@@ -763,9 +764,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
         nextOptions.travelers = getCompatibleTravelerCount(packageItem, value, currentOptions.travelers);
       }
 
-      if (isRowadTravelPackage(packageItem)) {
-        nextOptions.transportType = rowadFixedTransport;
-      }
+      nextOptions.transportType = isRowadTravelPackage(packageItem) ? rowadFixedTransport : regularFixedTransport;
 
       return {
         ...current,
@@ -1247,10 +1246,9 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       dateError: ""
     };
     const activeRoomTypes = program.roomTypes.filter((item) => item.active);
-    const activeTransportOptions = program.transportOptions.filter((item) => item.active);
     const roomOptions = getRoomCombinationOptions(program, options.travelers);
     const isRowadPackage = isRowadTravelPackage(program);
-    const selectedTransport = isRowadPackage ? rowadFixedTransport : options.transportType;
+    const selectedTransport = isRowadPackage ? rowadFixedTransport : regularFixedTransport;
     const selectedVisaChoice = getVisaChoiceValue(options.hasVisa, options.nationality);
     const selectedVisaLabel = getVisaTypeLabel(selectedVisaChoice, options.nationality);
     const travelerCount = Math.max(1, Number(options.travelers) || 1);
@@ -1329,14 +1327,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
             {!isRowadPackage ? (
               <label>
                 <span className="gv-travel-field-title"><BusIcon className="icon icon-sm" /><strong>وسيلة النقل</strong></span>
-                <select
-                  value={options.transportType}
-                  onChange={(event) => updateTravelOption(program.id, "transportType", event.target.value)}
-                >
-                  {activeTransportOptions.map((transport) => (
-                    <option key={transport.id} value={transport.label}>{transport.label}</option>
-                  ))}
-                </select>
+                <input type="text" value={regularFixedTransport} readOnly aria-readonly="true" />
               </label>
             ) : null}
             <label>

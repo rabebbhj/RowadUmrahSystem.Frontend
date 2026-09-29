@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import type { AuthUser } from "../../api/auth";
 import { getTraveler, updateTraveler, type TravelerDetail } from "../../api/travelers";
+import { canViewFullTravelerPhone, displayTravelerPhone } from "../../utils/permissions";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
 
 type TravelerEditPanelProps = {
@@ -24,6 +25,7 @@ export function TravelerEditPanel({
   const [error, setError] = useState<string | null>(null);
   const [passportImage, setPassportImage] = useState<File | null>(null);
   const [passportPreview, setPassportPreview] = useState<string | null>(null);
+  const canViewPhoneNumber = canViewFullTravelerPhone(user);
 
   useEffect(() => {
     let cancelled = false;
@@ -278,7 +280,16 @@ export function TravelerEditPanel({
 
                       <div className="col-md-6 mb-3">
                         <label className="form-label">رقم الهاتف</label>
-                        <input className="form-control" value={traveler.phoneNumber} onChange={(event) => setTraveler({ ...traveler, phoneNumber: event.target.value })} />
+                        <input
+                          className="form-control"
+                          value={displayTravelerPhone(user, traveler.phoneNumber)}
+                          readOnly={!canViewPhoneNumber}
+                          onChange={(event) => {
+                            if (canViewPhoneNumber) {
+                              setTraveler({ ...traveler, phoneNumber: event.target.value });
+                            }
+                          }}
+                        />
                       </div>
 
                       <div className="col-md-6 mb-3">

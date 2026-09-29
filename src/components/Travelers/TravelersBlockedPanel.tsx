@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { AuthUser } from "../../api/auth";
 import { getTravelers, unblockTraveler, type TravelerListItem } from "../../api/travelers";
 import { formatDateTime } from "../../utils/dates";
+import { displayTravelerPhone } from "../../utils/permissions";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
 
 type TravelersBlockedPanelProps = {
@@ -132,7 +133,7 @@ export function TravelersBlockedPanel({ user, activePath, onNavigate, onLogout }
                       </td>
                       <td>{traveler.passportNumber}</td>
                       <td>{traveler.nationality}</td>
-                      <td>{traveler.phoneNumber}</td>
+                      <td>{displayTravelerPhone(user, traveler.phoneNumber)}</td>
                       <td>{traveler.blockReason || <span className="text-muted">لا يوجد سبب مسجل</span>}</td>
                       <td>{traveler.blockedAt ? formatDateTime(traveler.blockedAt) : "-"}</td>
                       <td className="text-center">

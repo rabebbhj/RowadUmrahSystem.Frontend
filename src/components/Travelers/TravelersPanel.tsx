@@ -7,6 +7,7 @@ import {
   unblockTraveler,
   type TravelerListItem
 } from "../../api/travelers";
+import { displayTravelerPhone } from "../../utils/permissions";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
 
 type TravelersPanelProps = {
@@ -70,7 +71,7 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
   const canBlockTraveler = can(user, "canBlockTravelers");
   const canUnblockTraveler = can(user, "canUnblockTravelers");
   const canExportReports = can(user, "canExportReports");
-  const canReviewDocuments = can(user, "canViewDocuments") && can(user, "canUploadDocuments");
+  const canReviewDocuments = canEditTraveler;
 
   useEffect(() => {
     let cancelled = false;
@@ -282,7 +283,7 @@ export function TravelersPanel({ user, activePath, onNavigate, onLogout }: Trave
                       <td><strong>{traveler.passportNumber}</strong></td>
                       <td>{normalizeDisplayText(traveler.fullName)}</td>
                       <td>{normalizeDisplayText(traveler.nationality)}</td>
-                      <td>{traveler.phoneNumber}</td>
+                      <td>{displayTravelerPhone(user, traveler.phoneNumber)}</td>
                       <td><span className="badge badge-soft-warning">{traveler.tripCount}</span></td>
                       <td><span className={statusClass(traveler)}>{statusText(traveler)}</span></td>
                       <td>{formatDateTime(traveler.createdAt)}</td>

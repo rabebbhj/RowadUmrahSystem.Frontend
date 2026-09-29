@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { AuthUser } from "../../api/auth";
 import { getTravelers, type TravelerListItem } from "../../api/travelers";
 import { formatDate } from "../../utils/dates";
+import { displayTravelerPhone } from "../../utils/permissions";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
 
 type DocumentsPanelProps = {
@@ -114,7 +115,7 @@ export function DocumentsPanel({ user, activePath, onNavigate, onLogout }: Docum
                         </td>
                         <td>{traveler.passportNumber}</td>
                         <td>{normalizeDisplayText(traveler.nationality) || "-"}</td>
-                        <td>{traveler.phoneNumber || "-"}</td>
+                        <td>{displayTravelerPhone(user, traveler.phoneNumber)}</td>
                         <td>{formatDate(traveler.dateOfBirth)}</td>
                         <td>{formatDateTime(traveler.documentsReviewedAt)}</td>
                         <td>

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import type { AuthUser } from "../../api/auth";
 import { getTraveler, markTravelerDocumentsReviewed, type TravelerDetail } from "../../api/travelers";
 import { formatDate } from "../../utils/dates";
+import { displayTravelerPhone } from "../../utils/permissions";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
 
 type TravelerDetailsPanelProps = {
@@ -87,7 +88,11 @@ export function TravelerDetailsPanel({
   const canUploadDocuments = can(user, "canUploadDocuments");
   const canArchiveDocuments = can(user, "canArchiveDocuments");
   const canExportReports = can(user, "canExportReports");
-  const canReviewDocuments = canViewDocuments && canUploadDocuments;
+  const canViewTravelerDocuments = can(user, "canViewTravelers") || canEditTraveler || canViewDocuments;
+  const canManageDocuments = canViewDocuments && !readOnly;
+  const canDownloadDocuments = canViewDocuments;
+  const canExportDocumentReports = canViewDocuments && canExportReports;
+  const canReviewDocuments = canEditTraveler;
 
   useEffect(() => {
     let cancelled = false;
@@ -245,7 +250,11 @@ export function TravelerDetailsPanel({
 
     try {
       await markTravelerDocumentsReviewed(traveler.id);
-      onNavigate("/documents");
+      if (canViewDocuments) {
+        onNavigate("/documents");
+      } else {
+        onNavigate("/travelers");
+      }
     } catch (error) {
       if (error instanceof Error && error.message === "UNAUTHORIZED") {
         onLogout();
@@ -268,6 +277,7 @@ export function TravelerDetailsPanel({
                 fileName: traveler.passportNumber ? `Passport-${traveler.passportNumber}` : "Passport",
                 notes: "الصورة الأساسية للجواز",
                 uploadedAt: traveler.createdAt,
+                viewUrl: traveler.passportImagePath,
                 downloadUrl: traveler.passportImagePath,
                 documentId: null as number | null,
                 canArchive: false
@@ -283,6 +293,7 @@ export function TravelerDetailsPanel({
             fileName: normalizeDisplayText(doc.fileName),
             notes: normalizeDisplayText(doc.notes) || "-",
             uploadedAt: doc.uploadedAt,
+            viewUrl: doc.filePath,
             downloadUrl: `/TravelerDocuments/Download/${doc.id}`,
             documentId: doc.id,
             canArchive: true
@@ -343,14 +354,14 @@ export function TravelerDetailsPanel({
                         </button>
                       )}
 
-                      {canReviewDocuments && (
+                      {canReviewDocuments && !traveler.documentsReviewed && (
                         <button
                           type="button"
                           className="btn btn-outline-gold"
-                          disabled={reviewSubmitting || traveler.documentsReviewed}
+                          disabled={reviewSubmitting}
                           onClick={handleMarkDocumentsReviewed}
                         >
-                          {traveler.documentsReviewed ? "تم التدقيق" : reviewSubmitting ? "جاري التدقيق..." : "تم التدقيق"}
+                          {reviewSubmitting ? "جاري التدقيق..." : "تم التدقيق"}
                         </button>
                       )}
 
@@ -468,7 +479,7 @@ export function TravelerDetailsPanel({
 
                   <div className="traveler-detail-field">
                     <small>رقم الهاتف</small>
-                    <strong>{traveler.phoneNumber || "-"}</strong>
+                    <strong>{displayTravelerPhone(user, traveler.phoneNumber)}</strong>
                   </div>
 
                   <div className="traveler-detail-field">
@@ -511,12 +522,12 @@ export function TravelerDetailsPanel({
                 )}
               </div>
 
-              {canViewDocuments && (
+              {canViewTravelerDocuments && (
               <div className="page-card mb-4">
                 <div className="d-flex flex-wrap justify-content-between align-items-center mb-3">
                   <h4 className="section-title mb-0">مركز الوثائق</h4>
 
-                  {!readOnly && canExportReports && (
+                  {canExportDocumentReports && (
                     <button
                       type="button"
                       className="btn btn-sm btn-outline-gold"
@@ -527,7 +538,7 @@ export function TravelerDetailsPanel({
                   )}
                 </div>
 
-                {!readOnly && canUploadDocuments && (
+                {canManageDocuments && canUploadDocuments && (
                 <form onSubmit={handleDocumentSubmit} className="mb-4">
                   <div className="row g-3">
                     <div className="col-md-3">
@@ -591,24 +602,26 @@ export function TravelerDetailsPanel({
                               <td>
                                 <a
                                   className="btn btn-sm btn-outline-secondary me-2"
-                                  href={doc.downloadUrl}
+                                  href={doc.viewUrl}
                                   target="_blank"
                                   rel="noreferrer"
                                 >
                                   عرض
                                 </a>
 
-                                <a
-                                  className="btn btn-sm btn-outline-gold me-2"
-                                  href={doc.downloadUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  download
-                                >
-                                  تحميل
-                                </a>
+                                {canDownloadDocuments && (
+                                  <a
+                                    className="btn btn-sm btn-outline-gold me-2"
+                                    href={doc.downloadUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    download
+                                  >
+                                    تحميل
+                                  </a>
+                                )}
 
-                                {!readOnly && canArchiveDocuments && doc.canArchive && doc.documentId !== null && (
+                                {canManageDocuments && canArchiveDocuments && doc.canArchive && doc.documentId !== null && (
                                   <button
                                     type="button"
                                     className="btn btn-sm btn-outline-danger"

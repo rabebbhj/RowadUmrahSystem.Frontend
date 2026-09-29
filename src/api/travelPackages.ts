@@ -31,6 +31,7 @@ export interface RowadPricingProfile {
 }
 
 const defaultVisaSupplement = 45;
+const visaFeeWhenAlreadyHasVisa = 5;
 const standardMakkahRoomPrices: Record<string, Record<number, number>> = {
   "6": { 4: 25, 3: 30, 2: 35, 1: 40 },
   "10": { 4: 35, 3: 40, 2: 45, 1: 50 },
@@ -299,7 +300,7 @@ function calculateProfilePackagePrice(packageItem: TravelPackage, context: Packa
   }, 1));
   const roomAverage = roomTotal > 0 ? roomTotal / travelers : packageItem.basePrice;
   const transportPrice = context.transport === "باص" ? (profile.busPrices[String(durationDays)] ?? 0) : 0;
-  const visaPrice = context.previousVisa === "yes" ? 0 : profile.visaPrice;
+  const visaPrice = context.previousVisa === "yes" ? visaFeeWhenAlreadyHasVisa : profile.visaPrice;
 
   return roomAverage + transportPrice + visaPrice;
 }
@@ -327,10 +328,8 @@ function calculateStandardRulesPrice(packageItem: TravelPackage, context: Packag
     return total + getRoomCapacity(roomType ?? roomLabel);
   }, 1));
   const roomAverage = roomTotal / travelers;
-  const transportPrice = context.transport === "باص"
-    ? (standardBusPrices[durationKey] ?? 0)
-    : getSelectedOptionSupplement(packageItem.transportOptions, context.transport);
-  const visaPrice = context.previousVisa === "yes" ? 0 : defaultVisaSupplement;
+  const transportPrice = context.transport === "باص" ? (standardBusPrices[durationKey] ?? 0) : 0;
+  const visaPrice = context.previousVisa === "yes" ? visaFeeWhenAlreadyHasVisa : defaultVisaSupplement;
 
   return roomAverage + transportPrice + visaPrice;
 }
@@ -351,7 +350,7 @@ export function calculatePackagePrice(packageItem: TravelPackage, context: Packa
   const configuredVisaSupplement = packageItem.visaSupplement && packageItem.visaSupplement > 0
     ? packageItem.visaSupplement
     : defaultVisaSupplement;
-  const visaSupplement = context.previousVisa === "yes" ? 0 : configuredVisaSupplement;
+  const visaSupplement = context.previousVisa === "yes" ? visaFeeWhenAlreadyHasVisa : configuredVisaSupplement;
   const optionSupplement = roomSupplement + transportSupplement + visaSupplement;
 
   if (packageItem.priceMode !== "rules") {

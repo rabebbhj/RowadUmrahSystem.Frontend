@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { AuthUser } from "../../api/auth";
 import { getTravelers, restoreTraveler, type TravelerListItem } from "../../api/travelers";
 import { formatDateTime } from "../../utils/dates";
+import { displayTravelerPhone } from "../../utils/permissions";
 import { SignedInSidebar } from "../Layout/SignedInSidebar";
 
 type TravelersDeletedPanelProps = {
@@ -132,7 +133,7 @@ export function TravelersDeletedPanel({ user, activePath, onNavigate, onLogout }
                       </td>
                       <td>{traveler.fullName}</td>
                       <td>{traveler.nationality}</td>
-                      <td>{traveler.phoneNumber}</td>
+                      <td>{displayTravelerPhone(user, traveler.phoneNumber)}</td>
                       <td>{traveler.deletedAt ? formatDateTime(traveler.deletedAt) : "-"}</td>
                       <td>{traveler.deletedBy || "-"}</td>
                       <td className="text-center">
