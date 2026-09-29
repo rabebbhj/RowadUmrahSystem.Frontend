@@ -1412,13 +1412,16 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
         <div className="gv-hero__shade" />
         <header className="gv-header">
           <div className="gv-topbar">
+            {/*
             <div className="gv-brand gv-brand--company">
               <img src="/landingpage/company-logo.png" alt="شركة رواد لخدمات العمرة والحج" />
             </div>
+            */}
             <div className="gv-contact">
               <span><MailIcon className="icon icon-sm" /> info@umrah.com</span>
               <span><PhoneIcon className="icon icon-sm" /> +965 55 123 4567</span>
               <span><LocationIcon className="icon icon-sm" /> العربية</span>
+              {/*
               {travelerUser?.isAuthenticated ? (
                 <button className="gv-auth-nav gv-auth-nav--logout" type="button" onClick={() => void handleTravelerLogout()}>
                   تسجيل الخروج
@@ -1428,10 +1431,13 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                   تسجيل الدخول
                 </button>
               )}
+              */}
+              {/*
               <button className="gv-book" type="button" onClick={() => openBookingSection("حجز جديد")}>
                 احجز الآن
                 <ArrowRightIcon className="icon icon-sm" />
               </button>
+              */}
             </div>
           </div>
         </header>
@@ -1445,10 +1451,12 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
               استعرض باقات العمرة
               <ArrowRightIcon className="icon icon-sm" />
             </button>
+            {/*
             <button type="button" className="ghost">
               <ChatIcon className="icon icon-sm" />
               شاهد فيديو تعريفي
             </button>
+            */}
           </div>
         </div>
 
@@ -1460,6 +1468,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           <em>ثقتكم .. مسؤوليتنا</em>
         </aside>
       </section>
+      {/*
       <section className="gv-search" aria-label="فلترة باقات العمرة">
         <button type="button" onClick={submitFilters}>
           <SearchIcon className="icon icon-sm" />
@@ -1502,6 +1511,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           />
         </label>
       </section>
+      */}
 
       <section className="gv-packages" id="gv-packages">
         <div className="gv-packages__header">
@@ -1616,6 +1626,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                   <span aria-hidden="true">◎</span>
                 </button>
               </header>
+              {/*
               <div className="gv-auth-company">
                 <div className="gv-auth-company__text">
                   <strong><span>شركة</span> رواد</strong>
@@ -1624,6 +1635,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                 <span className="gv-auth-company__divider" />
                 <img src="/landingpage/company-logo.png" alt="رواد العمرة" />
               </div>
+              */}
 
               <div className="gv-auth-card">
                 <div className="gv-auth-card__head">
