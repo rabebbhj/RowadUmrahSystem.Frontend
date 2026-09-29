@@ -1411,7 +1411,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       <section className="gv-hero" id="globalview">
         <div className="gv-hero__shade" />
         <header className="gv-header">
-          <div className="gv-topbar">
+          <div className="gv-topbar gv-topbar--contact-only">
             {/*
             <div className="gv-brand gv-brand--company">
               <img src="/landingpage/company-logo.png" alt="شركة رواد لخدمات العمرة والحج" />
