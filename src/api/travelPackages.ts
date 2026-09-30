@@ -276,22 +276,37 @@ function calculateProfilePackagePrice(packageItem: TravelPackage, context: Packa
   if (!profile?.enabled) return null;
 
   const durationDays = context.durationDays ?? packageItem.durationDays;
+  const travelers = Math.max(1, Number(context.travelers) || 1);
   const roomParts = getRoomParts(context.roomType);
   const selectedRoomParts = roomParts.length > 0 ? roomParts : [packageItem.roomTypes.find((item) => item.active)?.label ?? ""].filter(Boolean);
-  const roomTotal = selectedRoomParts.reduce((total, roomLabel) => {
+  let assignedTravelers = 0;
+  const roomTotal = selectedRoomParts.reduce((total, roomLabel, index) => {
+    const roomType = packageItem.roomTypes.find((item) => item.label === roomLabel);
+    const capacity = Math.max(1, getRoomCapacity(roomType ?? roomLabel));
+    const remainingTravelers = Math.max(0, travelers - assignedTravelers);
+    const roomTravelers = index === selectedRoomParts.length - 1
+      ? remainingTravelers || Math.min(capacity, travelers)
+      : Math.min(capacity, remainingTravelers || capacity);
     const makkahPrice = getRoomProfilePrice(profile.makkahRoomPrices, durationDays, roomLabel);
     const madinahPrice = getRoomProfilePrice(profile.madinahRoomPrices, durationDays, roomLabel);
 
-    return total + makkahPrice + madinahPrice;
+    assignedTravelers += roomTravelers;
+
+    return total + (makkahPrice + madinahPrice) * roomTravelers;
   }, 0);
   const roomAverage = roomTotal > 0 ? roomTotal : packageItem.basePrice;
   const transportPrice = context.transport === "باص" ? (profile.busPrices[String(durationDays)] ?? 0) : 0;
   const visaPrice = context.previousVisa === "yes" ? visaFeeWhenAlreadyHasVisa : profile.visaPrice;
 
-  return roomAverage + transportPrice + visaPrice;
+  return roomAverage + (transportPrice + visaPrice) * travelers;
 }
 
 export function calculatePackagePrice(packageItem: TravelPackage, context: PackagePriceContext) {
+  const profilePrice = calculateProfilePackagePrice(packageItem, context);
+  if (profilePrice != null) {
+    return Math.round(profilePrice);
+  }
+
   const travelers = Math.max(1, Number(context.travelers) || 1);
   const roomSupplement = getSelectedOptionSupplement(packageItem.roomTypes, context.roomType);
   const transportSupplement = getSelectedOptionSupplement(packageItem.transportOptions, context.transport);
