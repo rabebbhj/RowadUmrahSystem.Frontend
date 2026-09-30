@@ -608,7 +608,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
         })
       : getHotelNightPrice(hotelName, fallbackPrice);
   const selectedPackagePrice = getReservationPackagePrice(selectedHotelInfo.name, selectedHotelInfo.price);
-  const hotelTotal = selectedPackage ? selectedPackagePrice * selectedTravelerCount : selectedHotelNightPrice * bookingNights;
+  const hotelTotal = selectedPackage ? selectedPackagePrice : selectedHotelNightPrice * bookingNights;
   const servicesTotal = 0;
   const reservationTotal = hotelTotal + servicesTotal;
   const reservationBaseLabel = selectedPackage ? "سعر الباقة" : "سعر الفندق";
@@ -1254,7 +1254,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       departureDate: options.bookingDate,
       durationDays: program.durationDays
     });
-    const displayPrice = (dynamicPrice || getPackageFromPrice(program)) * travelerCount;
+    const displayPrice = dynamicPrice || getPackageFromPrice(program);
 
     return (
       <article className={`gv-travel-card ${variant === "rowad" ? "gv-travel-card--rowad" : "gv-travel-card--standard"}`} key={program.id}>

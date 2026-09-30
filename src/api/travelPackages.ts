@@ -236,6 +236,13 @@ function getSelectedOptionSupplement(options: PackageOption[], label?: string) {
   return selected?.supplement ?? 0;
 }
 
+function getRuleTotal(rule: PricingRule, travelers: number) {
+  const priceType = rule.priceType.trim().toLowerCase();
+  const isPerPerson = priceType === "perperson" || priceType.includes("person") || priceType.includes("شخص");
+
+  return rule.price * (isPerPerson ? travelers : 1);
+}
+
 function ruleHasCondition(rule: PricingRule, field: string) {
   return rule.conditions.some((condition) => condition.field === field);
 }
@@ -272,18 +279,12 @@ function calculateProfilePackagePrice(packageItem: TravelPackage, context: Packa
   const roomParts = getRoomParts(context.roomType);
   const selectedRoomParts = roomParts.length > 0 ? roomParts : [packageItem.roomTypes.find((item) => item.active)?.label ?? ""].filter(Boolean);
   const roomTotal = selectedRoomParts.reduce((total, roomLabel) => {
-    const roomType = packageItem.roomTypes.find((item) => item.label === roomLabel);
-    const capacity = getRoomCapacity(roomType ?? roomLabel);
     const makkahPrice = getRoomProfilePrice(profile.makkahRoomPrices, durationDays, roomLabel);
     const madinahPrice = getRoomProfilePrice(profile.madinahRoomPrices, durationDays, roomLabel);
 
-    return total + (makkahPrice + madinahPrice) * capacity;
+    return total + makkahPrice + madinahPrice;
   }, 0);
-  const travelers = Math.max(1, context.travelers ?? selectedRoomParts.reduce((total, roomLabel) => {
-    const roomType = packageItem.roomTypes.find((item) => item.label === roomLabel);
-    return total + getRoomCapacity(roomType ?? roomLabel);
-  }, 1));
-  const roomAverage = roomTotal > 0 ? roomTotal / travelers : packageItem.basePrice;
+  const roomAverage = roomTotal > 0 ? roomTotal : packageItem.basePrice;
   const transportPrice = context.transport === "باص" ? (profile.busPrices[String(durationDays)] ?? 0) : 0;
   const visaPrice = context.previousVisa === "yes" ? visaFeeWhenAlreadyHasVisa : profile.visaPrice;
 
@@ -291,11 +292,7 @@ function calculateProfilePackagePrice(packageItem: TravelPackage, context: Packa
 }
 
 export function calculatePackagePrice(packageItem: TravelPackage, context: PackagePriceContext) {
-  const profilePrice = calculateProfilePackagePrice(packageItem, context);
-  if (profilePrice != null) {
-    return Math.round(profilePrice);
-  }
-
+  const travelers = Math.max(1, Number(context.travelers) || 1);
   const roomSupplement = getSelectedOptionSupplement(packageItem.roomTypes, context.roomType);
   const transportSupplement = getSelectedOptionSupplement(packageItem.transportOptions, context.transport);
   const configuredVisaSupplement = packageItem.visaSupplement && packageItem.visaSupplement > 0
@@ -316,15 +313,17 @@ export function calculatePackagePrice(packageItem: TravelPackage, context: Packa
       return second.conditions.length - first.conditions.length;
     });
 
-  const selectedRule = matchingRules[0];
-  if (selectedRule) {
-    return selectedRule.price +
-      (ruleHasCondition(selectedRule, "roomType") ? 0 : roomSupplement) +
-      (ruleHasCondition(selectedRule, "transport") ? 0 : transportSupplement) +
-      (ruleHasCondition(selectedRule, "previousVisa") ? 0 : visaSupplement);
+  const matchingConditionalRules = matchingRules.filter((rule) => rule.conditions.length > 0);
+  if (matchingConditionalRules.length > 0) {
+    return matchingConditionalRules.reduce((total, rule) => total + getRuleTotal(rule, travelers), 0);
   }
 
-  return packageItem.basePrice + optionSupplement;
+  const selectedRule = matchingRules[0];
+  if (selectedRule) {
+    return getRuleTotal(selectedRule, travelers);
+  }
+
+  return packageItem.basePrice;
 }
 
 export function createEmptyPackage(order = 1): TravelPackage {
