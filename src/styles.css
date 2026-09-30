@@ -14012,8 +14012,7 @@ main {
   }
 
   .gv-hero__content {
-    padding-top: clamp(72px, 11vh, 104px) !important;
-    padding-bottom: clamp(34px, 5vh, 54px) !important;
+    padding-top: clamp(72px, 10vh, 104px) !important;
   }
 
   .gv-search {
