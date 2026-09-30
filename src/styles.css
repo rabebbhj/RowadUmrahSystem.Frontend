@@ -5435,7 +5435,7 @@ img {
   padding: 18px 12px;
   display: grid;
   justify-items: center;
-  gap: 6px;
+  gap: 10px;
   text-align: center;
   border-inline-start: 1px solid rgba(201, 155, 72, 0.25);
 }
@@ -5455,6 +5455,8 @@ img {
 .gv-service-grid span {
   color: #afa493;
   font-size: 12px;
+  max-width: 18ch;
+  line-height: 1.35;
 }
 
 .gv-footer {
@@ -13750,6 +13752,7 @@ main {
   .gv-service-grid article {
     min-height: 142px;
     padding: 18px 10px;
+    gap: 12px;
     border-inline-start: 1px solid rgba(201, 155, 72, 0.25);
     border-bottom: 1px solid rgba(201, 155, 72, 0.22);
   }
@@ -13766,10 +13769,10 @@ main {
   }
 
   .gv-service-grid span {
-    max-width: 12ch;
+    max-width: 18ch;
     font-size: 0.82rem;
-    line-height: 1.55;
-    overflow-wrap: anywhere;
+    line-height: 1.35;
+    overflow-wrap: normal;
   }
 
   .gv-travel-card,

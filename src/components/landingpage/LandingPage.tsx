@@ -183,7 +183,7 @@ const defaultTravelPackageOptions: TravelPackageOptionState = {
 };
 const rowadPackagePrefix = "rowad-company-";
 const rowadFixedTransport = "باص";
-const regularFixedTransport = "سيارة فردية";
+const regularFixedTransport = "سيارة خاصة";
 
 function isRowadTravelPackage(packageItem: TravelPackage | null | undefined) {
   return Boolean(packageItem?.id.startsWith(rowadPackagePrefix));
@@ -306,8 +306,6 @@ function getRoomCapacity(roomType: PackageOption | string | null | undefined) {
   return 0;
 }
 
-const singleRoomLabel = "غرفة فردية";
-
 function buildRoomCombinationLabel(rooms: PackageOption[]) {
   return rooms.map((room) => room.label).join(" + ");
 }
@@ -328,6 +326,11 @@ function getRoomCombinationOptions(packageItem: TravelPackage | null | undefined
     .map((roomType) => ({ ...roomType, capacity: getRoomCapacity(roomType) }))
     .filter((roomType) => roomType.capacity > 0)
     .sort((first, second) => second.capacity - first.capacity);
+
+  if (travelerCount === 1) {
+    return validRoomTypes.map((roomType) => roomType.label);
+  }
+
   const combinations: PackageOption[][] = [];
 
   function collect(startIndex: number, remainingCapacity: number, selectedRooms: PackageOption[]) {
@@ -354,10 +357,6 @@ function getRoomCombinationOptions(packageItem: TravelPackage | null | undefined
   const combinationOptions = combinations.map(buildRoomCombinationLabel);
   const options = Array.from(new Set([...exactRoomOptions, ...combinationOptions]));
 
-  if (travelerCount === 1 && !options.some((roomType) => getRoomCapacity(roomType) === 1)) {
-    return [singleRoomLabel, ...options];
-  }
-
   return options;
 }
 
@@ -370,11 +369,6 @@ function getCompatibleRoomLabel(packageItem: TravelPackage | null | undefined, t
   }
 
   return roomOptions[0] || defaultRoomLabel;
-}
-
-function getCompatibleTravelerCount(packageItem: TravelPackage | null | undefined, roomType: string, fallback = "1") {
-  const capacity = getRoomCombinationCapacity(packageItem, roomType) || getRoomCapacity(roomType);
-  return capacity > 0 ? String(capacity) : fallback;
 }
 
 export default function LandingPage({ initialAuthView = null }: LandingPageProps) {
@@ -758,10 +752,6 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
       if (name === "travelers") {
         nextOptions.roomType = getCompatibleRoomLabel(packageItem, value, currentOptions.roomType);
-      }
-
-      if (name === "roomType") {
-        nextOptions.travelers = getCompatibleTravelerCount(packageItem, value, currentOptions.travelers);
       }
 
       nextOptions.transportType = isRowadTravelPackage(packageItem) ? rowadFixedTransport : regularFixedTransport;

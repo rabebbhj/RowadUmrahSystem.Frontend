@@ -32,21 +32,6 @@ export interface RowadPricingProfile {
 
 const defaultVisaSupplement = 45;
 const visaFeeWhenAlreadyHasVisa = 5;
-const standardMakkahRoomPrices: Record<string, Record<number, number>> = {
-  "6": { 4: 25, 3: 30, 2: 35, 1: 40 },
-  "10": { 4: 35, 3: 40, 2: 45, 1: 50 },
-  "11": { 4: 35, 3: 40, 2: 45, 1: 50 }
-};
-const standardMadinahRoomPrices: Record<string, Record<number, number>> = {
-  "6": { 4: 0, 3: 0, 2: 0, 1: 0 },
-  "10": { 4: 55, 3: 60, 2: 65, 1: 70 },
-  "11": { 4: 55, 3: 60, 2: 65, 1: 70 }
-};
-const standardBusPrices: Record<string, number> = {
-  "6": 20,
-  "10": 30,
-  "11": 30
-};
 
 export interface TravelPackage {
   id: string;
@@ -305,44 +290,10 @@ function calculateProfilePackagePrice(packageItem: TravelPackage, context: Packa
   return roomAverage + transportPrice + visaPrice;
 }
 
-function calculateStandardRulesPrice(packageItem: TravelPackage, context: PackagePriceContext) {
-  const durationKey = String(context.durationDays ?? packageItem.durationDays);
-  if (!standardMakkahRoomPrices[durationKey] || !standardMadinahRoomPrices[durationKey]) return null;
-
-  const roomParts = getRoomParts(context.roomType);
-  const selectedRoomParts = roomParts.length > 0 ? roomParts : [packageItem.roomTypes.find((item) => item.active)?.label ?? ""].filter(Boolean);
-  if (selectedRoomParts.length === 0) return null;
-
-  const roomTotal = selectedRoomParts.reduce((total, roomLabel) => {
-    const roomType = packageItem.roomTypes.find((item) => item.label === roomLabel);
-    const capacity = getRoomCapacity(roomType ?? roomLabel);
-    const makkahPrice = standardMakkahRoomPrices[durationKey]?.[capacity] ?? 0;
-    const madinahPrice = standardMadinahRoomPrices[durationKey]?.[capacity] ?? 0;
-
-    return total + (makkahPrice + madinahPrice) * capacity;
-  }, 0);
-  if (roomTotal <= 0) return null;
-
-  const travelers = Math.max(1, context.travelers ?? selectedRoomParts.reduce((total, roomLabel) => {
-    const roomType = packageItem.roomTypes.find((item) => item.label === roomLabel);
-    return total + getRoomCapacity(roomType ?? roomLabel);
-  }, 1));
-  const roomAverage = roomTotal / travelers;
-  const transportPrice = context.transport === "باص" ? (standardBusPrices[durationKey] ?? 0) : 0;
-  const visaPrice = context.previousVisa === "yes" ? visaFeeWhenAlreadyHasVisa : defaultVisaSupplement;
-
-  return roomAverage + transportPrice + visaPrice;
-}
-
 export function calculatePackagePrice(packageItem: TravelPackage, context: PackagePriceContext) {
   const profilePrice = calculateProfilePackagePrice(packageItem, context);
   if (profilePrice != null) {
     return Math.round(profilePrice);
-  }
-
-  const standardRulesPrice = calculateStandardRulesPrice(packageItem, context);
-  if (standardRulesPrice != null) {
-    return Math.round(standardRulesPrice);
   }
 
   const roomSupplement = getSelectedOptionSupplement(packageItem.roomTypes, context.roomType);
@@ -395,7 +346,7 @@ export function createEmptyPackage(order = 1): TravelPackage {
     displayOrder: order,
     transportOptions: [
       { id: "bus", label: "باص", active: true, supplement: 0, price: null },
-      { id: "private-car", label: "سيارة فردية", active: true, supplement: 350, price: null }
+      { id: "private-car", label: "سيارة خاصة", active: true, supplement: 350, price: null }
     ],
     roomTypes: [
       { id: "double", label: "غرفة مزدوجة", active: true, supplement: 0, price: null },
