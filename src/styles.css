@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap");
+﻿@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap");
 
 :root {
   --bg-main: #080909;
@@ -14012,7 +14012,7 @@ main {
   }
 
   .gv-hero__content {
-    padding-top: clamp(72px, 10vh, 104px) !important;
+  padding-top: clamp(72px, 10vh, 104px) !important;
   }
 
   .gv-search {

@@ -122,9 +122,9 @@ export function ServicesPage({ onStartBooking }: { onStartBooking: () => void })
               <div className="services-page__help-copy">
                 <strong>تحتاج مساعدة؟</strong>
                 <span>فريقنا متاح لخدمتكم على مدار الساعة</span>
-                <a href="tel:+965551234567">+965 55 123 4567</a>
+                <a href="tel:+96555583203">+965 55583203 - +965 22283558</a>
               </div>
-              <a className="btn btn-ghost services-page__help-cta" href="https://wa.me/965551234567" target="_blank" rel="noreferrer">
+              <a className="btn btn-ghost services-page__help-cta" href="https://wa.me/96555583203" target="_blank" rel="noreferrer">
                 <WhatsAppIcon className="icon icon-sm" />
                 <span>تواصل عبر واتساب</span>
               </a>

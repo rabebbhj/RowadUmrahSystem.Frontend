@@ -141,7 +141,7 @@ export function CorporateOffersPage({ onBackHome }: { selectedProgramIndex: numb
             <div className="corporate-offers__help">
               <h4>تحتاج عرض مخصص لشركتك؟</h4>
               <p>تواصل معنا للحصول على عرض يناسب احتياجاتك</p>
-              <a className="btn btn-gold corporate-offers__whatsapp" href="https://wa.me/965551234567" target="_blank" rel="noreferrer">
+              <a className="btn btn-gold corporate-offers__whatsapp" href="https://wa.me/96555583203" target="_blank" rel="noreferrer">
                 <WhatsAppIcon className="icon icon-sm" />
                 <span>تواصل عبر واتساب</span>
               </a>

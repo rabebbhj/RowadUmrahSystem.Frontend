@@ -66,15 +66,19 @@ export function Footer() {
           <ul className="footer__contact">
             <li>
               <PhoneIcon className="icon icon-sm" />
-              <span>+965 55 123 4567</span>
+              <span>+965 55583203 - +965 22283558</span>
+            </li>
+            <li>
+              <PhoneIcon className="icon icon-sm" />
+              <span>+965 65002927 - +965 22283589</span>
             </li>
             <li>
               <MailIcon className="icon icon-sm" />
-              <span>info@rawad-omrah.com</span>
+              <span>info@ruwadomra.com</span>
             </li>
             <li>
               <LocationIcon className="icon icon-sm" />
-              <span>الكويت - حولي - شارع الخليج العربي</span>
+              <span>الكويت - الفروانية - شارع حبيب مناور - مجمع العربيد جاليري - مكتب 5</span>
             </li>
           </ul>
         </section>

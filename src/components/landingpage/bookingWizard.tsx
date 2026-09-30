@@ -677,10 +677,10 @@ export function BookingWizard({
                 <HeadsetIcon className="icon icon-md" />
               </div>
               <p>فريقنا متاح لمساعدتك على مدار الساعة، ويمكنه متابعة الحجز أو تعديل تفاصيله.</p>
-              <a className="booking-help__phone" href="tel:+965551234567">
-                +965 55 123 4567
+              <a className="booking-help__phone" href="tel:+96555583203">
+                +965 55583203 - +965 22283558
               </a>
-              <a className="btn btn-ghost booking-help__whatsapp" href="https://wa.me/965551234567" target="_blank" rel="noreferrer">
+              <a className="btn btn-ghost booking-help__whatsapp" href="https://wa.me/96555583203" target="_blank" rel="noreferrer">
                 <WhatsAppIcon className="icon icon-sm" />
                 <span>تواصل عبر واتساب</span>
               </a>

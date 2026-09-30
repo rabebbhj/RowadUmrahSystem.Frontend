@@ -50,7 +50,7 @@ export function ContactPage({ onStartBooking }: { onStartBooking: () => void }) 
               <button className="btn btn-gold" type="button" onClick={onStartBooking}>
                 <span>احجز الآن</span>
               </button>
-              <a className="btn btn-ghost" href="https://wa.me/965551234567" target="_blank" rel="noreferrer">
+              <a className="btn btn-ghost" href="https://wa.me/96555583203" target="_blank" rel="noreferrer">
                 <WhatsAppIcon className="icon icon-sm" />
                 <span>واتساب</span>
               </a>
@@ -131,7 +131,7 @@ export function ContactPage({ onStartBooking }: { onStartBooking: () => void }) 
                 </span>
                 <div>
                   <strong>اتصل بنا</strong>
-                  <p>+965 55 123 4567</p>
+                  <p>+965 55583203 - +965 22283558</p>
                   <small>متاح 24/7</small>
                 </div>
               </div>
@@ -142,7 +142,7 @@ export function ContactPage({ onStartBooking }: { onStartBooking: () => void }) 
                 </span>
                 <div>
                   <strong>واتساب</strong>
-                  <p>+965 55 123 4567</p>
+                  <p>+965 65002927 - +965 22283589</p>
                   <small>رد سريع عبر واتساب</small>
                 </div>
               </div>
@@ -153,7 +153,7 @@ export function ContactPage({ onStartBooking }: { onStartBooking: () => void }) 
                 </span>
                 <div>
                   <strong>البريد الإلكتروني</strong>
-                  <p>info@rawad-omrah.com</p>
+                  <p>info@ruwadomra.com</p>
                   <small>نرد خلال 24 ساعة</small>
                 </div>
               </div>
@@ -209,7 +209,7 @@ export function ContactPage({ onStartBooking }: { onStartBooking: () => void }) 
                   <BuildingIcon className="icon icon-md" />
                   <strong>الكويت</strong>
                   <span>شارع الخليج العربي</span>
-                  <small>+965 55 123 4567</small>
+                  <small>+965 55583203 - +965 22283558</small>
                 </article>
                 <article className="contact-branch-card">
                   <BuildingIcon className="icon icon-md" />

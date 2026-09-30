@@ -140,7 +140,7 @@ export function AboutPage({ onStartBooking }: { onStartBooking: () => void }) {
             <strong>جاهز لرحلة روحانية مميزة؟</strong>
             <p>تواصل معنا الآن للحصول على عرض يناسب احتياجاتك.</p>
           </div>
-          <a className="btn btn-ghost about-cta__whatsapp" href="https://wa.me/965551234567" target="_blank" rel="noreferrer">
+          <a className="btn btn-ghost about-cta__whatsapp" href="https://wa.me/96555583203" target="_blank" rel="noreferrer">
             <WhatsAppIcon className="icon icon-sm" />
             <span>تواصل عبر واتساب</span>
           </a>

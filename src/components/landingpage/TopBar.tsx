@@ -9,7 +9,7 @@ export function TopBar({ onBookNow }: { onBookNow: () => void }) {
             <CalendarIcon className="icon icon-sm" />
             <span>احجز الآن</span>
           </button>
-          <a className="topbar__circle" href="https://wa.me/965551234567" aria-label="WhatsApp">
+          <a className="topbar__circle" href="https://wa.me/96555583203" aria-label="WhatsApp">
             <WhatsAppIcon className="icon icon-sm" />
           </a>
         </div>
@@ -17,15 +17,19 @@ export function TopBar({ onBookNow }: { onBookNow: () => void }) {
         <div className="topbar__contact">
           <span className="topbar__item">
             <PhoneIcon className="icon icon-sm" />
-            <span>+965 55 123 4567</span>
+            <span>+965 55583203 - +965 22283558</span>
+          </span>
+          <span className="topbar__item">
+            <PhoneIcon className="icon icon-sm" />
+            <span>+965 65002927 - +965 22283589</span>
           </span>
           <span className="topbar__item">
             <MailIcon className="icon icon-sm" />
-            <span>info@rawad-omrah.com</span>
+            <span>info@ruwadomra.com</span>
           </span>
           <span className="topbar__item topbar__location">
             <LocationIcon className="icon icon-sm" />
-            <span>الكويت - حولي - شارع الخليج العربي</span>
+            <span>الكويت - الفروانية - شارع حبيب مناور - مجمع العربيد جاليري - مكتب 5</span>
           </span>
         </div>
       </div>

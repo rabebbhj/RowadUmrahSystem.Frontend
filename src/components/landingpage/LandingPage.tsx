@@ -1408,7 +1408,9 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
               <img src={landingAsset("company-logo.png")} alt="شركة رواد لخدمات العمرة والحج" />
             </div>
             <div className="gv-contact">
-              <span><MailIcon className="icon icon-sm" /> ruwadaomra26@gmail.com</span>
+              <span><MailIcon className="icon icon-sm" /> info@ruwadomra.com</span>
+              <span><PhoneIcon className="icon icon-sm" /> +965 55583203 - +965 22283558</span>
+              <span><PhoneIcon className="icon icon-sm" /> +965 65002927 - +965 22283589</span>
               <span><LocationIcon className="icon icon-sm" /> العربية</span>
               {/*
               {travelerUser?.isAuthenticated ? (
@@ -2201,8 +2203,10 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           <li>النقل الداخلي</li>
         </ul>
         <div className="gv-footer__contact">
-          <span><MailIcon className="icon icon-sm" /> ruwadaomra26@gmail.com</span>
-          <span><LocationIcon className="icon icon-sm" /> الكويت - حولي</span>
+          <span><MailIcon className="icon icon-sm" /> info@ruwadomra.com</span>
+          <span><PhoneIcon className="icon icon-sm" /> +965 55583203 - +965 22283558</span>
+          <span><PhoneIcon className="icon icon-sm" /> +965 65002927 - +965 22283589</span>
+          <span><LocationIcon className="icon icon-sm" /> الكويت - الفروانية - شارع حبيب مناور - مجمع العربيد جاليري - مكتب 5</span>
         </div>
       </footer>
     </main>
