@@ -1977,6 +1977,15 @@ img {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
 }
 
+.gv-card__image-text--travel,
+.gv-card__image-text--corporate {
+  max-width: 11.5rem;
+}
+
+.gv-card__image-text--visa {
+  white-space: nowrap;
+}
+
 .gv-card__image-text::after {
   content: "";
   width: 42px;
@@ -5485,6 +5494,12 @@ img {
   width: 58px;
   height: 58px;
   color: #d6aa5c;
+}
+
+.gv-footer__brand img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
 }
 
 .gv-footer__brand strong {
@@ -13988,7 +14003,7 @@ main {
 /* Extra compact first viewport hero. */
 @media (min-width: 981px) {
   .gv-hero {
-    min-height: clamp(350px, 43vw, 430px) !important;
+    min-height: clamp(320px, 37vw, 390px) !important;
   }
 
   .gv-hero::after {
@@ -13997,8 +14012,8 @@ main {
   }
 
   .gv-hero__content {
-    padding-top: clamp(14px, 2.3vh, 24px) !important;
-    padding-bottom: clamp(60px, 8vh, 78px) !important;
+    padding-top: clamp(72px, 11vh, 104px) !important;
+    padding-bottom: clamp(34px, 5vh, 54px) !important;
   }
 
   .gv-search {

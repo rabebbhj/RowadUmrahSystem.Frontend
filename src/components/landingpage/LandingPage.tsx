@@ -31,13 +31,15 @@ import {
   UsersIcon
 } from "./landingShared";
 
+const landingAsset = (fileName: string) => `${import.meta.env.BASE_URL}landingpage/${fileName}`;
+
 const packages = [
   {
     badge: "الرحلات",
     type: "travel",
-    image: "/landingpage/avion.png",
+    image: landingAsset("avion.png"),
     price: "45",
-    imageText: ["من كل مكان", "إلى أطهر بقاع", "الأرض"],
+    imageText: ["من كل مكان إلى أطهر بقاع", "الأرض"],
     features: ["حجوزات طيران", "حجوزات فنادق", "تنظيم الجولات", "دعم مباشر"],
     people: "1-2",
     city: "مكة",
@@ -46,7 +48,7 @@ const packages = [
   {
     badge: "التأشيرات",
     type: "visa",
-    image: "/landingpage/mains.png",
+    image: landingAsset("mains.png"),
     price: "55",
     imageText: ["خطوة أسهل", "لرحلة أيسر"],
     features: ["تأشيرات سياحية", "حجز المواعيد", "متابعة الطلب", "استشارات السفر"],
@@ -57,9 +59,9 @@ const packages = [
   {
     badge: "برامج الشركات",
     type: "corporate",
-    image: "/landingpage/reunion.png",
+    image: landingAsset("reunion.png"),
     price: "60",
-    imageText: ["شراكات", "تسهل رحلتكم", "الإيمانية"],
+    imageText: ["شراكات تسهل رحلتكم", "الإيمانية"],
     features: ["رحلات عمل", "حجوزات جماعية", "تنظيم الفعاليات", "خدمة مخصصة"],
     people: "5+",
     city: "المدينة",
@@ -89,7 +91,7 @@ const hotelOptions = [
     city: "مكة المكرمة",
     distance: "250 متر من الحرم",
     price: 1250,
-    image: "/landingpage/hero-kaaba-premium.png",
+    image: landingAsset("hero-kaaba-premium.png"),
     perks: ["إطلالة على الحرم", "مواصلات مجانية", "خدمة 24 ساعة"]
   },
   {
@@ -97,7 +99,7 @@ const hotelOptions = [
     city: "مكة المكرمة",
     distance: "350 متر من الحرم",
     price: 980,
-    image: "/landingpage/paysage.png",
+    image: landingAsset("paysage.png"),
     perks: ["مطاعم متعددة", "مواصلات مجانية", "خدمة 24 ساعة"]
   },
   {
@@ -105,7 +107,7 @@ const hotelOptions = [
     city: "مكة المكرمة",
     distance: "450 متر من الحرم",
     price: 750,
-    image: "/landingpage/avion.png",
+    image: landingAsset("avion.png"),
     perks: ["موقع مميز", "إفطار شامل", "خدمة 24 ساعة"]
   }
 ];
@@ -1221,7 +1223,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
   const rowadTravelPackages = publishedTravelPackages.filter((program) => isRowadTravelPackage(program));
   const regularTravelPackages = publishedTravelPackages.filter((program) => !isRowadTravelPackage(program));
-  const rowadTravelBackground = resolvePackageImageUrl(rowadTravelPackages[1]?.imageUrl ?? rowadTravelPackages[0]?.imageUrl ?? "/landingpage/hero-kaaba-premium.png");
+  const rowadTravelBackground = resolvePackageImageUrl(rowadTravelPackages[1]?.imageUrl ?? rowadTravelPackages[0]?.imageUrl ?? landingAsset("hero-kaaba-premium.png"));
   const rowadTravelStyle = { "--rowad-travel-bg": `url(${rowadTravelBackground})` } as CSSProperties;
 
   const renderTravelPackageCard = (program: TravelPackage, variant: "rowad" | "regular" = "regular") => {
@@ -1258,7 +1260,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       <article className={`gv-travel-card ${variant === "rowad" ? "gv-travel-card--rowad" : "gv-travel-card--standard"}`} key={program.id}>
         <div className="gv-travel-card__media" style={{ backgroundImage: `url(${resolvePackageImageUrl(program.imageUrl)})` }}>
           <span><CalendarIcon className="icon icon-sm" /> {program.durationLabel}</span>
-          {variant === "rowad" ? <em className="gv-travel-card__brand">رواد</em> : null}
+          {/* {variant === "rowad" ? <em className="gv-travel-card__brand">رواد</em> : null} */}
         </div>
         <div className="gv-travel-card__body">
           <div className="gv-travel-card__features gv-travel-card__features--controls">
@@ -1401,15 +1403,12 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       <section className="gv-hero" id="globalview">
         <div className="gv-hero__shade" />
         <header className="gv-header">
-          <div className="gv-topbar gv-topbar--contact-only">
-            {/*
+          <div className="gv-topbar">
             <div className="gv-brand gv-brand--company">
-              <img src="/landingpage/company-logo.png" alt="شركة رواد لخدمات العمرة والحج" />
+              <img src={landingAsset("company-logo.png")} alt="شركة رواد لخدمات العمرة والحج" />
             </div>
-            */}
             <div className="gv-contact">
-              <span><MailIcon className="icon icon-sm" /> info@umrah.com</span>
-              <span><PhoneIcon className="icon icon-sm" /> +965 55 123 4567</span>
+              <span><MailIcon className="icon icon-sm" /> ruwadaomra26@gmail.com</span>
               <span><LocationIcon className="icon icon-sm" /> العربية</span>
               {/*
               {travelerUser?.isAuthenticated ? (
@@ -1528,7 +1527,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                   {program.type === "corporate" ? <UsersIcon className="icon icon-sm" /> : null}
                   {program.badge}
                 </span>
-                <p className="gv-card__image-text">
+                <p className={`gv-card__image-text gv-card__image-text--${program.type}`}>
                   {program.imageText.map((line) => (
                     <span key={line}>{line}</span>
                   ))}
@@ -1623,7 +1622,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                   <small>للسفر والسياحة وخدمات العمرة</small>
                 </div>
                 <span className="gv-auth-company__divider" />
-                <img src="/landingpage/company-logo.png" alt="رواد العمرة" />
+                <img src={landingAsset("company-logo.png")} alt="رواد العمرة" />
               </div>
               */}
 
@@ -2184,7 +2183,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
       <footer className="gv-footer">
         <div className="gv-footer__brand">
-          <MosqueIcon className="icon" />
+          <img src={landingAsset("company-logo.png")} alt="شركة رواد لخدمات العمرة والحج" />
           <div>
             <strong>رواد العمرة</strong>
             <p>نقدم لكم رحلات عمرة مميزة بأعلى معايير الراحة والثقة.</p>
@@ -2202,8 +2201,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           <li>النقل الداخلي</li>
         </ul>
         <div className="gv-footer__contact">
-          <span><PhoneIcon className="icon icon-sm" /> +965 55 123 4567</span>
-          <span><MailIcon className="icon icon-sm" /> info@rawad-omrah.com</span>
+          <span><MailIcon className="icon icon-sm" /> ruwadaomra26@gmail.com</span>
           <span><LocationIcon className="icon icon-sm" /> الكويت - حولي</span>
         </div>
       </footer>
