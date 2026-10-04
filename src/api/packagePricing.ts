@@ -1,4 +1,4 @@
-export interface PackagePricingItem {
+﻿export interface PackagePricingItem {
   packageDays: string;
   hotelName: string;
   nationality: string;
@@ -27,7 +27,7 @@ async function readErrorMessage(response: Response): Promise<string> {
 
   const text = await response.text();
   if (contentType.includes("text/html") || /^\s*<!doctype html/i.test(text) || /^\s*<html/i.test(text)) {
-    return "Erreur serveur. Verifiez les migrations et les journaux de production.";
+    return "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.";
   }
 
   return text || `API error: ${response.status}`;

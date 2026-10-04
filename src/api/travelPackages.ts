@@ -1,4 +1,4 @@
-export interface PackageOption {
+﻿export interface PackageOption {
   id: string;
   label: string;
   active: boolean;
@@ -85,7 +85,7 @@ async function readErrorMessage(response: Response): Promise<string> {
 
   const text = await response.text();
   if (contentType.includes("text/html") || /^\s*<!doctype html/i.test(text) || /^\s*<html/i.test(text)) {
-    return "Erreur serveur. Verifiez les migrations et les journaux de production.";
+    return "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.";
   }
 
   return text || `API error: ${response.status}`;
@@ -426,32 +426,32 @@ export function createEmptyPackage(order = 1): TravelPackage {
 
   return {
     id: "",
-    name: "باقة عمرة جديدة",
-    shortTitle: "رحلة عمرة",
+    name: "Ø¨Ø§Ù‚Ø© Ø¹Ù…Ø±Ø© Ø¬Ø¯ÙŠØ¯Ø©",
+    shortTitle: "Ø±Ø­Ù„Ø© Ø¹Ù…Ø±Ø©",
     description: "",
     durationDays: 6,
-    durationLabel: "6 أيام",
+    durationLabel: "6 Ø£ÙŠØ§Ù…",
     imageUrl: "/landingpage/paysage.png",
     basePrice: 75,
     visaSupplement: defaultVisaSupplement,
-    currency: "د.ك",
+    currency: "Ø¯.Ùƒ",
     priceMode: "rules",
     status: "draft",
     displayOrder: order,
     transportOptions: [
-      { id: "bus", label: "باص", active: true, supplement: 0, price: null },
-      { id: "private-car", label: "سيارة خاصة", active: true, supplement: 350, price: null }
+      { id: "bus", label: "Ø¨Ø§Øµ", active: true, supplement: 0, price: null },
+      { id: "private-car", label: "Ø³ÙŠØ§Ø±Ø© Ø®Ø§ØµØ©", active: true, supplement: 350, price: null }
     ],
     roomTypes: [
-      { id: "double", label: "غرفة مزدوجة", active: true, supplement: 0, price: null },
-      { id: "quad", label: "غرفة رباعية", active: true, supplement: 0, price: null }
+      { id: "double", label: "ØºØ±ÙØ© Ù…Ø²Ø¯ÙˆØ¬Ø©", active: true, supplement: 0, price: null },
+      { id: "quad", label: "ØºØ±ÙØ© Ø±Ø¨Ø§Ø¹ÙŠØ©", active: true, supplement: 0, price: null }
     ],
     departureDates: [],
     pricingProfile: null,
     pricingRules: [
       {
         id: "default-rule",
-        name: "السعر الأساسي",
+        name: "Ø§Ù„Ø³Ø¹Ø± Ø§Ù„Ø£Ø³Ø§Ø³ÙŠ",
         conditions: [],
         price: 75,
         priceType: "perPerson",

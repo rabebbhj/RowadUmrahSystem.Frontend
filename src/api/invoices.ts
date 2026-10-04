@@ -1,4 +1,4 @@
-export enum InvoiceStatus {
+﻿export enum InvoiceStatus {
   Unpaid = 1,
   PartiallyPaid = 2,
   Paid = 3,
@@ -122,7 +122,7 @@ async function readErrorMessage(response: Response): Promise<string> {
   const text = await response.text();
 
   if ((response.headers.get("content-type") ?? "").includes("text/html") || /^\s*<!doctype html/i.test(text) || /^\s*<html/i.test(text)) {
-    return "Erreur serveur. Verifiez les migrations et les journaux de production.";
+    return "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.";
   }
 
   return text || `API error: ${response.status}`;
@@ -158,17 +158,17 @@ export function invoiceStatusLabel(status: InvoiceStatus): string {
 export function paymentMethodLabel(method: PaymentMethod): string {
   switch (method) {
     case PaymentMethod.Cash:
-      return "نقدي";
+      return "Ù†Ù‚Ø¯ÙŠ";
     case PaymentMethod.BankTransfer:
-      return "تحويل بنكي";
+      return "ØªØ­ÙˆÙŠÙ„ Ø¨Ù†ÙƒÙŠ";
     case PaymentMethod.KNet:
       return "KNet";
     case PaymentMethod.Visa:
       return "Visa";
     case PaymentMethod.Cheque:
-      return "شيك";
+      return "Ø´ÙŠÙƒ";
     case PaymentMethod.Other:
-      return "أخرى";
+      return "Ø£Ø®Ø±Ù‰";
     default:
       return "Unknown";
   }
