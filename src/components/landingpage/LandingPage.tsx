@@ -150,6 +150,22 @@ const emptyReservationForm = {
   civilId: ""
 };
 
+function chooseRicherName(currentName: string, nextName: string | null | undefined) {
+  const current = currentName.trim().replace(/\s+/g, " ");
+  const next = (nextName ?? "").trim().replace(/\s+/g, " ");
+
+  if (!next) return currentName;
+  if (!current) return next;
+
+  const currentParts = current.split(" ").filter(Boolean).length;
+  const nextParts = next.split(" ").filter(Boolean).length;
+
+  if (nextParts > currentParts) return next;
+  if (nextParts === currentParts && next.length > current.length) return next;
+
+  return currentName;
+}
+
 const nationalityOptions = [
   "سوري",
   "مالي",
@@ -1330,7 +1346,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
         setReservationForm((current) => ({
           ...current,
           passportNumber: result.passportNumber || current.passportNumber,
-          fullName: result.fullName || current.fullName,
+          fullName: chooseRicherName(current.fullName, result.fullName),
           nationality: normalizeNationality(result.nationality) || current.nationality,
           gender: result.gender || current.gender,
           dateOfBirth: toDateInputValue(result.dateOfBirth) || current.dateOfBirth,
@@ -1349,7 +1365,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           ...current,
           civilId: result.civilId || current.civilId,
           passportNumber: result.passportNumber || current.passportNumber,
-          fullName: result.fullName || current.fullName,
+          fullName: chooseRicherName(current.fullName, result.fullName),
           nationality: normalizeNationality(result.nationality) || current.nationality,
           gender: result.gender || current.gender,
           dateOfBirth: toDateInputValue(result.dateOfBirth) || current.dateOfBirth,
