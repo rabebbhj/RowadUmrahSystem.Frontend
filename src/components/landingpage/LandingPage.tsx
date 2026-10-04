@@ -833,11 +833,13 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       return;
     }
 
+    /*
     if (!travelerUser?.isAuthenticated) {
       openAuthPopup("login", bookingTitle, packageId);
       setAuthMessage("يرجى تسجيل الدخول لإتمام الحجز.");
       return;
     }
+    */
 
     openReservationSection(bookingTitle, packageId);
   };
@@ -1363,12 +1365,14 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   };
 
   const submitReservation = async () => {
+    /*
     if (!travelerUser?.isAuthenticated) {
       setBookingSectionOpen(false);
       openAuthPopup("login", selectedBookingTitle || "حجز جديد", selectedPackageId);
       setAuthMessage("يرجى تسجيل الدخول قبل تأكيد طلب الحجز.");
       return;
     }
+    */
 
     if (!validateReservationData()) {
       setReservationStatus("يرجى مراجعة البيانات المطلوبة.");
