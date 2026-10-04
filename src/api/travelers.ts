@@ -166,6 +166,10 @@ async function readErrorMessage(response: Response): Promise<string> {
   }
 
   const text = await response.text();
+  if (contentType.includes("text/html") || /^\s*<!doctype html/i.test(text) || /^\s*<html/i.test(text)) {
+    return translateProblemTitle("", response.status);
+  }
+
   return normalizeArabicMessage(text || translateProblemTitle("", response.status));
 }
 

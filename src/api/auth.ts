@@ -53,6 +53,29 @@ export interface LoginRequest {
   rememberMe: boolean;
 }
 
+export interface RegisterTravelerRequest {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+}
+
+export interface VerifyEmailRequest {
+  email: string;
+  code: string;
+  rememberMe: boolean;
+}
+
+export interface EmailRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  code: string;
+  password: string;
+}
+
 const fetchOptions = {
   credentials: "include" as const,
   headers: {
@@ -97,4 +120,36 @@ export async function logout(): Promise<void> {
   if (!response.ok) {
     throw new Error(`API error: ${response.status}`);
   }
+}
+
+async function postAuth(path: string, body: unknown): Promise<LoginResult> {
+  const response = await fetch(path, {
+    method: "POST",
+    ...fetchOptions,
+    body: JSON.stringify(body)
+  });
+
+  const data = (await response.json()) as LoginResult;
+
+  return data;
+}
+
+export function registerTraveler(request: RegisterTravelerRequest): Promise<LoginResult> {
+  return postAuth("/api/auth/register-traveler", request);
+}
+
+export function verifyEmail(request: VerifyEmailRequest): Promise<LoginResult> {
+  return postAuth("/api/auth/verify-email", request);
+}
+
+export function resendEmailCode(request: EmailRequest): Promise<LoginResult> {
+  return postAuth("/api/auth/resend-email-code", request);
+}
+
+export function forgotPassword(request: EmailRequest): Promise<LoginResult> {
+  return postAuth("/api/auth/forgot-password", request);
+}
+
+export function resetPassword(request: ResetPasswordRequest): Promise<LoginResult> {
+  return postAuth("/api/auth/reset-password", request);
 }

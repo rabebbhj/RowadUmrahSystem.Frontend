@@ -48,6 +48,16 @@ export interface DashboardData {
   latestAuditLogs: LatestAuditLog[];
 }
 
+async function readErrorMessage(response: Response): Promise<string> {
+  const text = await response.text();
+
+  if ((response.headers.get("content-type") ?? "").includes("text/html") || /^\s*<!doctype html/i.test(text) || /^\s*<html/i.test(text)) {
+    return "Erreur serveur. Verifiez les migrations et les journaux de production.";
+  }
+
+  return text || `API error: ${response.status}`;
+}
+
 export async function getDashboard(): Promise<DashboardData> {
   const response = await fetch("/api/dashboard", {
     credentials: "include"
@@ -58,7 +68,7 @@ export async function getDashboard(): Promise<DashboardData> {
   }
 
   if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+    throw new Error(await readErrorMessage(response));
   }
 
   return response.json() as Promise<DashboardData>;

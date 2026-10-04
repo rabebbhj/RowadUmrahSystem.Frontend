@@ -1,5 +1,15 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { getCurrentUser, login as loginUser, logout as logoutUser, type AuthUser } from "../../api/auth";
+import {
+  forgotPassword,
+  getCurrentUser,
+  login as loginUser,
+  logout as logoutUser,
+  registerTraveler,
+  resendEmailCode,
+  resetPassword,
+  verifyEmail,
+  type AuthUser
+} from "../../api/auth";
 import type { CSSProperties, FormEvent } from "react";
 import { findPackagePrice, getPackagePricing, type PackagePricing } from "../../api/packagePricing";
 import { createTraveler, readCivilIdOcr, readPassportOcr } from "../../api/travelers";
@@ -28,6 +38,7 @@ import {
   PlaneIcon,
   SearchIcon,
   ShieldIcon,
+  StarIcon,
   UsersIcon
 } from "./landingShared";
 
@@ -166,6 +177,7 @@ type ReservationUploadKind = UploadKind | "visa";
 type AuthPopupView = "login" | "register" | "forgot" | "reset" | "verify" | "twoFactor";
 type TravelPackageOptionState = {
   bookingDate: string;
+  returnDate: string;
   travelers: string;
   roomType: string;
   transportType: string;
@@ -176,6 +188,7 @@ type TravelPackageOptionState = {
 type TravelPackageOptions = Record<string, TravelPackageOptionState>;
 const defaultTravelPackageOptions: TravelPackageOptionState = {
   bookingDate: "",
+  returnDate: "",
   travelers: "1",
   roomType: "",
   transportType: "",
@@ -186,6 +199,8 @@ const defaultTravelPackageOptions: TravelPackageOptionState = {
 const rowadPackagePrefix = "rowad-company-";
 const rowadFixedTransport = "باص";
 const regularFixedTransport = "سيارة خاصة";
+const minLibreTravelDays = 6;
+const longLibreTravelDays = 10;
 
 function isRowadTravelPackage(packageItem: TravelPackage | null | undefined) {
   return Boolean(packageItem?.id.startsWith(rowadPackagePrefix));
@@ -211,6 +226,63 @@ function getTodayDateInputValue() {
   const today = new Date();
   const timezoneOffset = today.getTimezoneOffset() * 60 * 1000;
   return new Date(today.getTime() - timezoneOffset).toISOString().slice(0, 10);
+}
+
+function parseDateInputValue(value: string | null | undefined) {
+  if (!value) return null;
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
+
+function getInclusiveDateRangeDays(startDate: string | null | undefined, endDate: string | null | undefined) {
+  const start = parseDateInputValue(startDate);
+  const end = parseDateInputValue(endDate);
+  if (!start || !end || end < start) return 0;
+  const dayMilliseconds = 24 * 60 * 60 * 1000;
+  return Math.floor((end.getTime() - start.getTime()) / dayMilliseconds) + 1;
+}
+
+function getLibrePricingDurationDays(startDate: string | null | undefined, endDate: string | null | undefined, fallbackDays: number) {
+  const travelDays = getInclusiveDateRangeDays(startDate, endDate);
+  if (travelDays >= longLibreTravelDays) return longLibreTravelDays;
+  if (travelDays >= minLibreTravelDays) return minLibreTravelDays;
+  return fallbackDays;
+}
+
+function getLibreDateRangeError(startDate: string | null | undefined, endDate: string | null | undefined) {
+  const travelDays = getInclusiveDateRangeDays(startDate, endDate);
+  return startDate && endDate && travelDays < minLibreTravelDays
+    ? "يجب ألا تقل مدة الرحلة عن 6 أيام."
+    : "";
+}
+
+function addMonthsToDate(value: string, amount: number) {
+  const [year, month] = value.split("-").map(Number);
+  const nextDate = new Date(year, (month || 1) - 1 + amount, 1);
+  const nextYear = nextDate.getFullYear();
+  const nextMonth = String(nextDate.getMonth() + 1).padStart(2, "0");
+  return `${nextYear}-${nextMonth}-01`;
+}
+
+function getMonthLabel(value: string) {
+  const [year, month] = value.split("-").map(Number);
+  return new Intl.DateTimeFormat("ar", { month: "long", year: "numeric" }).format(new Date(year, (month || 1) - 1, 1));
+}
+
+function getMonthGrid(value: string) {
+  const [year, month] = value.split("-").map(Number);
+  const monthIndex = (month || 1) - 1;
+  const firstDate = new Date(year, monthIndex, 1);
+  const dayCount = new Date(year, monthIndex + 1, 0).getDate();
+  const offset = firstDate.getDay();
+  const days: Array<string | null> = Array.from({ length: offset }, () => null);
+
+  for (let day = 1; day <= dayCount; day += 1) {
+    days.push(toDateInputValue(new Date(year, monthIndex, day).toISOString()));
+  }
+
+  return days;
 }
 
 function isImageFile(file: File) {
@@ -379,6 +451,8 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const [activePackageView, setActivePackageView] = useState<"travel" | null>(null);
   const [publishedTravelPackages, setPublishedTravelPackages] = useState<TravelPackage[]>([]);
   const [travelOptions, setTravelOptions] = useState<TravelPackageOptions>({});
+  const [openDateRangePicker, setOpenDateRangePicker] = useState<string | null>(null);
+  const [dateRangeMonths, setDateRangeMonths] = useState<Record<string, string>>({});
   const [bookingSectionOpen, setBookingSectionOpen] = useState(false);
   const [selectedBookingTitle, setSelectedBookingTitle] = useState("");
   const [selectedPackageId, setSelectedPackageId] = useState("");
@@ -412,6 +486,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const [authErrors, setAuthErrors] = useState<{ email?: string; password?: string }>({});
   const [travelerUser, setTravelerUser] = useState<AuthUser | null>(null);
   const [packagePricing, setPackagePricing] = useState<PackagePricing | null>(null);
+  const [selectedChoiceDetailPackageId, setSelectedChoiceDetailPackageId] = useState<string | null>(null);
   const [showAuthPassword, setShowAuthPassword] = useState(false);
   const [registerForm, setRegisterForm] = useState({
     fullName: "",
@@ -587,8 +662,13 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const selectedHasVisa = hasExistingVisa(selectedTravelOptions.hasVisa);
   const selectedVisaChoice = getVisaChoiceValue(selectedTravelOptions.hasVisa, selectedNationality);
   const selectedVisaLabel = getVisaTypeLabel(selectedVisaChoice, selectedNationality);
-  const bookingDays = selectedPackage?.durationLabel ?? (selectedBookingTitle.includes("6") ? "6 أيام" : "10 أيام");
-  const bookingNights = selectedPackage?.durationDays ?? (bookingDays === "6 أيام" ? 6 : 10);
+  const selectedEffectiveDurationDays = selectedPackage && !isRowadTravelPackage(selectedPackage)
+    ? getLibrePricingDurationDays(selectedTravelOptions.bookingDate, selectedTravelOptions.returnDate, selectedPackage.durationDays)
+    : selectedPackage?.durationDays;
+  const bookingDays = selectedPackage
+    ? `${selectedEffectiveDurationDays ?? selectedPackage.durationDays} أيام`
+    : selectedBookingTitle.includes("6") ? "6 أيام" : "10 أيام";
+  const bookingNights = selectedEffectiveDurationDays ?? selectedPackage?.durationDays ?? (bookingDays === "6 أيام" ? 6 : 10);
   const todayDateInputValue = getTodayDateInputValue();
   const getHotelNightPrice = (hotelName: string, fallbackPrice: number) =>
     findPackagePrice(packagePricing, bookingDays, hotelName, selectedNationality, fallbackPrice);
@@ -603,7 +683,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           travelers: selectedTravelerCount,
           previousVisa: selectedHasVisa ? "yes" : "no",
           departureDate: selectedTravelOptions.bookingDate,
-          durationDays: selectedPackage.durationDays,
+          durationDays: selectedEffectiveDurationDays ?? selectedPackage.durationDays,
           hotel: hotelName
         })
       : getHotelNightPrice(hotelName, fallbackPrice);
@@ -690,6 +770,9 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     setAuthContextPackageId(packageId);
     setAuthView(view);
     setAuthMessage("");
+    if (view === "verify" || view === "reset" || view === "forgot" || view === "register") {
+      setVerificationCode(["", "", "", "", "", ""]);
+    }
     setAuthPopupOpen(true);
   };
 
@@ -697,6 +780,40 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     const bookingTitle = title || "حجز جديد";
     const packageItem = publishedTravelPackages.find((item) => item.id === packageId);
     const options = packageId ? travelOptions[packageId] : null;
+
+    if (packageItem && !isRowadTravelPackage(packageItem) && (!options?.bookingDate || !options?.returnDate)) {
+      const defaultNationality = availableNationalities[0] ?? nationalityOptions[0];
+      setTravelOptions((current) => ({
+        ...current,
+        [packageId]: {
+          ...(current[packageId] ?? {
+            ...defaultTravelPackageOptions,
+            roomType: getCompatibleRoomLabel(packageItem, defaultTravelPackageOptions.travelers),
+            transportType: getDefaultTransportLabel(packageItem),
+            nationality: defaultNationality,
+            hasVisa: "no"
+          }),
+          dateError: "اختر تاريخ بداية ونهاية الرحلة قبل المتابعة."
+        }
+      }));
+      setOpenDateRangePicker(packageId);
+      return;
+    }
+
+    if (packageItem && !isRowadTravelPackage(packageItem)) {
+      const dateRangeError = getLibreDateRangeError(options?.bookingDate, options?.returnDate);
+      if (dateRangeError) {
+        setTravelOptions((current) => ({
+          ...current,
+          [packageId]: {
+            ...(current[packageId] ?? defaultTravelPackageOptions),
+            dateError: dateRangeError
+          }
+        }));
+        setOpenDateRangePicker(packageId);
+        return;
+      }
+    }
 
     if (packageItem && packageItem.departureDates.length > 0 && !options?.bookingDate) {
       const defaultNationality = availableNationalities[0] ?? nationalityOptions[0];
@@ -727,7 +844,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
   const updateTravelOption = (
     packageId: string,
-    name: "bookingDate" | "travelers" | "roomType" | "transportType" | "nationality" | "hasVisa",
+    name: "bookingDate" | "returnDate" | "travelers" | "roomType" | "transportType" | "nationality" | "hasVisa",
     value: string
   ) => {
     if (name === "hasVisa" && !hasExistingVisa(value)) {
@@ -749,7 +866,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       const nextOptions = {
         ...currentOptions,
         [name]: value,
-        dateError: name === "bookingDate" ? "" : currentOptions.dateError
+        dateError: name === "bookingDate" || name === "returnDate" ? "" : currentOptions.dateError
       };
 
       if (name === "travelers") {
@@ -776,6 +893,35 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
         bookingDate: validDate ? value : "",
         dateError: isPastDate ? "لا يمكن اختيار تاريخ سابق." : value && !validDate ? "هذا التاريخ غير متاح لهذه الباقة." : ""
       }
+    }));
+  };
+
+  const updateTravelDateRange = (packageId: string, selectedDate: string) => {
+    if (!selectedDate || selectedDate < todayDateInputValue) return;
+
+    setTravelOptions((current) => {
+      const currentOptions = current[packageId] ?? defaultTravelPackageOptions;
+      const hasCompleteRange = Boolean(currentOptions.bookingDate && currentOptions.returnDate);
+      const shouldStartNewRange = !currentOptions.bookingDate || hasCompleteRange || selectedDate < currentOptions.bookingDate;
+      const nextOptions = shouldStartNewRange
+        ? { ...currentOptions, bookingDate: selectedDate, returnDate: "", dateError: "" }
+        : {
+          ...currentOptions,
+          returnDate: selectedDate,
+          dateError: getLibreDateRangeError(currentOptions.bookingDate, selectedDate)
+        };
+
+      return {
+        ...current,
+        [packageId]: nextOptions
+      };
+    });
+  };
+
+  const changeDateRangeMonth = (packageId: string, currentMonth: string, amount: number) => {
+    setDateRangeMonths((current) => ({
+      ...current,
+      [packageId]: addMonthsToDate(currentMonth, amount)
     }));
   };
 
@@ -812,6 +958,13 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       });
 
       if (!result.succeeded || !result.user) {
+        if (result.message === "EMAIL_NOT_CONFIRMED") {
+          setVerificationCode(["", "", "", "", "", ""]);
+          setAuthView("verify");
+          setAuthMessage("تم إرسال رمز التحقق إلى بريدك الإلكتروني. أدخل الرمز لتفعيل الحساب.");
+          return;
+        }
+
         setAuthMessage(result.message || "تعذر تسجيل الدخول. تحقق من البريد الإلكتروني وكلمة المرور.");
         return;
       }
@@ -855,8 +1008,9 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     setAuthMessage("");
   };
 
-  const handleRegisterSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleRegisterSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setAuthMessage("");
 
     if (!registerForm.acceptTerms) {
       setAuthMessage("يجب الموافقة على الشروط والأحكام قبل إنشاء الحساب.");
@@ -868,27 +1022,147 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       return;
     }
 
-    setAuthEmail(registerForm.email);
-    setAuthMessage("تم تجهيز الحساب. أكمل التحقق من الرمز.");
-    setAuthView("verify");
+    setAuthLoading(true);
+
+    try {
+      const result = await registerTraveler({
+        fullName: registerForm.fullName.trim(),
+        email: registerForm.email.trim(),
+        phone: registerForm.phone.trim(),
+        password: registerForm.password
+      });
+
+      if (result.message === "EMAIL_NOT_CONFIRMED" || result.message === "VERIFICATION_CODE_SENT") {
+        setAuthEmail(registerForm.email.trim());
+        setVerificationCode(["", "", "", "", "", ""]);
+        setAuthMessage("تم إرسال رمز التحقق إلى بريدك الإلكتروني.");
+        setAuthView("verify");
+        return;
+      }
+
+      if (!result.succeeded) {
+        setAuthMessage(result.message || "تعذر إنشاء الحساب.");
+        return;
+      }
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : "تعذر إنشاء الحساب حالياً.");
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
-  const handleForgotSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleForgotSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setAuthMessage("تم إرسال رابط الاستعادة إلى بريدك الإلكتروني.");
-    setAuthView("reset");
+    setAuthLoading(true);
+    setAuthMessage("");
+    setVerificationCode(["", "", "", "", "", ""]);
+
+    try {
+      const result = await forgotPassword({ email: authEmail.trim() });
+      setAuthMessage(result.message || "تم إرسال رمز إعادة التعيين إلى بريدك الإلكتروني.");
+      setAuthView("reset");
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : "تعذر إرسال رمز إعادة التعيين حالياً.");
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
-  const handleResetSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleResetSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setAuthMessage("");
 
     if (resetForm.password !== resetForm.confirmPassword) {
       setAuthMessage("كلمتا المرور غير متطابقتين.");
       return;
     }
 
-    setAuthMessage("تم حفظ كلمة المرور الجديدة. يمكنك تسجيل الدخول الآن.");
-    setAuthView("login");
+    const code = verificationCode.join("");
+    if (code.length !== 6) {
+      setAuthMessage("يرجى إدخال رمز التحقق المكون من 6 أرقام.");
+      return;
+    }
+
+    setAuthLoading(true);
+
+    try {
+      const result = await resetPassword({
+        email: authEmail.trim(),
+        code,
+        password: resetForm.password
+      });
+
+      if (!result.succeeded) {
+        setAuthMessage(result.message || "تعذر تغيير كلمة المرور.");
+        return;
+      }
+
+      setAuthPassword("");
+      setVerificationCode(["", "", "", "", "", ""]);
+      setAuthMessage("تم حفظ كلمة المرور الجديدة. يمكنك تسجيل الدخول الآن.");
+      setAuthView("login");
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : "تعذر تغيير كلمة المرور حالياً.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleVerifyEmailSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const code = verificationCode.join("");
+
+    if (code.length !== 6) {
+      setAuthMessage("يرجى إدخال رمز التحقق المكون من 6 أرقام.");
+      return;
+    }
+
+    setAuthLoading(true);
+    setAuthMessage("");
+
+    try {
+      const result = await verifyEmail({
+        email: authEmail.trim(),
+        code,
+        rememberMe: authRemember
+      });
+
+      if (!result.succeeded || !result.user) {
+        setAuthMessage(result.message || "رمز التحقق غير صحيح.");
+        return;
+      }
+
+      setTravelerUser(result.user);
+      setAuthPopupOpen(false);
+      setVerificationCode(["", "", "", "", "", ""]);
+
+      if (authContextTitle) {
+        openReservationSection(authContextTitle, authContextPackageId);
+      }
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : "تعذر التحقق من الرمز حالياً.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleResendVerificationCode = async () => {
+    if (!authEmail.trim()) {
+      setAuthMessage("يرجى إدخال البريد الإلكتروني أولاً.");
+      return;
+    }
+
+    setAuthLoading(true);
+    setAuthMessage("");
+
+    try {
+      const result = await resendEmailCode({ email: authEmail.trim() });
+      setAuthMessage(result.message || "تم إرسال رمز جديد.");
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : "تعذر إرسال رمز جديد حالياً.");
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const updateVerificationCode = (index: number, value: string) => {
@@ -1127,7 +1401,14 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
         [
           `حجز عمرة مكتمل من الصفحة العامة: ${selectedBookingTitle || "حجز جديد"}`,
           selectedPackage ? `الباقة: ${selectedPackage.name}` : "",
-          selectedTravelOptions.bookingDate ? `تاريخ الحجز: ${selectedTravelOptions.bookingDate}` : "",
+          selectedTravelOptions.bookingDate ? `بداية الرحلة: ${selectedTravelOptions.bookingDate}` : "",
+          selectedTravelOptions.returnDate ? `نهاية الرحلة: ${selectedTravelOptions.returnDate}` : "",
+          selectedPackage && !isRowadTravelPackage(selectedPackage)
+            ? `مدة الرحلة: ${getInclusiveDateRangeDays(selectedTravelOptions.bookingDate, selectedTravelOptions.returnDate)} أيام`
+            : "",
+          selectedPackage && !isRowadTravelPackage(selectedPackage)
+            ? `تعرفة الحساب: ${selectedEffectiveDurationDays} أيام`
+            : "",
           selectedTravelOptions.travelers ? `عدد الأشخاص: ${selectedTravelOptions.travelers}` : "",
           selectedTravelOptions.roomType ? `نوع الغرفة: ${selectedTravelOptions.roomType}` : "",
           selectedTransportType ? `وسيلة النقل: ${selectedTransportType}` : "",
@@ -1140,6 +1421,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       formData.append("PackageId", selectedPackage?.id ?? "");
       formData.append("PackageName", selectedPackage?.name ?? selectedBookingTitle ?? "");
       formData.append("BookingDate", selectedTravelOptions.bookingDate || "");
+      formData.append("ReturnDate", selectedTravelOptions.returnDate || "");
       formData.append("TravelersCount", String(selectedTravelerCount));
       formData.append("RoomType", selectedTravelOptions.roomType || "");
       formData.append("TransportType", selectedTransportType || "");
@@ -1223,14 +1505,29 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
   const rowadTravelPackages = publishedTravelPackages.filter((program) => isRowadTravelPackage(program));
   const regularTravelPackages = publishedTravelPackages.filter((program) => !isRowadTravelPackage(program));
+  const libreTravelPackage = regularTravelPackages[0] ?? null;
   const rowadTravelBackground = resolvePackageImageUrl(rowadTravelPackages[1]?.imageUrl ?? rowadTravelPackages[0]?.imageUrl ?? landingAsset("hero-kaaba-premium.png"));
   const rowadTravelStyle = { "--rowad-travel-bg": `url(${rowadTravelBackground})` } as CSSProperties;
+  const activeDateRangePackage = openDateRangePicker
+    ? publishedTravelPackages.find((program) => program.id === openDateRangePicker) ?? null
+    : null;
+  const activeDateRangeOptions = activeDateRangePackage
+    ? travelOptions[activeDateRangePackage.id] ?? {
+      ...defaultTravelPackageOptions,
+      roomType: getCompatibleRoomLabel(activeDateRangePackage, defaultTravelPackageOptions.travelers),
+      transportType: getDefaultTransportLabel(activeDateRangePackage),
+      nationality: availableNationalities[0] ?? nationalityOptions[0],
+      hasVisa: "no"
+    }
+    : null;
+  const activeDateRangeMonth = activeDateRangePackage
+    ? dateRangeMonths[activeDateRangePackage.id] ?? `${(activeDateRangeOptions?.bookingDate || todayDateInputValue).slice(0, 7)}-01`
+    : todayDateInputValue;
 
   const renderTravelPackageCard = (program: TravelPackage, variant: "rowad" | "regular" = "regular") => {
     const defaultNationality = availableNationalities[0] ?? nationalityOptions[0];
     const options = travelOptions[program.id] ?? {
-      bookingDate: "",
-      travelers: "1",
+      ...defaultTravelPackageOptions,
       roomType: getCompatibleRoomLabel(program, "1"),
       transportType: getDefaultTransportLabel(program),
       nationality: defaultNationality,
@@ -1244,6 +1541,14 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
     const selectedVisaChoice = getVisaChoiceValue(options.hasVisa, options.nationality);
     const selectedVisaLabel = getVisaTypeLabel(selectedVisaChoice, options.nationality);
     const travelerCount = Math.max(1, Number(options.travelers) || 1);
+    const pricingDurationDays = !isRowadPackage
+      ? getLibrePricingDurationDays(options.bookingDate, options.returnDate, program.durationDays)
+      : program.durationDays;
+    const dateRangeLabel = options.bookingDate && options.returnDate
+      ? `${options.bookingDate} - ${options.returnDate}`
+      : options.bookingDate
+        ? `${options.bookingDate} - العودة`
+        : "اختر الأيام";
     const dynamicPrice = calculatePackagePrice(program, {
       packageId: program.id,
       travelers: travelerCount,
@@ -1252,14 +1557,14 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       nationality: options.nationality,
       previousVisa: hasExistingVisa(options.hasVisa) ? "yes" : "no",
       departureDate: options.bookingDate,
-      durationDays: program.durationDays
+      durationDays: pricingDurationDays
     });
     const displayPrice = dynamicPrice || getPackageFromPrice(program);
 
     return (
       <article className={`gv-travel-card ${variant === "rowad" ? "gv-travel-card--rowad" : "gv-travel-card--standard"}`} key={program.id}>
         <div className="gv-travel-card__media" style={{ backgroundImage: `url(${resolvePackageImageUrl(program.imageUrl)})` }}>
-          <span><CalendarIcon className="icon icon-sm" /> {program.durationLabel}</span>
+          {variant === "rowad" ? <span><CalendarIcon className="icon icon-sm" /> {program.durationLabel}</span> : null}
           {/* {variant === "rowad" ? <em className="gv-travel-card__brand">رواد</em> : null} */}
         </div>
         <div className="gv-travel-card__body">
@@ -1267,12 +1572,16 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
             <label>
               <span className="gv-travel-field-title"><CalendarIcon className="icon icon-sm" /><strong>تاريخ الحجز</strong></span>
               {variant !== "rowad" ? (
-                <input
-                  type="date"
-                  min={todayDateInputValue}
-                  value={options.bookingDate}
-                  onChange={(event) => updateTravelBookingDate(program.id, [], event.target.value)}
-                />
+                <div className="gv-date-range">
+                  <button
+                    type="button"
+                    className="gv-date-range__trigger"
+                    onClick={() => setOpenDateRangePicker((current) => current === program.id ? null : program.id)}
+                  >
+                    <span>{dateRangeLabel}</span>
+                    <CalendarIcon className="icon icon-sm" />
+                  </button>
+                </div>
               ) : program.departureDates.length > 0 ? (
                 <select
                   value={options.bookingDate}
@@ -1393,6 +1702,126 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
               </>
             )}
           </div>
+        </div>
+      </article>
+    );
+  };
+
+  const packageChoiceItems = [
+    ...rowadTravelPackages,
+    ...(libreTravelPackage ? [libreTravelPackage] : [])
+  ];
+  const showPackageChoiceWizard: boolean = false;
+  const defaultChoicePackage = rowadTravelPackages.find((program) => program.durationDays <= 6) ?? packageChoiceItems[0] ?? null;
+  const highlightedChoicePackage = selectedChoiceDetailPackageId
+    ? packageChoiceItems.find((program) => program.id === selectedChoiceDetailPackageId) ?? null
+    : null;
+  const footerChoicePackage = highlightedChoicePackage ?? defaultChoicePackage;
+  const highlightedChoicePrice = footerChoicePackage ? getPackageFromPrice(footerChoicePackage) : 0;
+
+  const packageChoiceSteps = [
+    { number: 1, label: "اختيار الرحلة", text: "حدد الباقة المناسبة", icon: <ShieldIcon className="icon icon-sm" /> },
+    { number: 2, label: "تحديد التاريخ", text: "اختر تاريخ رحلتك", icon: <CalendarIcon className="icon icon-sm" /> },
+    { number: 3, label: "بيانات المسافرين", text: "أضف بيانات المسافرين", icon: <UsersIcon className="icon icon-sm" /> },
+    { number: 4, label: "اختيار الفندق", text: "اختر الفندق المناسب", icon: <BedIcon className="icon icon-sm" /> },
+    { number: 5, label: "معلومات إضافية", text: "راجع التفاصيل", icon: <BusIcon className="icon icon-sm" /> },
+    { number: 6, label: "الدفع", text: "إتمام الحجز", icon: <DocumentIcon className="icon icon-sm" /> }
+  ];
+
+  const renderPackageChoiceCard = (program: TravelPackage) => {
+    const isFlexible = program.id === "umrah-flexible" || !isRowadTravelPackage(program);
+    const isSixDays = program.durationDays <= 6;
+    const title = isFlexible ? "باقة مخصصة" : isSixDays ? "باقة 6 أيام" : "باقة 10 أيام";
+    const description = isFlexible
+      ? "صمم رحلتك حسب احتياجاتك وميزانيتك"
+      : isSixDays
+        ? "رحلة مميزة ومختصرة لأداء مناسك العمرة براحة تامة"
+        : "رحلة متكاملة مع مدة أطول لراحة أكبر وتجربة أعمق";
+    const actionLabel = isFlexible ? "تخصيص الباقة" : "عرض التفاصيل";
+    const ribbonLabel = isFlexible ? "مخصصة لك" : isSixDays ? "الأكثر طلباً" : "أفضل للعائلات";
+    const badgeLabel = isFlexible ? "باقة مخصصة" : `${program.durationDays}`;
+    const price = getPackageFromPrice(program);
+    const features = isFlexible
+      ? [
+        { label: "اختر المدة", icon: <CalendarIcon className="icon icon-sm" /> },
+        { label: "وسيلة التنقل", icon: <BusIcon className="icon icon-sm" /> },
+        { label: "وسيلة النقل", icon: <BedIcon className="icon icon-sm" /> },
+        { label: "خدمات إضافية", icon: <SearchIcon className="icon icon-sm" /> }
+      ]
+      : isSixDays
+        ? [
+          { label: "دعم 24/7", icon: <UsersIcon className="icon icon-sm" /> },
+          { label: "مواصلات", icon: <BusIcon className="icon icon-sm" /> },
+          { label: "فندق مميز", icon: <BedIcon className="icon icon-sm" /> },
+          { label: "تذاكر طيران", icon: <PlaneIcon className="icon icon-sm" /> }
+        ]
+        : [
+          { label: "وجبات إضافية", icon: <UsersIcon className="icon icon-sm" /> },
+          { label: "فندق فاخر", icon: <BedIcon className="icon icon-sm" /> },
+          { label: "مواصلات", icon: <BusIcon className="icon icon-sm" /> },
+          { label: "تذاكر طيران", icon: <PlaneIcon className="icon icon-sm" /> }
+        ];
+
+    return (
+      <article
+        className={[
+          isSixDays && !isFlexible ? "gv-choice-card is-selected" : "gv-choice-card",
+          selectedChoiceDetailPackageId === program.id ? "is-detail-open" : "",
+          isFlexible ? "is-flexible" : ""
+        ].filter(Boolean).join(" ")}
+        key={program.id}
+      >
+        <div className="gv-choice-card__media" style={{ backgroundImage: `url(${resolvePackageImageUrl(program.imageUrl)})` }}>
+          <span className="gv-choice-card__ribbon">{ribbonLabel}</span>
+          {isSixDays && !isFlexible ? <span className="gv-choice-card__selected">✓</span> : null}
+          <span className="gv-choice-card__duration">
+            {badgeLabel}
+            {!isFlexible ? <small>أيام</small> : null}
+            <CalendarIcon className="icon icon-sm" />
+          </span>
+        </div>
+        <div className="gv-choice-card__body">
+          <h3>{title}</h3>
+          <p>{description}</p>
+          <div className="gv-choice-card__features">
+            {features.map((feature) => (
+              <span key={feature.label}>
+                {feature.icon}
+                {feature.label}
+              </span>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (isFlexible) {
+                openBookingSection(program.durationLabel, program.id);
+                return;
+              }
+              setSelectedChoiceDetailPackageId(program.id);
+            }}
+          >
+            {actionLabel}
+          </button>
+          <strong className="gv-choice-card__price">
+            <small>ابتداءً من</small>
+            <b>{price.toLocaleString("en-US")}</b>
+            <span>ر.س</span>
+          </strong>
+          <button
+            className="gv-choice-card__arrow"
+            type="button"
+            aria-label={actionLabel}
+            onClick={() => {
+              if (isFlexible) {
+                openBookingSection(program.durationLabel, program.id);
+                return;
+              }
+              setSelectedChoiceDetailPackageId(program.id);
+            }}
+          >
+            <ArrowRightIcon className="icon icon-sm" />
+          </button>
         </div>
       </article>
     );
@@ -1574,9 +2003,9 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
         <section className="gv-travel-packages" id="gv-travel-packages">
           {rowadTravelPackages.length > 0 ? (
             <div className="gv-rowad-travel" style={rowadTravelStyle}>
+              <span className="gv-rowad-travel__origin-badge">باقات رواد الأصلية</span>
               <div className="gv-rowad-travel__content">
                 <header className="gv-rowad-travel__header">
-                  <span>باقات رواد الأصلية</span>
                   <h2>رحلاتنا</h2>
                   <p>رحلات مختارة من دليل شركة رواد، بأسعار واضحة وقواعد حجز قابلة للإدارة.</p>
                 </header>
@@ -1586,12 +2015,57 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
               </div>
             </div>
           ) : null}
-          {regularTravelPackages.length > 0 ? (
-            <div className="gv-travel-packages__standard">
-              <h2 className="gv-travel-packages__title">باقات الرحلات</h2>
-              <div className="gv-travel-grid">
-                {regularTravelPackages.map((program) => renderTravelPackageCard(program))}
+          {/* Package choice wizard temporarily hidden. */}
+          {showPackageChoiceWizard && packageChoiceItems.length > 0 ? (
+            <div className="gv-package-choice">
+              <nav className="gv-package-choice__steps" aria-label="مراحل اختيار الرحلة">
+                {packageChoiceSteps.map((item) => (
+                  <span className={item.number === 1 ? "is-active" : ""} key={item.number}>
+                    <b>{item.number === 1 ? "✓" : item.icon}</b>
+                    <strong>{item.label}</strong>
+                    <small>{item.text}</small>
+                  </span>
+                ))}
+              </nav>
+              <div className="gv-choice-grid">
+                {packageChoiceItems.map(renderPackageChoiceCard)}
               </div>
+              {highlightedChoicePackage ? (
+                <section className="gv-choice-detail">
+                  <div className="gv-choice-detail__media" style={{ backgroundImage: `url(${resolvePackageImageUrl(highlightedChoicePackage.imageUrl)})` }}>
+                    <span><StarIcon className="icon icon-sm" /> باقة {highlightedChoicePackage.durationDays} أيام</span>
+                    <button type="button" aria-label="تشغيل العرض">▶</button>
+                  </div>
+                  <div className="gv-choice-detail__copy">
+                    <span className="gv-choice-detail__tag">الأكثر طلباً</span>
+                    <h3>تفاصيل باقة {highlightedChoicePackage.durationDays} أيام</h3>
+                    <p>رحلة مختصرة ومميزة تشمل جميع الخدمات الأساسية لأداء مناسك العمرة براحة وطمأنينة.</p>
+                    <div>
+                      <span><HeadsetIcon className="icon icon-sm" /><b>دعم وخدمة</b><small>عملاء 24/7</small></span>
+                      <span><BedIcon className="icon icon-sm" /><b>فندق مميز</b><small>قريب الحرم</small></span>
+                      <span><BusIcon className="icon icon-sm" /><b>مواصلات</b><small>داخلية وخارجية</small></span>
+                      <span><PlaneIcon className="icon icon-sm" /><b>تذاكر طيران</b><small>ذهاب وعودة</small></span>
+                    </div>
+                  </div>
+                  <aside className="gv-choice-detail__meta">
+                    <span><CalendarIcon className="icon icon-sm" /><b>المدة</b><small>{highlightedChoicePackage.durationDays} أيام</small></span>
+                    <span><LocationIcon className="icon icon-sm" /><b>الوجهة</b><small>مكة المكرمة - المدينة المنورة</small></span>
+                    <span><DocumentIcon className="icon icon-sm" /><b>نوع الباقة</b><small>اقتصادية / مريحة / فاخرة</small></span>
+                  </aside>
+                </section>
+              ) : null}
+              <footer className="gv-choice-actions">
+                <button type="button" className="gv-choice-actions__prev">
+                  <ArrowRightIcon className="icon icon-sm" />
+                  السابق
+                </button>
+                <span><ShieldIcon className="icon icon-md" /> جميع حجوزاتك مؤمنة وآمنة مع شركة رواد</span>
+                <button type="button" onClick={() => footerChoicePackage ? openBookingSection(footerChoicePackage.durationLabel, footerChoicePackage.id) : undefined}>
+                  التالي: تحديد التاريخ
+                  <ArrowRightIcon className="icon icon-sm" />
+                  <b>{highlightedChoicePrice.toLocaleString("en-US")} ر.س</b>
+                </button>
+              </footer>
             </div>
           ) : null}
           {publishedTravelPackages.length === 0 ? (
@@ -1599,6 +2073,76 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           ) : null}
         </section>
       )}
+
+      {activeDateRangePackage && activeDateRangeOptions ? (
+        <>
+          <div className="gv-date-range__overlay" onClick={() => setOpenDateRangePicker(null)} />
+          <div className="gv-date-range__panel" role="dialog" aria-modal="true" aria-label="اختيار أيام الرحلة">
+            <div className="gv-date-range__head">
+              <button type="button" onClick={() => changeDateRangeMonth(activeDateRangePackage.id, activeDateRangeMonth, -1)}>‹</button>
+              <strong>{getMonthLabel(activeDateRangeMonth)}</strong>
+              <button type="button" onClick={() => changeDateRangeMonth(activeDateRangePackage.id, activeDateRangeMonth, 1)}>›</button>
+            </div>
+            <div className="gv-date-range__weekdays">
+              {["أحد", "إث", "ثلا", "أرب", "خم", "جم", "سب"].map((day) => <span key={day}>{day}</span>)}
+            </div>
+            <div className="gv-date-range__days">
+              {getMonthGrid(activeDateRangeMonth).map((date, index) => {
+                const isEmpty = !date;
+                const isDisabled = Boolean(date && date < todayDateInputValue);
+                const isStart = Boolean(date && date === activeDateRangeOptions.bookingDate);
+                const isEnd = Boolean(date && date === activeDateRangeOptions.returnDate);
+                const isBetween = Boolean(
+                  date &&
+                  activeDateRangeOptions.bookingDate &&
+                  activeDateRangeOptions.returnDate &&
+                  date > activeDateRangeOptions.bookingDate &&
+                  date < activeDateRangeOptions.returnDate
+                );
+
+                return (
+                  <button
+                    key={date ?? `empty-${index}`}
+                    type="button"
+                    className={[
+                      isEmpty ? "is-empty" : "",
+                      isDisabled ? "is-disabled" : "",
+                      isStart ? "is-start" : "",
+                      isEnd ? "is-end" : "",
+                      isBetween ? "is-between" : ""
+                    ].filter(Boolean).join(" ")}
+                    disabled={isEmpty || isDisabled}
+                    onClick={() => {
+                      if (!date) return;
+                      updateTravelDateRange(activeDateRangePackage.id, date);
+                    }}
+                  >
+                    {date ? Number(date.slice(8, 10)) : ""}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="gv-date-range__actions">
+              <button
+                type="button"
+                onClick={() => {
+                  updateTravelOption(activeDateRangePackage.id, "bookingDate", "");
+                  updateTravelOption(activeDateRangePackage.id, "returnDate", "");
+                }}
+              >
+                مسح
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpenDateRangePicker(null)}
+                disabled={!activeDateRangeOptions.bookingDate || !activeDateRangeOptions.returnDate}
+              >
+                تم
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
 
       {authPopupOpen && (
         <div className="gv-auth-modal" role="dialog" aria-modal="true" aria-labelledby="gv-auth-title" onClick={() => setAuthPopupOpen(false)}>
@@ -1692,11 +2236,6 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                       {authLoading ? <span className="gv-auth-spinner" aria-hidden="true" /> : null}
                       {authLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
                     </button>
-                    <div className="gv-auth-divider"><span>أو</span></div>
-                    <button className="gv-auth-google" type="button">
-                      <b>G</b>
-                      متابعة باستخدام جوجل
-                    </button>
                     <p className="gv-auth-switch">ليس لديك حساب؟ <button type="button" onClick={() => openAuthPopup("register", authContextTitle)}>إنشاء حساب جديد</button></p>
                   </form>
                 )}
@@ -1722,9 +2261,10 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                       <input type="checkbox" checked={registerForm.acceptTerms} onChange={(event) => setRegisterForm((current) => ({ ...current, acceptTerms: event.target.checked }))} />
                       أوافق على الشروط والأحكام
                     </label>
-                    <button className="gv-auth-primary" type="submit"><ArrowRightIcon className="icon icon-sm" /> إنشاء الحساب</button>
-                    <div className="gv-auth-divider"><span>أو</span></div>
-                    <button className="gv-auth-google" type="button"><b>G</b> التسجيل باستخدام جوجل</button>
+                    <button className="gv-auth-primary" type="submit" disabled={authLoading}>
+                      <ArrowRightIcon className="icon icon-sm" />
+                      {authLoading ? "جاري إنشاء الحساب..." : "إنشاء الحساب"}
+                    </button>
                     <p className="gv-auth-switch">لديك حساب بالفعل؟ <button type="button" onClick={() => openAuthPopup("login", authContextTitle)}>تسجيل الدخول</button></p>
                   </form>
                 )}
@@ -1735,8 +2275,10 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                       البريد الإلكتروني
                       <span className="gv-auth-field"><input type="email" value={authEmail} onChange={(event) => setAuthEmail(event.target.value)} placeholder="أدخل بريدك الإلكتروني" required /><MailIcon className="icon icon-sm" /></span>
                     </label>
-                    <button className="gv-auth-primary" type="submit"><ArrowRightIcon className="icon icon-sm" /> إرسال رابط الاستعادة</button>
-                    <div className="gv-auth-divider"><span>أو</span></div>
+                    <button className="gv-auth-primary" type="submit" disabled={authLoading}>
+                      <ArrowRightIcon className="icon icon-sm" />
+                      {authLoading ? "جاري الإرسال..." : "إرسال رمز الاستعادة"}
+                    </button>
                     <button className="gv-auth-outline" type="button" onClick={() => openAuthPopup("login", authContextTitle)}>العودة إلى تسجيل الدخول</button>
                     <p className="gv-auth-secure"><ShieldIcon className="icon icon-sm" /> حماية وأمان لبياناتك</p>
                   </form>
@@ -1744,6 +2286,14 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
                 {authView === "reset" && (
                   <form className="gv-auth-form" onSubmit={handleResetSubmit}>
+                    <label>
+                      رمز التحقق
+                      <div className="gv-auth-code" dir="ltr">
+                        {verificationCode.map((digit, index) => (
+                          <input key={index} inputMode="numeric" maxLength={1} value={digit} onChange={(event) => updateVerificationCode(index, event.target.value)} aria-label={`رمز إعادة التعيين ${index + 1}`} />
+                        ))}
+                      </div>
+                    </label>
                     <label>
                       كلمة المرور الجديدة
                       <span className="gv-auth-field"><input type="password" value={resetForm.password} onChange={(event) => setResetForm((current) => ({ ...current, password: event.target.value }))} placeholder="أدخل كلمة المرور الجديدة" required /><ShieldIcon className="icon icon-sm" /></span>
@@ -1753,22 +2303,28 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                       <span className="gv-auth-field"><input type="password" value={resetForm.confirmPassword} onChange={(event) => setResetForm((current) => ({ ...current, confirmPassword: event.target.value }))} placeholder="أعد إدخال كلمة المرور الجديدة" required /><ShieldIcon className="icon icon-sm" /></span>
                     </label>
                     <p className="gv-auth-hint">يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل ويفضل استخدام مزيج من الحروف والأرقام.</p>
-                    <button className="gv-auth-primary" type="submit"><ArrowRightIcon className="icon icon-sm" /> حفظ كلمة المرور</button>
+                    <button className="gv-auth-primary" type="submit" disabled={authLoading}>
+                      <ArrowRightIcon className="icon icon-sm" />
+                      {authLoading ? "جاري الحفظ..." : "حفظ كلمة المرور"}
+                    </button>
                     <button className="gv-auth-linkline" type="button" onClick={() => openAuthPopup("login", authContextTitle)}>العودة إلى تسجيل الدخول</button>
                     <p className="gv-auth-secure"><ShieldIcon className="icon icon-sm" /> معلوماتك محمية وآمنة دائماً</p>
                   </form>
                 )}
 
                 {authView === "verify" && (
-                  <form className="gv-auth-form" onSubmit={(event) => { event.preventDefault(); setAuthView("twoFactor"); setAuthMessage(""); }}>
+                  <form className="gv-auth-form" onSubmit={handleVerifyEmailSubmit}>
                     <div className="gv-auth-code" dir="ltr">
                       {verificationCode.map((digit, index) => (
                         <input key={index} inputMode="numeric" maxLength={1} value={digit} onChange={(event) => updateVerificationCode(index, event.target.value)} aria-label={`رمز التحقق ${index + 1}`} />
                       ))}
                     </div>
-                    <p className="gv-auth-muted">تم إرسال الرمز إلى 55*******</p>
-                    <button className="gv-auth-primary" type="submit"><ArrowRightIcon className="icon icon-sm" /> تأكيد الرمز</button>
-                    <div className="gv-auth-resend"><span>إعادة الإرسال خلال 00:45</span><button type="button">إرسال الرمز مرة أخرى</button></div>
+                    <p className="gv-auth-muted">تم إرسال الرمز إلى {authEmail}</p>
+                    <button className="gv-auth-primary" type="submit" disabled={authLoading}>
+                      <ArrowRightIcon className="icon icon-sm" />
+                      {authLoading ? "جاري التحقق..." : "تأكيد الرمز"}
+                    </button>
+                    <div className="gv-auth-resend"><span>لم يصلك الرمز؟</span><button type="button" onClick={() => void handleResendVerificationCode()} disabled={authLoading}>إرسال الرمز مرة أخرى</button></div>
                     <p className="gv-auth-safety"><ShieldIcon className="icon icon-sm" /> بياناتك في أمان</p>
                   </form>
                 )}

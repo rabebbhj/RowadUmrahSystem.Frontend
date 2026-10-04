@@ -5,6 +5,7 @@ type PackageSectionsTabsProps = {
   onNavigate: (path: string) => void;
 };
 
+/*
 const sections: Array<{ key: PackageSection; label: string; path: string }> = [
   { key: "packages", label: "الباقات", path: "/settings" },
   { key: "rules", label: "قواعد التسعير", path: "/pricing-rules" },
@@ -12,8 +13,13 @@ const sections: Array<{ key: PackageSection; label: string; path: string }> = [
   { key: "groups", label: "مجموعات الجنسيات", path: "/nationality-groups" },
   { key: "services", label: "الخدمات والإضافات", path: "/services-addons" }
 ];
+*/
 
 export function PackageSectionsTabs({ active, onNavigate }: PackageSectionsTabsProps) {
+  void active;
+  void onNavigate;
+
+  /*
   return (
     <section className="package-admin-tabs" aria-label="أقسام الباقات">
       {sections.map((section) => (
@@ -28,4 +34,7 @@ export function PackageSectionsTabs({ active, onNavigate }: PackageSectionsTabsP
       ))}
     </section>
   );
+  */
+
+  return null;
 }

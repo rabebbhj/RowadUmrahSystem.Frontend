@@ -31,7 +31,7 @@ body {
     margin: 0;
     background: radial-gradient(circle at top right, rgba(201, 162, 77, .16), transparent 34%), radial-gradient(circle at bottom left, rgba(95, 67, 36, .10), transparent 30%), var(--rowad-bg);
     color: var(--rowad-text);
-    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-family: "Times New Roman", Times, serif;
 }
 
 /* Shell */
@@ -2648,7 +2648,7 @@ body {
     text-align: right;
     background: radial-gradient(circle at top right, rgba(201, 162, 77, .16), transparent 34%), radial-gradient(circle at bottom left, rgba(95, 67, 36, .10), transparent 30%), var(--rowad-bg);
     color: var(--rowad-text);
-    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-family: "Times New Roman", Times, serif;
 }
 
 .app-shell .rowad-sidebar {
@@ -3480,7 +3480,7 @@ body {
     text-align: right;
     background: radial-gradient(circle at top right, rgba(201, 162, 77, 0.18), transparent 35%), radial-gradient(circle at bottom left, rgba(122, 90, 50, 0.14), transparent 35%), var(--rowad-bg);
     color: var(--rowad-text);
-    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-family: "Times New Roman", Times, serif;
 }
 
 .auth-shell .auth-hero {
@@ -4340,4 +4340,11 @@ body {
     .rowad-nav-link::after {
         display: none;
     }
+}
+
+html,
+body,
+#root,
+#root * {
+    font-family: "Times New Roman", Times, serif !important;
 }

@@ -63,12 +63,12 @@ const statusLabel = (value: string) => statusOptions.find((item) => item.value =
 const activeOptions = (items: PackageOption[]) => items.filter((item) => item.active);
 const rowadPricingDurations = ["6", "10"];
 const defaultRowadMakkahPrices: Record<string, Record<string, number>> = {
-  "6": { "غرفة رباعية": 25, "غرفة ثلاثية": 30, "غرفة ثنائية": 35, "غرفة فردية": 40 },
-  "10": { "غرفة رباعية": 35, "غرفة ثلاثية": 40, "غرفة ثنائية": 45, "غرفة فردية": 50 }
+  "6": { "غرفة رباعية": 25, "غرفة ثلاثية": 30, "غرفة مزدوجة": 35, "غرفة فردية": 40 },
+  "10": { "غرفة رباعية": 35, "غرفة ثلاثية": 40, "غرفة مزدوجة": 45, "غرفة فردية": 50 }
 };
 const defaultRowadMadinahPrices: Record<string, Record<string, number>> = {
-  "6": { "غرفة رباعية": 0, "غرفة ثلاثية": 0, "غرفة ثنائية": 0, "غرفة فردية": 0 },
-  "10": { "غرفة رباعية": 55, "غرفة ثلاثية": 60, "غرفة ثنائية": 65, "غرفة فردية": 70 }
+  "6": { "غرفة رباعية": 0, "غرفة ثلاثية": 0, "غرفة مزدوجة": 0, "غرفة فردية": 0 },
+  "10": { "غرفة رباعية": 55, "غرفة ثلاثية": 60, "غرفة مزدوجة": 65, "غرفة فردية": 70 }
 };
 
 function makeId(prefix: string) {
@@ -829,3 +829,4 @@ export function PackageSettingsPanel({ user, activePath, onNavigate, onLogout }:
     </div>
   );
 }
+

@@ -50,8 +50,14 @@ export interface JournalEntryUpsertRequest {
   lines: JournalEntryLineUpsertRequest[];
 }
 
-function readErrorMessage(response: Response): Promise<string> {
-  return response.text().then((text) => text || `API error: ${response.status}`);
+async function readErrorMessage(response: Response): Promise<string> {
+  const text = await response.text();
+
+  if ((response.headers.get("content-type") ?? "").includes("text/html") || /^\s*<!doctype html/i.test(text) || /^\s*<html/i.test(text)) {
+    return "Erreur serveur. Verifiez les migrations et les journaux de production.";
+  }
+
+  return text || `API error: ${response.status}`;
 }
 
 async function requestJson<T>(response: Response): Promise<T> {

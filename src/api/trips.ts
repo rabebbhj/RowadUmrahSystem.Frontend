@@ -18,6 +18,16 @@ export interface TripCreateRequest {
   notes: string;
 }
 
+async function readErrorMessage(response: Response): Promise<string> {
+  const text = await response.text();
+
+  if ((response.headers.get("content-type") ?? "").includes("text/html") || /^\s*<!doctype html/i.test(text) || /^\s*<html/i.test(text)) {
+    return "Erreur serveur. Verifiez les migrations et les journaux de production.";
+  }
+
+  return text || `API error: ${response.status}`;
+}
+
 export async function getTrips(search = "", includeDeleted = false): Promise<TripListItem[]> {
   const params = new URLSearchParams({
     includeDeleted: String(includeDeleted)
@@ -36,7 +46,7 @@ export async function getTrips(search = "", includeDeleted = false): Promise<Tri
   }
 
   if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+    throw new Error(await readErrorMessage(response));
   }
 
   return response.json();
@@ -59,8 +69,7 @@ export async function createTrip(
   }
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `API error: ${response.status}`);
+    throw new Error(await readErrorMessage(response));
   }
 
   return response.json();
@@ -77,8 +86,7 @@ export async function archiveTrip(id: number): Promise<TripListItem> {
   }
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `API error: ${response.status}`);
+    throw new Error(await readErrorMessage(response));
   }
 
   return response.json();
@@ -95,8 +103,7 @@ export async function restoreTrip(id: number): Promise<TripListItem> {
   }
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `API error: ${response.status}`);
+    throw new Error(await readErrorMessage(response));
   }
 
   return response.json();

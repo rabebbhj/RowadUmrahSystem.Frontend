@@ -83,7 +83,12 @@ async function readErrorMessage(response: Response): Promise<string> {
     }
   }
 
-  return (await response.text()) || `API error: ${response.status}`;
+  const text = await response.text();
+  if (contentType.includes("text/html") || /^\s*<!doctype html/i.test(text) || /^\s*<html/i.test(text)) {
+    return "Erreur serveur. Verifiez les migrations et les journaux de production.";
+  }
+
+  return text || `API error: ${response.status}`;
 }
 
 async function requestJson<T>(response: Response): Promise<T> {
@@ -98,12 +103,87 @@ async function requestJson<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+function normalizeArabicText(value: string) {
+  if (!/[\u00d8\u00d9\u00c3\u00c2]/.test(value)) {
+    return value;
+  }
+
+  try {
+    const bytes = Uint8Array.from(Array.from(value, (char) => char.charCodeAt(0) & 0xff));
+    return new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+  } catch {
+    return value;
+  }
+}
+
+function normalizePackageOption(option: PackageOption): PackageOption {
+  return {
+    ...option,
+    label: normalizeArabicText(option.label)
+  };
+}
+
+function normalizePricingCondition(condition: PricingCondition): PricingCondition {
+  return {
+    ...condition,
+    value: normalizeArabicText(condition.value)
+  };
+}
+
+function normalizePricingRule(rule: PricingRule): PricingRule {
+  return {
+    ...rule,
+    name: normalizeArabicText(rule.name),
+    priceType: normalizeArabicText(rule.priceType),
+    conditions: rule.conditions.map(normalizePricingCondition)
+  };
+}
+
+function normalizePriceMap(priceMap: Record<string, Record<string, number>>) {
+  return Object.entries(priceMap ?? {}).reduce<Record<string, Record<string, number>>>((durations, [duration, rooms]) => {
+    durations[duration] = Object.entries(rooms ?? {}).reduce<Record<string, number>>((roomPrices, [room, price]) => {
+      roomPrices[normalizeArabicText(room)] = price;
+      return roomPrices;
+    }, {});
+    return durations;
+  }, {});
+}
+
+function normalizePricingProfile(profile: RowadPricingProfile | null | undefined): RowadPricingProfile | null | undefined {
+  if (!profile) {
+    return profile;
+  }
+
+  return {
+    ...profile,
+    makkahRoomPrices: normalizePriceMap(profile.makkahRoomPrices),
+    madinahRoomPrices: normalizePriceMap(profile.madinahRoomPrices)
+  };
+}
+
+function normalizeTravelPackage(packageItem: TravelPackage): TravelPackage {
+  return {
+    ...packageItem,
+    name: normalizeArabicText(packageItem.name),
+    shortTitle: normalizeArabicText(packageItem.shortTitle),
+    description: normalizeArabicText(packageItem.description),
+    durationLabel: normalizeArabicText(packageItem.durationLabel),
+    currency: normalizeArabicText(packageItem.currency),
+    status: normalizeArabicText(packageItem.status),
+    priceMode: normalizeArabicText(packageItem.priceMode),
+    transportOptions: packageItem.transportOptions.map(normalizePackageOption),
+    roomTypes: packageItem.roomTypes.map(normalizePackageOption),
+    pricingRules: packageItem.pricingRules.map(normalizePricingRule),
+    pricingProfile: normalizePricingProfile(packageItem.pricingProfile)
+  };
+}
+
 export async function getPublishedPackages(): Promise<TravelPackage[]> {
   const response = await fetch("/api/packages", {
     credentials: "include"
   });
 
-  return requestJson<TravelPackage[]>(response);
+  return (await requestJson<TravelPackage[]>(response)).map(normalizeTravelPackage);
 }
 
 export async function getAdminPackages(): Promise<TravelPackage[]> {
@@ -111,7 +191,7 @@ export async function getAdminPackages(): Promise<TravelPackage[]> {
     credentials: "include"
   });
 
-  return requestJson<TravelPackage[]>(response);
+  return (await requestJson<TravelPackage[]>(response)).map(normalizeTravelPackage);
 }
 
 export async function createPackage(request: TravelPackage): Promise<TravelPackage> {
@@ -122,7 +202,7 @@ export async function createPackage(request: TravelPackage): Promise<TravelPacka
     body: JSON.stringify(request)
   });
 
-  return requestJson<TravelPackage>(response);
+  return normalizeTravelPackage(await requestJson<TravelPackage>(response));
 }
 
 export async function updatePackage(id: string, request: TravelPackage): Promise<TravelPackage> {
@@ -133,7 +213,7 @@ export async function updatePackage(id: string, request: TravelPackage): Promise
     body: JSON.stringify(request)
   });
 
-  return requestJson<TravelPackage>(response);
+  return normalizeTravelPackage(await requestJson<TravelPackage>(response));
 }
 
 export async function duplicatePackage(id: string): Promise<TravelPackage> {
@@ -142,7 +222,7 @@ export async function duplicatePackage(id: string): Promise<TravelPackage> {
     credentials: "include"
   });
 
-  return requestJson<TravelPackage>(response);
+  return normalizeTravelPackage(await requestJson<TravelPackage>(response));
 }
 
 export async function deletePackage(id: string): Promise<void> {
@@ -238,7 +318,7 @@ function getSelectedOptionSupplement(options: PackageOption[], label?: string) {
 
 function getRuleTotal(rule: PricingRule, travelers: number) {
   const priceType = rule.priceType.trim().toLowerCase();
-  const isPerPerson = priceType === "perperson" || priceType.includes("person") || priceType.includes("شخص");
+  const isPerPerson = priceType === "perperson" || priceType.includes("person") || priceType.includes("\u0634\u062e\u0635");
 
   return rule.price * (isPerPerson ? travelers : 1);
 }
@@ -251,10 +331,10 @@ function getRoomCapacity(roomType: PackageOption | string | null | undefined) {
   const id = typeof roomType === "string" ? "" : roomType?.id.toLowerCase() ?? "";
   const label = typeof roomType === "string" ? roomType : roomType?.label ?? "";
 
-  if (id.includes("quad") || label.includes("رباع")) return 4;
-  if (id.includes("triple") || label.includes("ثلاث")) return 3;
-  if (id.includes("double") || label.includes("ثنائ") || label.includes("مزدوج")) return 2;
-  if (id.includes("single") || label.includes("فرد")) return 1;
+  if (id.includes("quad") || label.includes("\u0631\u0628\u0627\u0639")) return 4;
+  if (id.includes("triple") || label.includes("\u062b\u0644\u0627\u062b")) return 3;
+  if (id.includes("double") || label.includes("\u062b\u0646\u0627\u0626") || label.includes("\u0645\u0632\u062f\u0648\u062c")) return 2;
+  if (id.includes("single") || label.includes("\u0641\u0631\u062f")) return 1;
 
   return 1;
 }
@@ -295,7 +375,7 @@ function calculateProfilePackagePrice(packageItem: TravelPackage, context: Packa
     return total + (makkahPrice + madinahPrice) * roomTravelers;
   }, 0);
   const roomAverage = roomTotal > 0 ? roomTotal : packageItem.basePrice;
-  const transportPrice = context.transport === "باص" ? (profile.busPrices[String(durationDays)] ?? 0) : 0;
+  const transportPrice = context.transport === "\u0628\u0627\u0635" ? (profile.busPrices[String(durationDays)] ?? 0) : 0;
   const visaPrice = context.previousVisa === "yes" ? visaFeeWhenAlreadyHasVisa : profile.visaPrice;
 
   return roomAverage + (transportPrice + visaPrice) * travelers;
