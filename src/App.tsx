@@ -3,7 +3,9 @@ import { getCurrentUser, login, logout, type AuthUser } from "./api/auth";
 import LandingPage from "./components/landingpage/LandingPage";
 import { LoginPanel } from "./components/Auth/LoginPanel";
 import { DashboardPanel } from "./components/Dashboard/DashboardPanel";
-import { TravelersPanel } from "./components/Travelers/TravelersPanel";
+import { TravelDatesPage } from "./pages/admin/travelers/TravelDatesPage";
+import { DatePackagesPage } from "./pages/admin/travelers/DatePackagesPage";
+import { PackageTravelersPage } from "./pages/admin/travelers/PackageTravelersPage";
 import { TravelersCreatePanel } from "./components/Travelers/TravelersCreatePanel";
 import { TravelersDeletedPanel } from "./components/Travelers/TravelersDeletedPanel";
 import { TravelersBlockedPanel } from "./components/Travelers/TravelersBlockedPanel";
@@ -302,10 +304,16 @@ export default function App() {
 
   if (path === "/admin") return <DashboardPanel {...commonProps} />;
   if (path === "/booking/login") return <TravelersCreatePanel {...commonProps} />;
-  if (path === "/travelers") return <TravelersPanel {...commonProps} />;
+  if (path === "/travelers") return <TravelDatesPage {...commonProps} />;
   if (path === "/travelers/create") return <TravelersCreatePanel {...commonProps} />;
   if (path === "/travelers/deleted") return <TravelersDeletedPanel {...commonProps} />;
   if (path === "/travelers/blocked") return <TravelersBlockedPanel {...commonProps} />;
+  if (segments[0] === "travelers" && segments[1] === "date" && segments[2] && segments[3] === "package" && segments[4]) {
+    return <PackageTravelersPage {...commonProps} dateId={segments[2]} packageId={segments[4]} />;
+  }
+  if (segments[0] === "travelers" && segments[1] === "date" && segments[2]) {
+    return <DatePackagesPage {...commonProps} dateId={segments[2]} />;
+  }
   if (segments[0] === "travelers" && segments[2] === "edit") {
     return <TravelerEditPanel {...commonProps} travelerId={parseId(segments[1])} />;
   }

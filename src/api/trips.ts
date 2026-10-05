@@ -1,10 +1,13 @@
-﻿export interface TripListItem {
+export type TripStatus = "pending" | "confirmed" | "completed" | "cancelled";
+
+export interface TripListItem {
   id: number;
   travelerId: number;
   travelerName: string;
   passportNumber: string;
   tripType: string;
   tripDate: string;
+  status: TripStatus;
   notes: string | null;
   createdAt: string;
   isDeleted: boolean;
@@ -52,9 +55,7 @@ export async function getTrips(search = "", includeDeleted = false): Promise<Tri
   return response.json();
 }
 
-export async function createTrip(
-  request: TripCreateRequest
-): Promise<TripListItem> {
+export async function createTrip(request: TripCreateRequest): Promise<TripListItem> {
   const response = await fetch("/api/trips", {
     method: "POST",
     credentials: "include",
@@ -79,6 +80,27 @@ export async function archiveTrip(id: number): Promise<TripListItem> {
   const response = await fetch(`/api/trips/${id}/archive`, {
     method: "POST",
     credentials: "include"
+  });
+
+  if (response.status === 401) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  return response.json();
+}
+
+export async function updateTripStatus(id: number, status: TripStatus): Promise<TripListItem> {
+  const response = await fetch(`/api/trips/${id}/status`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ status })
   });
 
   if (response.status === 401) {

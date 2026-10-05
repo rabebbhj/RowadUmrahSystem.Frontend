@@ -130,6 +130,12 @@ const paymentPlans = [
 ];
 
 const reservationSteps = [1, 2, 3, 4, 5];
+const languageOptions = [
+  { value: "ar", label: "العربية" },
+  { value: "en", label: "English" },
+  { value: "hi", label: "हिन्दी" },
+  { value: "bn", label: "বাংলা" }
+];
 
 const emptyFilters = {
   people: "",
@@ -222,6 +228,24 @@ function isRowadTravelPackage(packageItem: TravelPackage | null | undefined) {
   return Boolean(packageItem?.id.startsWith(rowadPackagePrefix));
 }
 
+function getRowadDepartureWeekday(packageItem: TravelPackage | null | undefined) {
+  return (packageItem?.durationDays ?? 0) <= 6 ? 4 : 2;
+}
+
+function getRowadDepartureLabel(packageItem: TravelPackage | null | undefined) {
+  return getRowadDepartureWeekday(packageItem) === 4 ? "اختر الخميس" : "اختر الثلاثاء";
+}
+
+function isRowadDepartureDate(packageItem: TravelPackage | null | undefined, date: string, todayDate: string) {
+  if (!date || date < todayDate) return false;
+  return parseDateInput(date).getDay() === getRowadDepartureWeekday(packageItem);
+}
+
+function getRowadReturnDate(packageItem: TravelPackage | null | undefined, bookingDate: string) {
+  if (!bookingDate) return "";
+  return addDaysToDateInput(bookingDate, Math.max(1, packageItem?.durationDays ?? 1) - 1);
+}
+
 function getDefaultTransportLabel(packageItem: TravelPackage | null | undefined) {
   if (!packageItem) return "";
   if (isRowadTravelPackage(packageItem)) return rowadFixedTransport;
@@ -236,6 +260,25 @@ type LandingPageProps = {
 
 function toDateInputValue(value: string | null | undefined) {
   return value ? value.slice(0, 10) : "";
+}
+
+function toLocalDateInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateInput(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, (month || 1) - 1, day || 1);
+}
+
+function addDaysToDateInput(value: string, amount: number) {
+  const date = parseDateInput(value);
+  date.setDate(date.getDate() + amount);
+  return toLocalDateInputValue(date);
 }
 
 function getTodayDateInputValue() {
@@ -286,6 +329,11 @@ function getMonthLabel(value: string) {
   return new Intl.DateTimeFormat("ar", { month: "long", year: "numeric" }).format(new Date(year, (month || 1) - 1, 1));
 }
 
+function formatCompactDateRange(startDate: string, endDate: string) {
+  if (!startDate || !endDate) return startDate || endDate;
+  return `${startDate.slice(5).replace("-", "/")} - ${endDate.slice(5).replace("-", "/")}`;
+}
+
 function getMonthGrid(value: string) {
   const [year, month] = value.split("-").map(Number);
   const monthIndex = (month || 1) - 1;
@@ -295,7 +343,7 @@ function getMonthGrid(value: string) {
   const days: Array<string | null> = Array.from({ length: offset }, () => null);
 
   for (let day = 1; day <= dayCount; day += 1) {
-    days.push(toDateInputValue(new Date(year, monthIndex, day).toISOString()));
+    days.push(toLocalDateInputValue(new Date(year, monthIndex, day)));
   }
 
   return days;
@@ -411,6 +459,7 @@ function getRoomCombinationCapacity(packageItem: TravelPackage | null | undefine
 
 function getRoomCombinationOptions(packageItem: TravelPackage | null | undefined, travelers: string) {
   const activeRoomTypes = packageItem?.roomTypes.filter((item) => item.active) ?? [];
+  const activeRoomLabels = activeRoomTypes.map((roomType) => roomType.label).filter(Boolean);
   const travelerCount = Number(travelers) || 1;
   const validRoomTypes = activeRoomTypes
     .map((roomType) => ({ ...roomType, capacity: getRoomCapacity(roomType) }))
@@ -418,7 +467,7 @@ function getRoomCombinationOptions(packageItem: TravelPackage | null | undefined
     .sort((first, second) => second.capacity - first.capacity);
 
   if (travelerCount === 1) {
-    return validRoomTypes.map((roomType) => roomType.label);
+    return activeRoomLabels;
   }
 
   const combinations: PackageOption[][] = [];
@@ -445,7 +494,7 @@ function getRoomCombinationOptions(packageItem: TravelPackage | null | undefined
     .filter((roomType) => roomType.capacity === travelerCount)
     .map((roomType) => roomType.label);
   const combinationOptions = combinations.map(buildRoomCombinationLabel);
-  const options = Array.from(new Set([...exactRoomOptions, ...combinationOptions]));
+  const options = Array.from(new Set([...activeRoomLabels, ...exactRoomOptions, ...combinationOptions]));
 
   return options;
 }
@@ -500,6 +549,7 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const [authLoading, setAuthLoading] = useState(false);
   const [authMessage, setAuthMessage] = useState("");
   const [authErrors, setAuthErrors] = useState<{ email?: string; password?: string }>({});
+  const [siteLanguage, setSiteLanguage] = useState("ar");
   const [travelerUser, setTravelerUser] = useState<AuthUser | null>(null);
   const [packagePricing, setPackagePricing] = useState<PackagePricing | null>(null);
   const [selectedChoiceDetailPackageId, setSelectedChoiceDetailPackageId] = useState<string | null>(null);
@@ -932,6 +982,25 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       return {
         ...current,
         [packageId]: nextOptions
+      };
+    });
+  };
+
+  const updateRowadTravelDate = (packageId: string, selectedDate: string) => {
+    const packageItem = publishedTravelPackages.find((item) => item.id === packageId);
+    if (!isRowadDepartureDate(packageItem, selectedDate, todayDateInputValue)) return;
+
+    setTravelOptions((current) => {
+      const currentOptions = current[packageId] ?? defaultTravelPackageOptions;
+
+      return {
+        ...current,
+        [packageId]: {
+          ...currentOptions,
+          bookingDate: selectedDate,
+          returnDate: getRowadReturnDate(packageItem, selectedDate),
+          dateError: ""
+        }
       };
     });
   };
@@ -1543,6 +1612,10 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const activeDateRangeMonth = activeDateRangePackage
     ? dateRangeMonths[activeDateRangePackage.id] ?? `${(activeDateRangeOptions?.bookingDate || todayDateInputValue).slice(0, 7)}-01`
     : todayDateInputValue;
+  const activeDateRangeIsRowad = isRowadTravelPackage(activeDateRangePackage);
+  const activeDateRangeReturnDate = activeDateRangeIsRowad && activeDateRangeOptions?.bookingDate
+    ? activeDateRangeOptions.returnDate || getRowadReturnDate(activeDateRangePackage, activeDateRangeOptions.bookingDate)
+    : activeDateRangeOptions?.returnDate ?? "";
 
   const renderTravelPackageCard = (program: TravelPackage, variant: "rowad" | "regular" = "regular") => {
     const defaultNationality = availableNationalities[0] ?? nationalityOptions[0];
@@ -1569,6 +1642,9 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
       : options.bookingDate
         ? `${options.bookingDate} - العودة`
         : "اختر الأيام";
+    const fixedTripDateLabel = options.bookingDate
+      ? formatCompactDateRange(options.bookingDate, options.returnDate || getRowadReturnDate(program, options.bookingDate))
+      : getRowadDepartureLabel(program);
     const dynamicPrice = calculatePackagePrice(program, {
       packageId: program.id,
       travelers: travelerCount,
@@ -1602,23 +1678,17 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                     <CalendarIcon className="icon icon-sm" />
                   </button>
                 </div>
-              ) : program.departureDates.length > 0 ? (
-                <select
-                  value={options.bookingDate}
-                  onChange={(event) => updateTravelOption(program.id, "bookingDate", event.target.value)}
-                >
-                  <option value="">اختر التاريخ</option>
-                  {program.departureDates.map((date) => (
-                    <option key={date} value={date} disabled={date < todayDateInputValue}>{date}</option>
-                  ))}
-                </select>
               ) : (
-                <input
-                  type="date"
-                  min={todayDateInputValue}
-                  value={options.bookingDate}
-                  onChange={(event) => updateTravelBookingDate(program.id, program.departureDates, event.target.value)}
-                />
+                <div className="gv-date-range">
+                  <button
+                    type="button"
+                    className="gv-date-range__trigger"
+                    onClick={() => setOpenDateRangePicker((current) => current === program.id ? null : program.id)}
+                  >
+                    <span>{fixedTripDateLabel}</span>
+                    <CalendarIcon className="icon icon-sm" />
+                  </button>
+                </div>
               )}
             </label>
             <label>
@@ -1860,7 +1930,14 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
               <span><MailIcon className="icon icon-sm" /> info@ruwadomra.com</span>
               <span><PhoneIcon className="icon icon-sm" /> +965 55583203 - +965 22283558</span>
               <span><PhoneIcon className="icon icon-sm" /> +965 65002927 - +965 22283589</span>
-              <span><LocationIcon className="icon icon-sm" /> العربية</span>
+              <label className="gv-language-select" aria-label="اختيار اللغة">
+                <LocationIcon className="icon icon-sm" />
+                <select value={siteLanguage} onChange={(event) => setSiteLanguage(event.target.value)}>
+                  {languageOptions.map((language) => (
+                    <option key={language.value} value={language.value}>{language.label}</option>
+                  ))}
+                </select>
+              </label>
               {/*
               {travelerUser?.isAuthenticated ? (
                 <button className="gv-auth-nav gv-auth-nav--logout" type="button" onClick={() => void handleTravelerLogout()}>
@@ -2106,18 +2183,29 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
             <div className="gv-date-range__weekdays">
               {["أحد", "إث", "ثلا", "أرب", "خم", "جم", "سب"].map((day) => <span key={day}>{day}</span>)}
             </div>
+            {activeDateRangeIsRowad ? (
+              <p className="gv-date-range__hint">
+                {getRowadDepartureLabel(activeDateRangePackage)}، وسيتم تحديد {activeDateRangePackage.durationDays} أيام تلقائياً.
+              </p>
+            ) : null}
             <div className="gv-date-range__days">
               {getMonthGrid(activeDateRangeMonth).map((date, index) => {
                 const isEmpty = !date;
-                const isDisabled = Boolean(date && date < todayDateInputValue);
+                const isAllowedRowadDeparture = Boolean(
+                  date && activeDateRangeIsRowad && isRowadDepartureDate(activeDateRangePackage, date, todayDateInputValue)
+                );
+                const isDisabled = Boolean(
+                  date &&
+                  (activeDateRangeIsRowad ? !isAllowedRowadDeparture : date < todayDateInputValue)
+                );
                 const isStart = Boolean(date && date === activeDateRangeOptions.bookingDate);
-                const isEnd = Boolean(date && date === activeDateRangeOptions.returnDate);
+                const isEnd = Boolean(date && date === activeDateRangeReturnDate);
                 const isBetween = Boolean(
                   date &&
                   activeDateRangeOptions.bookingDate &&
-                  activeDateRangeOptions.returnDate &&
+                  activeDateRangeReturnDate &&
                   date > activeDateRangeOptions.bookingDate &&
-                  date < activeDateRangeOptions.returnDate
+                  date < activeDateRangeReturnDate
                 );
 
                 return (
@@ -2129,11 +2217,17 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                       isDisabled ? "is-disabled" : "",
                       isStart ? "is-start" : "",
                       isEnd ? "is-end" : "",
-                      isBetween ? "is-between" : ""
+                      isBetween ? "is-between" : "",
+                      isAllowedRowadDeparture ? "is-departure" : ""
                     ].filter(Boolean).join(" ")}
                     disabled={isEmpty || isDisabled}
                     onClick={() => {
                       if (!date) return;
+                      if (activeDateRangeIsRowad) {
+                        updateRowadTravelDate(activeDateRangePackage.id, date);
+                        return;
+                      }
+
                       updateTravelDateRange(activeDateRangePackage.id, date);
                     }}
                   >
@@ -2155,7 +2249,11 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
               <button
                 type="button"
                 onClick={() => setOpenDateRangePicker(null)}
-                disabled={!activeDateRangeOptions.bookingDate || !activeDateRangeOptions.returnDate}
+                disabled={
+                  activeDateRangeIsRowad
+                    ? !activeDateRangeOptions.bookingDate
+                    : !activeDateRangeOptions.bookingDate || !activeDateRangeOptions.returnDate
+                }
               >
                 تم
               </button>
@@ -2175,11 +2273,15 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
             <div className="gv-auth-popup__side">
               <header className="gv-auth-popup__top">
-                <button className="gv-auth-language" type="button">
+                <label className="gv-auth-language" aria-label="اختيار اللغة">
                   <span aria-hidden="true">⌄</span>
-                  العربية
+                  <select value={siteLanguage} onChange={(event) => setSiteLanguage(event.target.value)}>
+                    {languageOptions.map((language) => (
+                      <option key={language.value} value={language.value}>{language.label}</option>
+                    ))}
+                  </select>
                   <span aria-hidden="true">◎</span>
-                </button>
+                </label>
               </header>
               {/*
               <div className="gv-auth-company">

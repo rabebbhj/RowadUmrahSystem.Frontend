@@ -20,7 +20,7 @@ type SidebarItem = {
 };
 
 type PageTitle = {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
 };
 
@@ -175,7 +175,7 @@ const pageTitles: { match: (path: string) => boolean; title: PageTitle }[] = [
   { match: (path) => path.startsWith("/travelers/blocked"), title: { eyebrow: "Travelers", title: "الشكاوى والحظر" } },
   { match: (path) => path.startsWith("/travelers/deleted"), title: { eyebrow: "Travelers", title: "أرشيف المسافرين" } },
   { match: (path) => path.startsWith("/travelers/create"), title: { eyebrow: "Travelers", title: "تسجيل مسافر جديد" } },
-  { match: (path) => path.startsWith("/travelers"), title: { eyebrow: "Travelers", title: "المسافرون" } },
+  { match: (path) => path.startsWith("/travelers"), title: { title: "المسافرون / الرحلات" } },
   { match: (path) => path.startsWith("/trips/create"), title: { eyebrow: "Trips", title: "إضافة رحلة" } },
   { match: (path) => path.startsWith("/trips/deleted"), title: { eyebrow: "Trips", title: "أرشيف الرحلات" } },
   { match: (path) => path.startsWith("/trips"), title: { eyebrow: "Trips", title: "الرحلات" } },
@@ -263,7 +263,7 @@ export function SignedInSidebar({ user, activePath, onNavigate, onLogout }: Sign
     </aside>
       <header className="rowad-app-header">
         <div className="rowad-app-header-title">
-          <span>{headerTitle.eyebrow}</span>
+          {headerTitle.eyebrow && <span>{headerTitle.eyebrow}</span>}
           <h1>{headerTitle.title}</h1>
         </div>
         <div className="rowad-app-header-user">
