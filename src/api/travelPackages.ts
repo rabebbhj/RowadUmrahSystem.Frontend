@@ -426,32 +426,32 @@ export function createEmptyPackage(order = 1): TravelPackage {
 
   return {
     id: "",
-    name: "Ø¨Ø§Ù‚Ø© Ø¹Ù…Ø±Ø© Ø¬Ø¯ÙŠØ¯Ø©",
-    shortTitle: "Ø±Ø­Ù„Ø© Ø¹Ù…Ø±Ø©",
+    name: "باقة عمرة جديدة",
+    shortTitle: "رحلة عمرة",
     description: "",
     durationDays: 6,
-    durationLabel: "6 Ø£ÙŠØ§Ù…",
+    durationLabel: "6 أيام",
     imageUrl: "/landingpage/paysage.png",
     basePrice: 75,
     visaSupplement: defaultVisaSupplement,
-    currency: "Ø¯.Ùƒ",
+    currency: "د.ك",
     priceMode: "rules",
     status: "draft",
     displayOrder: order,
     transportOptions: [
-      { id: "bus", label: "Ø¨Ø§Øµ", active: true, supplement: 0, price: null },
-      { id: "private-car", label: "Ø³ÙŠØ§Ø±Ø© Ø®Ø§ØµØ©", active: true, supplement: 350, price: null }
+      { id: "bus", label: "باص", active: true, supplement: 0, price: null },
+      { id: "private-car", label: "سيارة خاصة", active: true, supplement: 350, price: null }
     ],
     roomTypes: [
-      { id: "double", label: "ØºØ±ÙØ© Ù…Ø²Ø¯ÙˆØ¬Ø©", active: true, supplement: 0, price: null },
-      { id: "quad", label: "ØºØ±ÙØ© Ø±Ø¨Ø§Ø¹ÙŠØ©", active: true, supplement: 0, price: null }
+      { id: "double", label: "غرفة مزدوجة", active: true, supplement: 0, price: null },
+      { id: "quad", label: "غرفة رباعية", active: true, supplement: 0, price: null }
     ],
     departureDates: [],
     pricingProfile: null,
     pricingRules: [
       {
         id: "default-rule",
-        name: "Ø§Ù„Ø³Ø¹Ø± Ø§Ù„Ø£Ø³Ø§Ø³ÙŠ",
+        name: "السعر الأساسي",
         conditions: [],
         price: 75,
         priceType: "perPerson",
