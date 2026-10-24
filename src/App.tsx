@@ -44,6 +44,8 @@ import { PricingRuleBuilderPage } from "./components/Pricing/PricingRuleBuilderP
 import { PricingExceptionsPage } from "./components/Pricing/PricingExceptionsPage";
 import { ServicesAddonsPage } from "./components/Pricing/ServicesAddonsPage";
 import { SignedInSidebar } from "./components/Layout/SignedInSidebar";
+import { BookingSettingsPage } from "./components/Booking/BookingSettingsPage";
+import { RoomingPage } from "./components/Booking/RoomingPage";
 import { AdminPlaceholderPanel } from "./components/Layout/AdminPlaceholderPanel";
 
 const publicPaths = new Set(["/", "/globalview", "/booking/login"]);
@@ -73,7 +75,9 @@ const adminRoutePrefixes = [
   "/nationality-groups",
   "/pricing-rules",
   "/pricing-exceptions",
-  "/services-addons"
+  "/services-addons",
+  "/booking-settings",
+  "/rooming"
 ];
 
 function currentPath() {
@@ -339,6 +343,9 @@ export default function App() {
     return <UsersPermissionsPanel {...commonProps} userId={segments[1] ?? ""} />;
   }
   if (path === "/settings") return <PackageSettingsPanel {...commonProps} />;
+  if ((path === "/booking-settings" || path === "/rooming") && !hasRole(user, "Admin")) return forbiddenPanel;
+  if (path === "/booking-settings") return <BookingSettingsPage {...commonProps} />;
+  if (path === "/rooming") return <RoomingPage {...commonProps} />;
   if (path === "/settings/general") {
     return (
       <AdminPlaceholderPanel

@@ -154,6 +154,7 @@ const sidebarItems: SidebarItem[] = [
     canShow: (user) => user.roles.some((role) => role.toLowerCase() === "admin"),
     icon: LandmarkIcon
   },
+  { label: "حجوزات التطبيق", path: "/rooming", activePaths: ["/rooming", "/booking-settings"], canShow: (user) => user.roles.some((role) => role.toLowerCase() === "admin"), icon: BusFrontIcon },
   { label: "الوثائق", path: "/documents", canShow: (user) => Boolean(user.permissions?.canViewDocuments), icon: FileTextIcon },
   {
     label: "الشكاوى والحظر",
@@ -172,6 +173,8 @@ const rowadLogoSrc = `${import.meta.env.BASE_URL}landingpage/company-logo.png`;
 
 const pageTitles: { match: (path: string) => boolean; title: PageTitle }[] = [
   { match: (path) => path === "/admin", title: { eyebrow: "Dashboard", title: "لوحة التحكم" } },
+  { match: (path) => path === "/rooming", title: { eyebrow: "Rooming", title: "توزيع الغرف" } },
+  { match: (path) => path === "/booking-settings", title: { eyebrow: "Booking", title: "إعدادات الحجز" } },
   { match: (path) => path.startsWith("/travelers/blocked"), title: { eyebrow: "Travelers", title: "الشكاوى والحظر" } },
   { match: (path) => path.startsWith("/travelers/deleted"), title: { eyebrow: "Travelers", title: "أرشيف المسافرين" } },
   { match: (path) => path.startsWith("/travelers/create"), title: { eyebrow: "Travelers", title: "تسجيل مسافر جديد" } },
