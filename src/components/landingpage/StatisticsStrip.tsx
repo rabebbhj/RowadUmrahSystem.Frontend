@@ -12,7 +12,7 @@ export function StatisticsStrip() {
     <section className="stats-shell">
       <div className="container stats-strip">
         <div className="stats-strip__image">
-          <img src="/landingpage/paysage.png" alt="" />
+          <img src="/landingpage/paysage.webp" alt="" />
         </div>
 
         {stats.map((stat) => (

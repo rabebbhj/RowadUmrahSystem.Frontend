@@ -31,12 +31,12 @@ const categories = [
 ];
 
 const services: ServiceItem[] = [
-  { id: "s1", code: "S001", name: "تأشيرة فقط", image: "/landingpage/auth-login-bg.png", type: "التأشيرة", pricing: "لكل شخص", linked: true, active: true },
-  { id: "s2", code: "S002", name: "سيارة خاصة", image: "/landingpage/reservation-bg.png", type: "المواصلات", pricing: "سعر ثابت", linked: true, active: true },
-  { id: "s3", code: "S003", name: "باص مشترك", image: "/landingpage/bus.png", type: "المواصلات", pricing: "لكل شخص", linked: false, active: false },
-  { id: "s4", code: "S004", name: "حجز طيران", image: "/landingpage/avion.png", type: "الطيران", pricing: "سعر ثابت", linked: true, active: true },
-  { id: "s5", code: "S005", name: "ترقية غرفة", image: "/landingpage/chambre.png", type: "الفنادق", pricing: "لكل شخص", linked: true, active: true },
-  { id: "s6", code: "S006", name: "استقبال من المطار", image: "/landingpage/mains.png", type: "المواصلات", pricing: "سعر ثابت", linked: true, active: true }
+  { id: "s1", code: "S001", name: "تأشيرة فقط", image: "/landingpage/auth-login-bg.webp", type: "التأشيرة", pricing: "لكل شخص", linked: true, active: true },
+  { id: "s2", code: "S002", name: "سيارة خاصة", image: "/landingpage/reservation-bg.webp", type: "المواصلات", pricing: "سعر ثابت", linked: true, active: true },
+  { id: "s3", code: "S003", name: "باص مشترك", image: "/landingpage/bus.webp", type: "المواصلات", pricing: "لكل شخص", linked: false, active: false },
+  { id: "s4", code: "S004", name: "حجز طيران", image: "/landingpage/avion.webp", type: "الطيران", pricing: "سعر ثابت", linked: true, active: true },
+  { id: "s5", code: "S005", name: "ترقية غرفة", image: "/landingpage/chambre.webp", type: "الفنادق", pricing: "لكل شخص", linked: true, active: true },
+  { id: "s6", code: "S006", name: "استقبال من المطار", image: "/landingpage/mains.webp", type: "المواصلات", pricing: "سعر ثابت", linked: true, active: true }
 ];
 
 export function ServicesAddonsPage({ user, activePath, onNavigate, onLogout }: ServicesAddonsPageProps) {

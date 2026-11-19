@@ -57,7 +57,7 @@ export function ContactPage({ onStartBooking }: { onStartBooking: () => void }) 
             </div>
           </div>
           <div className="contact-hero__visual">
-            <img src="/landingpage/kaaba.png" alt="الكعبة المشرفة" />
+            <img src="/landingpage/kaaba.webp" alt="الكعبة المشرفة" />
           </div>
         </div>
 

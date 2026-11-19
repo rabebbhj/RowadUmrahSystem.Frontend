@@ -80,7 +80,7 @@ export function AboutPage({ onStartBooking }: { onStartBooking: () => void }) {
             <p>خدمتكم شرف... ورضاكم هدفنا</p>
           </div>
           <div className="about-hero__visual">
-            <img src="/landingpage/kaaba.png" alt="الكعبة المشرفة" />
+            <img src="/landingpage/kaaba.webp" alt="الكعبة المشرفة" />
           </div>
         </div>
 
@@ -105,7 +105,7 @@ export function AboutPage({ onStartBooking }: { onStartBooking: () => void }) {
           </div>
 
           <div className="about-panel__visual">
-            <img src="/landingpage/dormir.png" alt="فنادق وخدمات العمرة" />
+            <img src="/landingpage/dormir.webp" alt="فنادق وخدمات العمرة" />
           </div>
         </section>
 

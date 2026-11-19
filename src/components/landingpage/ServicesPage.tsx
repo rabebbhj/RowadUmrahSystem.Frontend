@@ -53,10 +53,10 @@ function ServiceCard({
 
 export function ServicesPage({ onStartBooking }: { onStartBooking: () => void }) {
   const coreServices = [
-    { image: "/landingpage/avion.png", title: "حجوزات الطيران", subtitle: "حجوزات طيران داخلية ودولية بأفضل الأسعار" },
-    { image: "/landingpage/chambre.png", title: "حجوزات الفنادق", subtitle: "فنادق قريبة من الحرم بجميع المستويات" },
-    { image: "/landingpage/bus.png", title: "النقل والمواصلات", subtitle: "تنقل آمن ومريح بين المطار والمشاعر" },
-    { image: "/landingpage/reunion.png", title: "خدمات المعتمرين", subtitle: "خدمات متكاملة لراحة المعتمر" }
+    { image: "/landingpage/avion.webp", title: "حجوزات الطيران", subtitle: "حجوزات طيران داخلية ودولية بأفضل الأسعار" },
+    { image: "/landingpage/chambre.webp", title: "حجوزات الفنادق", subtitle: "فنادق قريبة من الحرم بجميع المستويات" },
+    { image: "/landingpage/bus.webp", title: "النقل والمواصلات", subtitle: "تنقل آمن ومريح بين المطار والمشاعر" },
+    { image: "/landingpage/reunion.webp", title: "خدمات المعتمرين", subtitle: "خدمات متكاملة لراحة المعتمر" }
   ];
 
   const extraServices = [
@@ -97,7 +97,7 @@ export function ServicesPage({ onStartBooking }: { onStartBooking: () => void })
             <h1>خدماتنا</h1>
           </div>
           <div className="services-page__visual">
-            <img src="/landingpage/kaaba.png" alt="الكعبة المشرفة" />
+            <img src="/landingpage/kaaba.webp" alt="الكعبة المشرفة" />
           </div>
         </div>
 
@@ -158,7 +158,7 @@ export function ServicesPage({ onStartBooking }: { onStartBooking: () => void })
           <div className="services-page__col services-page__col--company">
             <ServiceColumnTitle icon={<BuildingIcon className="icon icon-md" />} title="خدمات الشركات والموظفين" />
             <div className="services-page__company-card">
-              <img src="/landingpage/reunion.png" alt="خدمات الشركات والموظفين" />
+              <img src="/landingpage/reunion.webp" alt="خدمات الشركات والموظفين" />
               <div className="services-page__company-copy">
                 <strong>حلول متكاملة للشركات والمجموعات</strong>
                 <p>أسعار خاصة للشركات والمجموعات وحلول مرنة تناسب احتياجاتكم.</p>

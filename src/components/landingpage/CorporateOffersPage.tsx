@@ -67,9 +67,9 @@ function OfferCard({
 
 export function CorporateOffersPage({ onBackHome }: { selectedProgramIndex: number; onSelectProgram: (index: number) => void; onBackHome: () => void }) {
   const offers: Array<{ program: BookingProgram; price: string; accent: string }> = [
-    { program: { id: "economy", badge: "اقتصادية", title: "باقة الشركات الاقتصادية", image: "/landingpage/chambre.png", nights: "فندق 3 نجوم", city: "مكة والمدينة", transport: "طيران اقتصادي", transfer: "إفطار يومي", price: "2,390 د.ك", details: ["مثالية للشركات الصغيرة والمتوسطة"] }, price: "2,390", accent: "accent-green" },
-    { program: { id: "best", badge: "الأكثر طلباً", title: "باقة الشركات المميزة", image: "/landingpage/kaaba.png", nights: "فندق 4 نجوم", city: "مكة والمدينة", transport: "طيران درجة أعمال", transfer: "إفطار وغداء يومي", price: "3,990 د.ك", details: ["أفضل خيار للمجموعات والشركات الكبيرة"] }, price: "3,990", accent: "accent-gold" },
-    { program: { id: "vip", badge: "VIP", title: "باقة الشركات VIP", image: "/landingpage/dormir.png", nights: "فندق 5 نجوم", city: "مكة والمدينة", transport: "طيران درجة أولى", transfer: "جميع الوجبات", price: "6,990 د.ك", details: ["الفخامة والتميز لقادتكم وكبار موظفيكم"] }, price: "6,990", accent: "accent-vip" }
+    { program: { id: "economy", badge: "اقتصادية", title: "باقة الشركات الاقتصادية", image: "/landingpage/chambre.webp", nights: "فندق 3 نجوم", city: "مكة والمدينة", transport: "طيران اقتصادي", transfer: "إفطار يومي", price: "2,390 د.ك", details: ["مثالية للشركات الصغيرة والمتوسطة"] }, price: "2,390", accent: "accent-green" },
+    { program: { id: "best", badge: "الأكثر طلباً", title: "باقة الشركات المميزة", image: "/landingpage/kaaba.webp", nights: "فندق 4 نجوم", city: "مكة والمدينة", transport: "طيران درجة أعمال", transfer: "إفطار وغداء يومي", price: "3,990 د.ك", details: ["أفضل خيار للمجموعات والشركات الكبيرة"] }, price: "3,990", accent: "accent-gold" },
+    { program: { id: "vip", badge: "VIP", title: "باقة الشركات VIP", image: "/landingpage/dormir.webp", nights: "فندق 5 نجوم", city: "مكة والمدينة", transport: "طيران درجة أولى", transfer: "جميع الوجبات", price: "6,990 د.ك", details: ["الفخامة والتميز لقادتكم وكبار موظفيكم"] }, price: "6,990", accent: "accent-vip" }
   ];
 
   const featureItems = [
@@ -96,7 +96,7 @@ export function CorporateOffersPage({ onBackHome }: { selectedProgramIndex: numb
             <p>برامج مخصصة تلبي احتياجات شركتك بأفضل الخدمات والأسعار</p>
           </div>
           <div className="corporate-offers__visual">
-            <img src="/landingpage/kaaba.png" alt="الكعبة المشرفة" />
+            <img src="/landingpage/kaaba.webp" alt="الكعبة المشرفة" />
           </div>
         </div>
 

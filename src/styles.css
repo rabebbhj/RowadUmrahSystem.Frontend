@@ -1,4 +1,4 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap");
+﻿@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@400;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap");
 
 :root {
   --bg-main: #080909;
@@ -37,7 +37,7 @@
   border-radius: 28px;
   background:
     linear-gradient(135deg, rgba(10, 11, 11, 0.94), rgba(12, 12, 12, 0.76)),
-    url("/landingpage/kaaba.png") center/cover no-repeat;
+    url("/landingpage/kaaba.webp") center/cover no-repeat;
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -695,7 +695,7 @@ img {
 .gv-reservation-modal {
   background:
     linear-gradient(rgba(14, 12, 9, 0.42), rgba(14, 12, 9, 0.44)),
-    url("/landingpage/hero-kaaba-premium.png") center / cover no-repeat !important;
+    url("/landingpage/hero-kaaba-premium.webp") center / cover no-repeat !important;
   backdrop-filter: blur(8px);
 }
 
@@ -994,7 +994,7 @@ body,
 .gv-reservation-modal {
   background:
     linear-gradient(rgba(14, 12, 9, 0.42), rgba(14, 12, 9, 0.44)),
-    url("/landingpage/hero-kaaba-premium.png") center / cover no-repeat;
+    url("/landingpage/hero-kaaba-premium.webp") center / cover no-repeat;
   backdrop-filter: blur(8px);
 }
 
@@ -1566,7 +1566,7 @@ body,
   align-items: start;
   background:
     linear-gradient(90deg, rgba(5, 6, 8, 0.92) 0%, rgba(5, 6, 8, 0.72) 35%, rgba(5, 6, 8, 0.25) 70%, rgba(5, 6, 8, 0.35) 100%),
-    url("/landingpage/hero-kaaba-premium.png") center center / cover no-repeat;
+    url("/landingpage/hero-kaaba-premium.webp") center center / cover no-repeat;
   color: #fff;
   overflow: hidden;
 }
@@ -2032,7 +2032,7 @@ body,
   bottom: -70px;
   width: 540px;
   height: 190px;
-  background: url("/landingpage/hero-kaaba-premium.png") center bottom / cover no-repeat;
+  background: url("/landingpage/hero-kaaba-premium.webp") center bottom / cover no-repeat;
   filter: sepia(0.45);
   opacity: 0.09;
 }
@@ -2080,9 +2080,9 @@ body,
   justify-content: center;
   gap: 26px;
   color: #15100c;
-  font-size: clamp(2rem, 3.2vw, 3.2rem);
+  font-size: clamp(1.4rem, 2.1vw, 2rem);
   font-weight: 900;
-  line-height: 1.12;
+  line-height: 1.2;
 }
 
 .gv-packages__header p {
@@ -2140,16 +2140,155 @@ body,
   animation: gv-rise 0.7s ease both;
 }
 
-.gv-card:nth-child(2) {
-  animation-delay: 0.08s;
-}
-
-.gv-card:nth-child(3) {
-  animation-delay: 0.16s;
-}
-
 .gv-card.is-clickable {
   cursor: pointer;
+}
+
+/* --- Variante « dark » (عمرة البدل) --- */
+.gv-card--dark {
+  background: radial-gradient(ellipse at 30% 20%, #1e1a14 0%, #0e0c09 70%);
+  border-color: rgba(212, 174, 98, 0.35);
+}
+
+.gv-card--dark__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 20px 24px;
+  gap: 14px;
+  text-align: center;
+  min-height: 100%;
+}
+
+.gv-card--dark__star {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  opacity: 0.08;
+  color: #d4ae62;
+}
+
+.gv-card--dark__star .icon {
+  width: 72px;
+  height: 72px;
+}
+
+.gv-card--dark__icon-circle {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d4ae62, #a9802f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.gv-card--dark__icon-circle .icon {
+  width: 36px;
+  height: 36px;
+  color: #fff;
+}
+
+.gv-card__badge--dark {
+  position: static;
+  margin-top: 4px;
+}
+
+.gv-card--dark__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: rgba(220, 50, 50, 0.18);
+  border: 1px solid rgba(220, 50, 50, 0.4);
+  color: #f56565;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.gv-card--dark__live::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f56565;
+  animation: gv-pulse-dot 1.5s ease infinite;
+}
+
+@keyframes gv-pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.gv-card--dark__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.gv-card--dark .gv-card__features {
+  width: 100%;
+}
+
+.gv-card--dark .gv-card__divider {
+  width: 100%;
+}
+
+.gv-card__footer--dark {
+  justify-content: center;
+  margin-top: auto;
+  width: 100%;
+}
+
+.gv-card--dark__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 32px;
+  border: 1.5px solid #d4ae62;
+  border-radius: 30px;
+  background: transparent;
+  color: #d4ae62;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.gv-card--dark__cta:hover {
+  background: rgba(212, 174, 98, 0.12);
+  transform: translateY(-2px);
+}
+
+/* --- Variante « coming soon » (قيد الإنشاء) --- */
+.gv-card--coming {
+  cursor: default;
+}
+
+.gv-card--coming .gv-card__footer {
+  justify-content: center;
+}
+
+.gv-card__coming-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 18px;
+  border-radius: 20px;
+  background: rgba(212, 174, 98, 0.14);
+  border: 1px solid rgba(212, 174, 98, 0.35);
+  color: #e9cf8e;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
 }
 
 .gv-travel-card--standard {
@@ -3221,7 +3360,7 @@ body,
   inset-block: 0;
   right: -90px;
   width: 420px;
-  background: url("/landingpage/kaaba.png") right center / cover no-repeat;
+  background: url("/landingpage/kaaba.webp") right center / cover no-repeat;
   filter: sepia(0.45);
 }
 
@@ -3230,7 +3369,7 @@ body,
   bottom: -80px;
   width: 520px;
   height: 210px;
-  background: url("/landingpage/hero-kaaba-premium.png") center bottom / cover no-repeat;
+  background: url("/landingpage/hero-kaaba-premium.webp") center bottom / cover no-repeat;
   filter: sepia(0.3);
 }
 
@@ -3647,7 +3786,7 @@ body,
   border-radius: 8px;
   background:
     linear-gradient(180deg, rgba(255, 245, 220, 0.9) 0%, rgba(255, 246, 226, 0.74) 15%, rgba(9, 17, 20, 0.97) 15.2%, rgba(7, 13, 16, 0.98) 100%),
-    url("/landingpage/hero-kaaba-premium.png") center top / cover no-repeat;
+    url("/landingpage/hero-kaaba-premium.webp") center top / cover no-repeat;
   box-shadow: 0 24px 70px rgba(77, 52, 19, 0.18);
 }
 
@@ -3656,7 +3795,7 @@ body,
   top: 86px;
   width: auto;
   height: 190px;
-  background: url("/landingpage/hero-kaaba-premium.png") center / cover no-repeat;
+  background: url("/landingpage/hero-kaaba-premium.webp") center / cover no-repeat;
   opacity: 0.42;
   filter: sepia(0.25);
 }
@@ -4245,7 +4384,7 @@ body,
   padding: 0 18px 18px;
   background:
     linear-gradient(180deg, rgba(255, 246, 226, 0.86) 0%, rgba(255, 247, 232, 0.64) 13%, rgba(16, 31, 35, 0.9) 13.2%, rgba(13, 27, 31, 0.94) 100%),
-    url("/landingpage/hero-kaaba-premium.png") center top / cover no-repeat;
+    url("/landingpage/hero-kaaba-premium.webp") center top / cover no-repeat;
   box-shadow: 0 22px 60px rgba(66, 47, 22, 0.16);
 }
 
@@ -4883,7 +5022,7 @@ body,
   border-radius: 28px;
   background:
     linear-gradient(90deg, rgba(250, 244, 233, 0.22), rgba(250, 244, 233, 0.9) 48%, rgba(250, 244, 233, 0.28)),
-    url("/landingpage/reservation-bg.png") center center / cover no-repeat;
+    url("/landingpage/reservation-bg.webp") center center / cover no-repeat;
   color: #111820;
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
   isolation: isolate;
@@ -5937,7 +6076,7 @@ body,
   border-radius: 0;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0 64%, rgba(255, 255, 255, 0.72) 91%),
-    url("/landingpage/auth-login-bg.png") left center / cover no-repeat;
+    url("/landingpage/auth-login-bg.webp") left center / cover no-repeat;
   border: 0;
   box-shadow: none;
   color: #111820;
@@ -7478,7 +7617,7 @@ body,
 .gv-services {
   width: 100%;
   max-width: none;
-  padding: 22px max(20px, calc((100% - 1230px) / 2)) 26px;
+  padding: 14px max(20px, calc((100% - 1230px) / 2)) 18px;
   background: #080b10;
   color: #efe5d3;
 }
@@ -7993,7 +8132,7 @@ main {
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(5, 5, 5, 0.92) 0%, rgba(5, 5, 5, 0.4) 35%, rgba(5, 5, 5, 0.06) 65%, rgba(5, 5, 5, 0.02) 100%),
-    url("/landingpage/kaaba.png") center right / cover no-repeat;
+    url("/landingpage/kaaba.webp") center right / cover no-repeat;
   box-shadow: var(--shadow), var(--glow);
 }
 
@@ -8746,7 +8885,7 @@ main {
   border-radius: 26px;
   background:
     linear-gradient(90deg, rgba(5, 5, 5, 0.96) 0%, rgba(8, 9, 9, 0.86) 42%, rgba(8, 9, 9, 0.28) 100%),
-    url("/landingpage/kaaba.png") center right / cover no-repeat;
+    url("/landingpage/kaaba.webp") center right / cover no-repeat;
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -9594,7 +9733,7 @@ main {
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(5, 5, 5, 0.96) 0%, rgba(8, 9, 9, 0.86) 42%, rgba(8, 9, 9, 0.28) 100%),
-    url("/landingpage/kaaba.png") center right / cover no-repeat;
+    url("/landingpage/kaaba.webp") center right / cover no-repeat;
   box-shadow: var(--shadow);
 }
 
@@ -9969,7 +10108,7 @@ main {
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(5, 5, 5, 0.96) 0%, rgba(8, 9, 9, 0.86) 42%, rgba(8, 9, 9, 0.28) 100%),
-    url("/landingpage/kaaba.png") center right / cover no-repeat;
+    url("/landingpage/kaaba.webp") center right / cover no-repeat;
   box-shadow: var(--shadow);
 }
 
@@ -10212,7 +10351,7 @@ main {
   border-radius: 20px;
   background:
     linear-gradient(90deg, rgba(10, 11, 11, 0.98), rgba(12, 13, 13, 0.96)),
-    url("/landingpage/paysage.png") right center / cover no-repeat;
+    url("/landingpage/paysage.webp") right center / cover no-repeat;
   box-shadow: var(--shadow);
 }
 
@@ -10254,7 +10393,7 @@ main {
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(5, 5, 5, 0.96) 0%, rgba(8, 9, 9, 0.86) 42%, rgba(8, 9, 9, 0.28) 100%),
-    url("/landingpage/kaaba.png") center right / cover no-repeat;
+    url("/landingpage/kaaba.webp") center right / cover no-repeat;
   box-shadow: var(--shadow);
 }
 
@@ -10719,7 +10858,7 @@ main {
   border-radius: 20px;
   background:
     linear-gradient(90deg, rgba(10, 11, 11, 0.98), rgba(12, 13, 13, 0.96)),
-    url("/landingpage/paysage.png") right center / cover no-repeat;
+    url("/landingpage/paysage.webp") right center / cover no-repeat;
   box-shadow: var(--shadow);
 }
 
@@ -10755,7 +10894,7 @@ main {
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(5, 5, 5, 0.96) 0%, rgba(8, 9, 9, 0.86) 42%, rgba(8, 9, 9, 0.28) 100%),
-    url("/landingpage/kaaba.png") center right / cover no-repeat;
+    url("/landingpage/kaaba.webp") center right / cover no-repeat;
   box-shadow: var(--shadow);
 }
 
@@ -11131,7 +11270,7 @@ main {
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(5, 5, 5, 0.96) 0%, rgba(8, 9, 9, 0.86) 42%, rgba(8, 9, 9, 0.28) 100%),
-    url("/landingpage/kaaba.png") center right / cover no-repeat;
+    url("/landingpage/kaaba.webp") center right / cover no-repeat;
   box-shadow: var(--shadow);
 }
 
@@ -13601,7 +13740,7 @@ main {
   border-radius: 18px;
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 250, 242, 0.82) 44%, rgba(255, 255, 255, 0.94) 100%),
-    url("/landingpage/hero-kaaba-premium.png") center 46% / cover no-repeat;
+    url("/landingpage/hero-kaaba-premium.webp") center 46% / cover no-repeat;
   box-shadow: 0 14px 34px rgba(86, 54, 17, 0.07);
 }
 
@@ -14320,7 +14459,7 @@ main {
   border-radius: 24px;
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.95), rgba(255, 250, 242, 0.72)),
-    url("/landingpage/hero-kaaba-premium.png") center 45% / cover no-repeat;
+    url("/landingpage/hero-kaaba-premium.webp") center 45% / cover no-repeat;
   box-shadow: 0 18px 42px rgba(78, 51, 20, 0.08);
 }
 
@@ -14965,7 +15104,7 @@ main {
   border-radius: 24px;
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.96), rgba(255, 250, 242, 0.72)),
-    url("/landingpage/hero-kaaba-premium.png") center 45% / cover no-repeat;
+    url("/landingpage/hero-kaaba-premium.webp") center 45% / cover no-repeat;
   box-shadow: 0 18px 42px rgba(78, 51, 20, 0.08);
 }
 
@@ -16102,7 +16241,7 @@ main {
 .gv-reservation-modal {
   background:
     linear-gradient(rgba(14, 12, 9, 0.42), rgba(14, 12, 9, 0.44)),
-    url("/landingpage/hero-kaaba-premium.png") center / cover no-repeat !important;
+    url("/landingpage/hero-kaaba-premium.webp") center / cover no-repeat !important;
   backdrop-filter: blur(8px);
 }
 
@@ -16165,4 +16304,231 @@ main {
   border-radius: 0 0 18px 18px !important;
   background: rgba(255, 252, 246, 0.94) !important;
   color: #665b4b !important;
+}
+
+/* ------------------------------------------------------------------------
+   Documents juridiques (fenetre des Conditions generales).
+
+   Le texte fait 116 articles : la fenetre doit pouvoir etre parcourue, pas
+   seulement affichee. D'ou les chapitres replies, la hauteur plafonnee et le
+   defilement interne. La case a cocher et sa phrase se calent en haut l'une
+   de l'autre, parce que la declaration de l'article 116 fait plusieurs lignes.
+   ------------------------------------------------------------------------ */
+
+.gv-legal-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #a97b26;
+  font: inherit;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.gv-legal-link:hover,
+.gv-legal-link:focus-visible {
+  color: #7d5a19;
+}
+
+/* La declaration de paiement fait plusieurs lignes : la case reste en haut. */
+.gv-payment-terms {
+  align-items: flex-start;
+  font-weight: 700;
+  line-height: 1.9;
+}
+
+.gv-payment-terms input {
+  flex: none;
+  margin-top: 5px;
+}
+
+.gv-footer__legal {
+  display: grid;
+  gap: 8px;
+}
+
+.gv-footer__legal .gv-legal-link {
+  color: inherit;
+  font-weight: 700;
+}
+
+.gv-legal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(13, 10, 6, 0.62);
+}
+
+.gv-legal-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(760px, 100%);
+  max-height: min(86vh, 900px);
+  overflow: hidden;
+  border-radius: 20px;
+  background: #fffdf7;
+  box-shadow: 0 24px 60px rgba(13, 10, 6, 0.35);
+}
+
+.gv-legal-head {
+  position: relative;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid #ece2cf;
+  background: #5c3b13;
+  color: #fff6e7;
+  text-align: right;
+}
+
+.gv-legal-head h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.gv-legal-head p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(255, 246, 231, 0.76);
+}
+
+.gv-legal-version {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #f0cf8a;
+}
+
+.gv-legal-close {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff6e7;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.gv-legal-body {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  overflow-y: auto;
+  text-align: right;
+}
+
+.gv-legal-intro {
+  margin: 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f7efe1;
+  color: #5c3b13;
+  font-size: 13px;
+  line-height: 2;
+}
+
+.gv-legal-section {
+  border: 1px solid #ece2cf;
+  border-radius: 14px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.gv-legal-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 15px;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: right;
+  cursor: pointer;
+}
+
+.gv-legal-section-head > span:last-child {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+}
+
+.gv-legal-section-head em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 900;
+  color: #c99a38;
+}
+
+.gv-legal-section-head strong {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #171717;
+}
+
+.gv-legal-chevron {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f7efe1;
+  color: #a97b26;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.gv-legal-section-body {
+  padding: 0 15px 6px;
+  border-top: 1px solid #ece2cf;
+}
+
+.gv-legal-article {
+  padding: 13px 0;
+  border-bottom: 1px solid #f3ebdd;
+}
+
+.gv-legal-article:last-child {
+  border-bottom: 0;
+}
+
+.gv-legal-article em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 900;
+  color: #c99a38;
+}
+
+.gv-legal-article h3 {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 900;
+  color: #171717;
+}
+
+.gv-legal-article p {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 2.1;
+  color: #4b443a;
+  white-space: pre-line;
+}
+
+@media (max-width: 640px) {
+  .gv-legal-overlay { padding: 0; }
+  .gv-legal-dialog { max-height: 100vh; border-radius: 0; }
 }

@@ -94,7 +94,7 @@ export function PricingRuleBuilderPage({ user, activePath, onNavigate, onLogout 
         <section className="pricing-rule-layout">
           <aside className="pricing-preview-panel">
             <h2><span>◉</span> معاينة القاعدة</h2>
-            <img src="/landingpage/kaaba.png" alt="" />
+            <img src="/landingpage/kaaba.webp" alt="" />
             <div className="pricing-preview-list">
               <p>القاعدة سيتم تطبيقها على</p>
               <div><span>الجنسية / المجموعة</span><strong>{preview.group}</strong></div>

@@ -4375,7 +4375,7 @@ body,
     border-bottom-color: rgba(245, 203, 104, .18);
     background:
         linear-gradient(90deg, rgba(6, 16, 23, .94), rgba(6, 16, 23, .58), rgba(6, 16, 23, .94)),
-        url("/landingpage/hero-kaaba-premium.png") center 47% / cover no-repeat;
+        url("/landingpage/hero-kaaba-premium.webp") center 47% / cover no-repeat;
     box-shadow: 0 12px 32px rgba(0, 0, 0, .26);
 }
 
@@ -5048,7 +5048,7 @@ body,
     border-bottom: 1px solid #eadcc8;
     background:
         linear-gradient(90deg, rgba(255, 253, 248, .98), rgba(255, 249, 238, .9)),
-        url("/landingpage/hero-kaaba-premium.png") center 48% / cover no-repeat;
+        url("/landingpage/hero-kaaba-premium.webp") center 48% / cover no-repeat;
     box-shadow: 0 8px 22px rgba(80, 52, 20, .07);
 }
 

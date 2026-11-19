@@ -11,6 +11,11 @@ import {
   type AuthUser
 } from "../../api/auth";
 import type { CSSProperties, FormEvent } from "react";
+import { LegalDialog } from "./LegalDialog";
+import { SiteFooter } from "./SiteFooter";
+import { SiteHero } from "./SiteHero";
+import { AppPromoBar, AppPromoModal } from "./AppReminders";
+import { acceptanceDeclaration, type LegalDocumentId } from "../../legal";
 import { findPackagePrice, getPackagePricing, type PackagePricing } from "../../api/packagePricing";
 import { createTraveler, readCivilIdOcr, readPassportOcr } from "../../api/travelers";
 import {
@@ -31,6 +36,7 @@ import {
   DocumentIcon,
   GlobeIcon,
   HeadsetIcon,
+  HeartIcon,
   LocationIcon,
   MailIcon,
   MosqueIcon,
@@ -48,35 +54,86 @@ const packages = [
   {
     badge: "الرحلات",
     type: "travel",
-    image: landingAsset("avion.png"),
+    variant: "package" as const,
+    image: landingAsset("avion.webp"),
     price: "45",
     imageText: ["من كل مكان إلى أطهر بقاع", "الأرض"],
     features: ["حجوزات طيران", "حجوزات فنادق", "تنظيم الجولات", "دعم مباشر"],
     people: "1-2",
     city: "مكة",
-    duration: "7"
+    duration: "7",
+    cta: "عرض التفاصيل",
+    comingSoon: false
   },
   {
     badge: "التأشيرات",
     type: "visa",
-    image: landingAsset("mains.png"),
+    variant: "package" as const,
+    image: landingAsset("mains.webp"),
     price: "55",
     imageText: ["خطوة أسهل", "لرحلة أيسر"],
     features: ["تأشيرات سياحية", "حجز المواعيد", "متابعة الطلب", "استشارات السفر"],
     people: "3-4",
     city: "مكة والمدينة",
-    duration: "10"
+    duration: "10",
+    cta: "عرض التفاصيل",
+    comingSoon: false
   },
   {
     badge: "برامج الشركات",
     type: "corporate",
-    image: landingAsset("reunion.png"),
+    variant: "package" as const,
+    image: landingAsset("reunion.webp"),
     price: "60",
     imageText: ["شراكات تسهل رحلتكم", "الإيمانية"],
     features: ["رحلات عمل", "حجوزات جماعية", "تنظيم الفعاليات", "خدمة مخصصة"],
     people: "5+",
     city: "المدينة",
-    duration: "14"
+    duration: "14",
+    cta: "عرض التفاصيل",
+    comingSoon: false
+  },
+  {
+    badge: "المزارات",
+    type: "mazarat",
+    variant: "service" as const,
+    image: landingAsset("paysage.webp"),
+    price: "",
+    imageText: ["اكتشف أجمل المعالم", "في مكة والمدينة"],
+    features: ["جولات مكة", "جولات المدينة", "مواقع تاريخية", "مرشد خاص"],
+    people: "",
+    city: "",
+    duration: "",
+    cta: "اكتشف",
+    comingSoon: true
+  },
+  {
+    badge: "عمرة البدل",
+    type: "badal",
+    variant: "dark" as const,
+    image: "",
+    price: "",
+    imageText: ["عمرة بالنيابة", "عن من تحب"],
+    features: ["بث مباشر", "توثيق كامل", "شهادة رسمية", "دعاء مخصوص"],
+    people: "",
+    city: "",
+    duration: "",
+    cta: "اطلب الآن",
+    comingSoon: false
+  },
+  {
+    badge: "الطيران",
+    type: "flight",
+    variant: "service" as const,
+    image: landingAsset("avion.webp"),
+    price: "",
+    imageText: ["احجز رحلتك الجوية", "بأفضل الأسعار"],
+    features: ["حجز تذاكر", "أفضل الأسعار", "جميع الخطوط", "دعم فوري"],
+    people: "",
+    city: "",
+    duration: "",
+    cta: "احجز تذكرتك",
+    comingSoon: true
   }
 ];
 
@@ -87,14 +144,8 @@ const packageFeatureIcons = [
   <HeadsetIcon className="icon icon-sm" />
 ];
 
-const services = [
-  { icon: <ShieldIcon className="icon icon-md" />, title: "تأمين شامل", text: "لحماية رحلتك وراحة بالك" },
-  { icon: <HeadsetIcon className="icon icon-md" />, title: "دعم على مدار الساعة", text: "نحن معك في كل خطوة" },
-  { icon: <BusIcon className="icon icon-md" />, title: "تنقلات مريحة", text: "سيارات حديثة ومكيفة" },
-  { icon: <CalendarIcon className="icon icon-md" />, title: "استخراج تأشيرات", text: "بإجراء واضح وسريع" },
-  { icon: <MosqueIcon className="icon icon-md" />, title: "إرشادات دينية", text: "مع مرشدين مختصين" },
-  { icon: <UsersIcon className="icon icon-md" />, title: "مجموعات صغيرة", text: "خدمة أفضل واهتمام أكبر" }
-];
+// Le ruban des six avantages a disparu : la section « خدماتنا المتميزة » est remplacee par
+// AppPromoBar, la bande qui presente l'application mobile.
 
 const hotelOptions = [
   {
@@ -102,7 +153,7 @@ const hotelOptions = [
     city: "مكة المكرمة",
     distance: "250 متر من الحرم",
     price: 1250,
-    image: landingAsset("hero-kaaba-premium.png"),
+    image: landingAsset("hero-kaaba-premium.webp"),
     perks: ["إطلالة على الحرم", "مواصلات مجانية", "خدمة 24 ساعة"]
   },
   {
@@ -110,7 +161,7 @@ const hotelOptions = [
     city: "مكة المكرمة",
     distance: "350 متر من الحرم",
     price: 980,
-    image: landingAsset("paysage.png"),
+    image: landingAsset("paysage.webp"),
     perks: ["مطاعم متعددة", "مواصلات مجانية", "خدمة 24 ساعة"]
   },
   {
@@ -118,7 +169,7 @@ const hotelOptions = [
     city: "مكة المكرمة",
     distance: "450 متر من الحرم",
     price: 750,
-    image: landingAsset("avion.png"),
+    image: landingAsset("avion.webp"),
     perks: ["موقع مميز", "إفطار شامل", "خدمة 24 ساعة"]
   }
 ];
@@ -538,7 +589,10 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   const [selectedHotel, setSelectedHotel] = useState(hotelOptions[0].name);
   const [paymentMethod, setPaymentMethod] = useState<"myfatoorah" | "card">("myfatoorah");
   const [paymentMode, setPaymentMode] = useState<"full" | "installments">("full");
+  // Jamais pre-cochee : l'article 116 l'interdit quand la loi exige un geste positif du client.
   const [paymentTermsAccepted, setPaymentTermsAccepted] = useState(false);
+  // Le document juridique ouvert par-dessus la page, ou null quand aucun ne l'est.
+  const [legalDocument, setLegalDocument] = useState<LegalDocumentId | null>(null);
   const [authPopupOpen, setAuthPopupOpen] = useState(Boolean(initialAuthView));
   const [authView, setAuthView] = useState<AuthPopupView>(initialAuthView ?? "login");
   const [authContextTitle, setAuthContextTitle] = useState("");
@@ -1593,9 +1647,23 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
   );
 
   const rowadTravelPackages = publishedTravelPackages.filter((program) => isRowadTravelPackage(program));
+
+  // La plus proche date de depart encore a venir, toutes baquettes confondues. Rend null quand
+  // aucune date n'est publiee : le hero masque alors la carte au lieu d'inventer un depart.
+  const nextDepartureLabel = useMemo(() => {
+    const today = getTodayDateInputValue();
+    const upcoming = publishedTravelPackages
+      .flatMap((program) => program.departureDates ?? [])
+      .filter((date) => typeof date === "string" && date >= today)
+      .sort();
+    if (upcoming.length === 0) return null;
+    const date = parseDateInputValue(upcoming[0]);
+    if (!date) return null;
+    return date.toLocaleDateString("ar", { weekday: "long", day: "numeric", month: "long" });
+  }, [publishedTravelPackages]);
   const regularTravelPackages = publishedTravelPackages.filter((program) => !isRowadTravelPackage(program));
   const libreTravelPackage = regularTravelPackages[0] ?? null;
-  const rowadTravelBackground = resolvePackageImageUrl(rowadTravelPackages[1]?.imageUrl ?? rowadTravelPackages[0]?.imageUrl ?? landingAsset("hero-kaaba-premium.png"));
+  const rowadTravelBackground = resolvePackageImageUrl(rowadTravelPackages[1]?.imageUrl ?? rowadTravelPackages[0]?.imageUrl ?? landingAsset("hero-kaaba-premium.webp"));
   const rowadTravelStyle = { "--rowad-travel-bg": `url(${rowadTravelBackground})` } as CSSProperties;
   const activeDateRangePackage = openDateRangePicker
     ? publishedTravelPackages.find((program) => program.id === openDateRangePicker) ?? null
@@ -1919,72 +1987,15 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
 
   return (
     <main className="globalview-page" dir="rtl" lang="ar">
-      <section className="gv-hero" id="globalview">
-        <div className="gv-hero__shade" />
-        <header className="gv-header">
-          <div className="gv-topbar">
-            <div className="gv-brand gv-brand--company">
-              <img src={landingAsset("company-logo.png")} alt="شركة رواد لخدمات العمرة والحج" />
-            </div>
-            <div className="gv-contact">
-              <span><MailIcon className="icon icon-sm" /> info@ruwadomra.com</span>
-              <span><PhoneIcon className="icon icon-sm" /> +965 55583203 - +965 22283558</span>
-              <span><PhoneIcon className="icon icon-sm" /> +965 65002927 - +965 22283589</span>
-              <label className="gv-language-select" aria-label="اختيار اللغة">
-                <LocationIcon className="icon icon-sm" />
-                <select value={siteLanguage} onChange={(event) => setSiteLanguage(event.target.value)}>
-                  {languageOptions.map((language) => (
-                    <option key={language.value} value={language.value}>{language.label}</option>
-                  ))}
-                </select>
-              </label>
-              {/*
-              {travelerUser?.isAuthenticated ? (
-                <button className="gv-auth-nav gv-auth-nav--logout" type="button" onClick={() => void handleTravelerLogout()}>
-                  تسجيل الخروج
-                </button>
-              ) : (
-                <button className="gv-auth-nav" type="button" onClick={() => openAuthPopup("login")}>
-                  تسجيل الدخول
-                </button>
-              )}
-              */}
-              {/*
-              <button className="gv-book" type="button" onClick={() => openBookingSection("حجز جديد")}>
-                احجز الآن
-                <ArrowRightIcon className="icon icon-sm" />
-              </button>
-              */}
-            </div>
-          </div>
-        </header>
-
-        <div className="gv-hero__content">
-          <p>رحلة إيمانية ..</p>
-          <h1>تجربة روحانية لا تُنسى</h1>
-          <span>نقدم لكم أفضل خدمات العمرة المتكاملة، برعاية واهتمام لنجعل رحلتكم إلى بيت الله الحرام سهلة وآمنة ومميزة.</span>
-          <div className="gv-actions">
-            <button type="button" onClick={() => document.getElementById("gv-packages")?.scrollIntoView({ behavior: "smooth" })}>
-              استعرض باقات العمرة
-              <ArrowRightIcon className="icon icon-sm" />
-            </button>
-            {/*
-            <button type="button" className="ghost">
-              <ChatIcon className="icon icon-sm" />
-              شاهد فيديو تعريفي
-            </button>
-            */}
-          </div>
-        </div>
-
-        <aside className="gv-support">
-          <MosqueIcon className="icon gv-support__mark" />
-          <strong>خدمة عملاء</strong>
-          <b>24/7</b>
-          <span className="gv-support__line">لخدمتكم في كل خطوة <HeadsetIcon className="icon icon-sm" /></span>
-          <em>ثقتكم .. مسؤوليتنا</em>
-        </aside>
-      </section>
+      {/* Le hero : barre de navigation, titre au mot rotatif et arche photo.
+          La date de depart vient des vraies dates publiees ; sans elle, la carte disparait. */}
+      <SiteHero
+        onBook={() => openBookingSection("حجز جديد")}
+        nextDepartureLabel={nextDepartureLabel}
+        language={siteLanguage}
+        onLanguageChange={setSiteLanguage}
+        languages={languageOptions}
+      />
       {/*
       <section className="gv-search" aria-label="فلترة باقات العمرة">
         <button type="button" onClick={submitFilters}>
@@ -2042,58 +2053,120 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           )}
         </div>
         <div className="gv-package-grid">
-          {filteredPackages.map((program) => (
-            <article
-              className={`gv-card ${program.type === "travel" ? "is-clickable" : ""}`}
-              key={program.badge}
-              onClick={() => openPackageView(program.type)}
-            >
-              <div className="gv-card__media" style={{ backgroundImage: `url(${program.image})` }}>
-                <span className="gv-card__badge">
-                  {program.type === "travel" ? <ArrowRightIcon className="icon icon-sm" /> : null}
-                  {program.type === "visa" ? <DocumentIcon className="icon icon-sm" /> : null}
-                  {program.type === "corporate" ? <UsersIcon className="icon icon-sm" /> : null}
-                  {program.badge}
-                </span>
-                <p className={`gv-card__image-text gv-card__image-text--${program.type}`}>
-                  {program.imageText.map((line) => (
-                    <span key={line}>{line}</span>
-                  ))}
-                </p>
-              </div>
-              <div className="gv-card__body">
-                <div className="gv-card__features">
-                  {program.features.map((feature, index) => (
-                    <span key={feature}>
-                      {index === 0 && program.type === "travel" ? <ArrowRightIcon className="icon icon-sm" /> : null}
-                      {index === 0 && program.type === "visa" ? <DocumentIcon className="icon icon-sm" /> : null}
-                      {index === 0 && program.type === "corporate" ? <CalendarIcon className="icon icon-sm" /> : null}
-                      {index > 0 ? packageFeatureIcons[index] : null}
-                      {feature}
+          {packages.map((program, cardIndex) => {
+            const badgeIcon = {
+              travel: <ArrowRightIcon className="icon icon-sm" />,
+              visa: <DocumentIcon className="icon icon-sm" />,
+              corporate: <UsersIcon className="icon icon-sm" />,
+              mazarat: <LocationIcon className="icon icon-sm" />,
+              badal: <HeartIcon className="icon icon-sm" />,
+              flight: <PlaneIcon className="icon icon-sm" />
+            }[program.type];
+
+            const featureFirstIcon = {
+              travel: <ArrowRightIcon className="icon icon-sm" />,
+              visa: <DocumentIcon className="icon icon-sm" />,
+              corporate: <CalendarIcon className="icon icon-sm" />,
+              mazarat: <LocationIcon className="icon icon-sm" />,
+              badal: <StarIcon className="icon icon-sm" />,
+              flight: <PlaneIcon className="icon icon-sm" />
+            }[program.type];
+
+            if (program.variant === "dark") {
+              return (
+                <article
+                  className="gv-card gv-card--dark"
+                  key={program.badge}
+                  style={{ animationDelay: `${cardIndex * 0.08}s` }}
+                >
+                  <div className="gv-card--dark__inner">
+                    <span className="gv-card--dark__star" aria-hidden="true">
+                      <StarIcon className="icon" />
                     </span>
-                  ))}
+                    <div className="gv-card--dark__icon-circle">
+                      <HeartIcon className="icon" />
+                    </div>
+                    <span className="gv-card__badge gv-card__badge--dark">
+                      {badgeIcon}
+                      {program.badge}
+                    </span>
+                    <span className="gv-card--dark__live">بث مباشر</span>
+                    <p className="gv-card--dark__text">
+                      {program.imageText.map((line) => (
+                        <span key={line}>{line}</span>
+                      ))}
+                    </p>
+                    <div className="gv-card__features">
+                      {program.features.map((feature, index) => (
+                        <span key={feature}>
+                          {index === 0 ? featureFirstIcon : packageFeatureIcons[index]}
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="gv-card__divider" />
+                    <div className="gv-card__footer gv-card__footer--dark">
+                      <button type="button" className="gv-card--dark__cta">
+                        {program.cta}
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            }
+
+            return (
+              <article
+                className={`gv-card ${program.type === "travel" ? "is-clickable" : ""} ${program.comingSoon ? "gv-card--coming" : ""}`}
+                key={program.badge}
+                onClick={() => !program.comingSoon && openPackageView(program.type)}
+                style={{ animationDelay: `${cardIndex * 0.08}s` }}
+              >
+                <div className="gv-card__media" style={{ backgroundImage: program.image ? `url(${program.image})` : undefined }}>
+                  <span className="gv-card__badge">
+                    {badgeIcon}
+                    {program.badge}
+                  </span>
+                  <p className={`gv-card__image-text gv-card__image-text--${program.type}`}>
+                    {program.imageText.map((line) => (
+                      <span key={line}>{line}</span>
+                    ))}
+                  </p>
                 </div>
-                <div className="gv-card__divider" />
-                <div className="gv-card__footer">
-                  <p>تبدأ من <b>{program.price}</b> د.ك</p>
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      openPackageView(program.type);
-                    }}
-                  >
-                    <ArrowRightIcon className="icon icon-sm" />
-                    عرض التفاصيل
-                  </button>
+                <div className="gv-card__body">
+                  <div className="gv-card__features">
+                    {program.features.map((feature, index) => (
+                      <span key={feature}>
+                        {index === 0 ? featureFirstIcon : packageFeatureIcons[index]}
+                        {feature}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="gv-card__divider" />
+                  <div className="gv-card__footer">
+                    {program.price ? (
+                      <p>تبدأ من <b>{program.price}</b> د.ك</p>
+                    ) : null}
+                    {program.comingSoon ? (
+                      <span className="gv-card__coming-badge">قيد الإنشاء</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          openPackageView(program.type);
+                        }}
+                      >
+                        <ArrowRightIcon className="icon icon-sm" />
+                        {program.cta}
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
-        {filteredPackages.length === 0 && (
-          <div className="gv-empty">لا توجد باقات مطابقة لهذا البحث. جرّب تعديل المدينة أو المدة.</div>
-        )}
       </section>
 
       {activePackageView === "travel" && (
@@ -2379,9 +2452,14 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                     <label>
                       <span className="gv-auth-field"><input type="password" value={registerForm.confirmPassword} onChange={(event) => setRegisterForm((current) => ({ ...current, confirmPassword: event.target.value }))} placeholder="أعد إدخال كلمة المرور" required /><ShieldIcon className="icon icon-sm" /></span>
                     </label>
+                    {/* Article 9 : les conditions doivent etre consultables AVANT de s'engager,
+                        donc le nom du document est un lien et non du texte mort. */}
                     <label className="gv-auth-check gv-auth-check--end">
                       <input type="checkbox" checked={registerForm.acceptTerms} onChange={(event) => setRegisterForm((current) => ({ ...current, acceptTerms: event.target.checked }))} />
-                      أوافق على الشروط والأحكام
+                      <span>
+                        أوافق على <button type="button" className="gv-legal-link" onClick={() => setLegalDocument("terms")}>الشروط والأحكام</button>
+                        {" و"}<button type="button" className="gv-legal-link" onClick={() => setLegalDocument("privacy")}>سياسة الخصوصية</button>
+                      </span>
                     </label>
                     <button className="gv-auth-primary" type="submit" disabled={authLoading}>
                       <ArrowRightIcon className="icon icon-sm" />
@@ -2797,11 +2875,19 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
                   </div>
                   <div className="gv-payment-secure">
                     <ShieldIcon className="icon icon-sm" />
-                    دفع آمن 100% وجميع المعاملات محمية ومشفرة
+                    المعاملات محمية ومشفّرة عبر بوابة دفع معتمدة
                   </div>
+                  {/* Article 116 : la declaration est imposee mot pour mot, et les trois documents
+                      qu'elle cite doivent etre ouvrables — sans quoi « قرأت » serait faux.
+                      La case ne doit jamais etre pre-cochee. */}
                   <label className="gv-payment-terms">
-                    <input type="checkbox" checked={paymentTermsAccepted} onChange={(event) => setPaymentTermsAccepted(event.target.checked)} />
-                    أوافق على الشروط والأحكام وسياسة الإلغاء
+                    <input type="checkbox" checked={paymentTermsAccepted} onChange={(event) => setPaymentTermsAccepted(event.target.checked)} aria-label={acceptanceDeclaration} />
+                    <span>
+                      أقرّ بأنني قرأت ووافقت على <button type="button" className="gv-legal-link" onClick={() => setLegalDocument("terms")}>الشروط والأحكام</button>
+                      {" و"}<button type="button" className="gv-legal-link" onClick={() => setLegalDocument("privacy")}>سياسة الخصوصية</button>
+                      {" و"}<button type="button" className="gv-legal-link" onClick={() => setLegalDocument("cancellation")}>شروط التعديل والإلغاء والاسترداد</button>
+                      {" المطبّقة على حجزي، وأنني راجعت تفاصيل الحجز وبيانات المسافرين والخدمات والأسعار المبيّنة قبل إتمام عملية الدفع."}
+                    </span>
                   </label>
                   <div className="gv-stage-actions">
                     <button type="button" className="gv-stage-back" onClick={() => goToReservationStep(4)}>العودة</button>
@@ -2848,45 +2934,22 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
         </div>
       )}
 
-      <section className="gv-services">
-        <h2>خدماتنا المتميزة</h2>
-        <div className="gv-service-grid">
-          {services.map((service) => (
-            <article key={service.title}>
-              {service.icon}
-              <strong>{service.title}</strong>
-              <span>{service.text}</span>
-            </article>
-          ))}
-        </div>
-      </section>
+      {/* A la place de l'ancien ruban d'avantages : l'application mobile, montree avec ses
+          vraies captures. Le lien « خدماتنا » de la barre de navigation pointe toujours ici,
+          d'ou l'identifiant conserve. */}
+      {/* Le rappel de l'application, a la place de l'ancienne section « خدماتنا المتميزة ».
+          Il porte l'identifiant vise par le lien « خدماتنا » de la navigation. */}
+      <AppPromoBar />
 
-      <footer className="gv-footer">
-        <div className="gv-footer__brand">
-          <img src={landingAsset("company-logo.png")} alt="شركة رواد لخدمات العمرة والحج" />
-          <div>
-            <strong>رواد العمرة</strong>
-            <p>نقدم لكم رحلات عمرة مميزة بأعلى معايير الراحة والثقة.</p>
-          </div>
-        </div>
-        <ul>
-          <li>الرئيسية</li>
-          <li>رحلات العمرة</li>
-          <li>العروض</li>
-          <li>خدماتنا</li>
-        </ul>
-        <ul>
-          <li>حجز فوري</li>
-          <li>خدمة عملاء</li>
-          <li>النقل الداخلي</li>
-        </ul>
-        <div className="gv-footer__contact">
-          <span><MailIcon className="icon icon-sm" /> info@ruwadomra.com</span>
-          <span><PhoneIcon className="icon icon-sm" /> +965 55583203 - +965 22283558</span>
-          <span><PhoneIcon className="icon icon-sm" /> +965 65002927 - +965 22283589</span>
-          <span><LocationIcon className="icon icon-sm" /> الكويت - الفروانية - شارع حبيب مناور - مجمع العربيد جاليري - مكتب 5</span>
-        </div>
-      </footer>
+      {/* Article 9 : les documents juridiques restent accessibles depuis n'importe quelle page,
+          pas seulement au moment du paiement. SiteFooter porte la colonne « روابط قانونية ». */}
+      <SiteFooter onOpenLegal={setLegalDocument} onBook={() => openBookingSection("حجز جديد")} />
+
+      <LegalDialog documentId={legalDocument} onClose={() => setLegalDocument(null)} />
+
+      {/* Le popup. Il ne s'ouvre jamais pendant que le tunnel de reservation est a l'ecran :
+          interrompre quelqu'un qui saisit son passeport lui ferait perdre son travail. */}
+      <AppPromoModal bookingOpen={bookingSectionOpen} />
     </main>
   );
 }

@@ -251,7 +251,7 @@ export function getPackageFromPrice(packageItem: TravelPackage) {
 }
 
 export function resolvePackageImageUrl(imageUrl: string | null | undefined) {
-  const fallback = "/landingpage/avion.png";
+  const fallback = "/landingpage/avion.webp";
   const value = imageUrl?.trim() || fallback;
 
   if (value.startsWith("data:") || value.startsWith("http://") || value.startsWith("https://")) {
@@ -431,7 +431,7 @@ export function createEmptyPackage(order = 1): TravelPackage {
     description: "",
     durationDays: 6,
     durationLabel: "6 أيام",
-    imageUrl: "/landingpage/paysage.png",
+    imageUrl: "/landingpage/paysage.webp",
     basePrice: 75,
     visaSupplement: defaultVisaSupplement,
     currency: "د.ك",

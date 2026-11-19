@@ -54,7 +54,7 @@ const BOOKING_WIZARD_SERVICES: BookingService[] = [
     title: "وجبات إضافية",
     subtitle: "وجبة ساخنة وخدمة مرافقة",
     price: "12 د.ك",
-    image: "/landingpage/reunion.png"
+    image: "/landingpage/reunion.webp"
   }
 ];
 
@@ -330,7 +330,7 @@ export function BookingWizard({
             <p>{STEP_SUBTITLES[step]}</p>
           </div>
           <div className="booking-hero__visual">
-            <img src="/landingpage/kaaba.png" alt="الكعبة المشرفة" />
+            <img src="/landingpage/kaaba.webp" alt="الكعبة المشرفة" />
           </div>
         </div>
 

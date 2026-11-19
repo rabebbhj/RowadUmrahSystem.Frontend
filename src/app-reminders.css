@@ -1,0 +1,886 @@
+/* ==========================================================================
+   Les deux rappels de l'application sur le site : la barre dans la page et
+   le popup. Composants dans components/landingpage/AppReminders.tsx et
+   PhoneDeck.tsx.
+
+   Tout s'arrete pour qui a demande moins d'animations (bloc tout en bas) :
+   le paquet ne defile plus, les particules disparaissent, la premiere carte
+   reste au centre.
+   ========================================================================== */
+
+/* --- Le paquet de telephones. --------------------------------------------- */
+
+.rwd {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.rwd__stage {
+  position: relative;
+  width: var(--rwd-w);
+  height: var(--rwd-h);
+}
+
+.rwd__phone {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  /* Le rayon suit la largeur : a 140 px comme a 180 px, le telephone garde ses proportions. */
+  border-radius: calc(var(--rwd-w) * 0.17);
+  background: #0a0a09;
+  padding: calc(var(--rwd-w) * 0.035);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 0 1.5px rgba(233, 207, 142, 0.45);
+  transition: transform 600ms cubic-bezier(0.65, 0, 0.35, 1), opacity 600ms cubic-bezier(0.65, 0, 0.35, 1);
+  cursor: grab;
+}
+
+/* Pendant le glissement, la carte suit le doigt sans retard. */
+.rwd__phone.is-dragging {
+  transition: none;
+  cursor: grabbing;
+}
+
+.rwd__screen {
+  position: relative;
+  height: 100%;
+  border-radius: calc(var(--rwd-w) * 0.13);
+  overflow: hidden;
+}
+
+.rwd__status {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--rwd-h) * 0.052);
+  z-index: 2;
+  direction: ltr;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 calc(var(--rwd-w) * 0.1);
+  font-size: calc(var(--rwd-w) * 0.05);
+  font-weight: 700;
+  color: #f7f3ec;
+}
+
+.rwd__screen.is-light .rwd__status {
+  color: #1b1a17;
+}
+
+.rwd__status i {
+  width: calc(var(--rwd-w) * 0.085);
+  height: calc(var(--rwd-w) * 0.042);
+  border: 1px solid currentColor;
+  border-radius: 2px;
+}
+
+.rwd__notch {
+  position: absolute;
+  top: calc(var(--rwd-w) * 0.035);
+  left: 50%;
+  width: calc(var(--rwd-w) * 0.33);
+  height: calc(var(--rwd-w) * 0.07);
+  margin-left: calc(var(--rwd-w) * -0.165);
+  border-radius: calc(var(--rwd-w) * 0.06);
+  background: #000;
+  z-index: 3;
+}
+
+.rwd__img {
+  position: absolute;
+  top: calc(var(--rwd-h) * 0.052);
+  left: 0;
+  width: 100%;
+  height: calc(100% - var(--rwd-h) * 0.052);
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  pointer-events: none;
+}
+
+.rwd__dots {
+  display: flex;
+  gap: 6px;
+}
+
+.rwd__dot {
+  width: 22px;
+  height: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.rwd__dot i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #e9cf8e;
+  animation: rwa-fill 3s linear forwards;
+}
+
+.rwd__dot:focus-visible {
+  outline: 2px solid #e9cf8e;
+  outline-offset: 3px;
+}
+
+@keyframes rwa-fill {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* --- Le decor commun aux deux rappels. ------------------------------------ */
+
+.rwa-decor__star {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  opacity: 0.13;
+  pointer-events: none;
+  animation: rwa-spin 120s linear infinite;
+}
+
+@keyframes rwa-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.rwa-decor__halo {
+  position: absolute;
+  width: 440px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(212, 174, 98, 0.4), transparent);
+  pointer-events: none;
+  animation: rwa-blob 9s ease-in-out infinite alternate;
+}
+
+@keyframes rwa-blob {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(60px, 40px) scale(1.15); }
+}
+
+.rwa-decor__lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.02) 0 2px, transparent 2px 7px);
+}
+
+.rwa-decor__spark {
+  position: absolute;
+  bottom: -10px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #e9cf8e;
+  box-shadow: 0 0 8px #d4ae62;
+  pointer-events: none;
+  animation: rwa-rise 8s linear infinite;
+}
+
+@keyframes rwa-rise {
+  0% { transform: translateY(0); opacity: 0; }
+  15% { opacity: 0.9; }
+  100% { transform: translateY(-260px); opacity: 0; }
+}
+
+/* Le texte dore qui respire. */
+.rwa-gold {
+  background: linear-gradient(90deg, #a9802f, #d4ae62 35%, #f6e3b0 50%, #d4ae62 65%, #a9802f);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rwa-shine 5s linear infinite;
+}
+
+@keyframes rwa-shine {
+  from { background-position: 120% 0; }
+  to { background-position: -120% 0; }
+}
+
+/* --- Les cartes des magasins. --------------------------------------------- */
+
+.rwa-store {
+  height: 54px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border-radius: 16px;
+  background: #0b0a08;
+  border: 1px solid rgba(233, 207, 142, 0.35);
+  color: #fbf4e4;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Tant qu'aucune adresse n'est renseignee, la carte garde son dessin mais n'est pas un lien. */
+.rwa-store.is-soon {
+  cursor: default;
+}
+
+.rwa-store:not(.is-soon):hover {
+  border-color: #d4ae62;
+  background: #141109;
+}
+
+.rwa-store:focus-visible {
+  outline: 2px solid #e9cf8e;
+  outline-offset: 3px;
+}
+
+.rwa-store__mark {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #fbf4e4;
+  color: #1b1a17;
+  display: grid;
+  place-items: center;
+}
+
+.rwa-store__mark svg {
+  width: 17px;
+  height: 17px;
+}
+
+.rwa-store__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: start;
+  min-width: 0;
+}
+
+.rwa-store__text span {
+  font-size: 10px;
+  font-weight: 700;
+  color: #d4ae62;
+}
+
+.rwa-store__text b {
+  font-size: 15px;
+  white-space: nowrap;
+  font-family: system-ui, sans-serif;
+}
+
+/* --- Le QR. ---------------------------------------------------------------- */
+
+.rwa-qr {
+  position: relative;
+  flex: none;
+  border-radius: min(16px, 18%);
+  background: #ffffff;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+}
+
+.rwa-qr svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.rwa-qr__badge {
+  position: absolute;
+  width: 24%;
+  height: 24%;
+  border-radius: 8px;
+  background: #1b1a17;
+  border: 3px solid #ffffff;
+  display: grid;
+  place-items: center;
+}
+
+.rwa-qr__badge img {
+  width: 62%;
+  height: 70%;
+  object-fit: contain;
+}
+
+.rwa-qr__scan {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 2px;
+  background: #d4ae62;
+  box-shadow: 0 0 12px 3px rgba(212, 174, 98, 0.6);
+  animation: rwa-scan 2.6s ease-in-out infinite alternate;
+}
+
+/* Mode sombre : modules clairs sur fond transparent, pour les fonds sombres. */
+.rwa-qr--dark {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.rwa-qr--dark .rwa-qr__badge {
+  background: transparent;
+  border-color: #fbf4e4;
+}
+
+.rwa-qr--dark .rwa-qr__scan {
+  display: none;
+}
+
+@keyframes rwa-scan {
+  from { top: 6%; }
+  to { top: 90%; }
+}
+
+/* --- La barre dans la page. ------------------------------------------------ */
+
+.rwa-bar {
+  width: min(1540px, calc(100% - 80px));
+  margin: 0 auto 28px;
+}
+
+.rwa-bar__card {
+  position: relative;
+  /* Une hauteur FIXE coupait les boutons des magasins des que le titre passait sur deux lignes.
+     La bande s'etire maintenant avec son contenu, et garde 220 px au minimum. */
+  min-height: 160px;
+  border-radius: 30px;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 80% 0%, #3a2f1e 0%, #1b1813 50%, #100f0c 100%);
+  box-shadow: 0 30px 60px rgba(27, 26, 23, 0.25), 0 0 0 1px rgba(233, 207, 142, 0.35);
+  display: grid;
+  /* Le texte — QR compris — puis le paquet de telephones. */
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 40px;
+  font-family: "IBM Plex Sans Arabic", "Cairo", system-ui, sans-serif;
+}
+
+.rwa-bar__card .rwa-decor__star {
+  top: -150px;
+  left: 330px;
+  opacity: 0.14;
+}
+
+.rwa-bar__card .rwa-decor__halo {
+  top: -60px;
+  left: 380px;
+  width: 420px;
+  height: 340px;
+}
+
+.rwa-bar__copy {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.rwa-bar__badge {
+  align-self: flex-start;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 13px;
+  background: rgba(255, 250, 238, 0.1);
+  border: 1px solid rgba(233, 207, 142, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #e9cf8e;
+}
+
+.rwa-bar__badge svg {
+  width: 14px;
+  height: 14px;
+  color: #d4ae62;
+}
+
+.rwa-bar__title {
+  margin: 0;
+  font-family: "Noto Kufi Arabic", "Cairo", sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.3;
+  color: #fbf4e4;
+}
+
+/* Le QR, le texte « امسح بكاميرا جوالك » et les boutons : tous sur la meme ligne. */
+.rwa-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rwa-bar__actions .rwa-store {
+  height: 42px;
+  padding: 0 14px;
+}
+
+/* Le paquet deborde en bas de la barre : l'effet « qui sort du cadre ». */
+.rwa-bar__deck {
+  position: relative;
+  z-index: 3;
+  align-self: start;
+  margin-top: 0;
+  height: 150px;
+}
+
+.rwa-bar__deck .rwd__dots {
+  display: none;
+}
+
+/* Le bouton QR : le texte « امسح بكاميرا جوالك » puis le code. Un clic ouvre le QR en grand. */
+.rwa-bar__qrBtn {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.rwa-bar__qrBtn:hover .rwa-bar__qrLabel {
+  color: #e9cf8e;
+}
+
+.rwa-bar__qrLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: #d8cdb6;
+  white-space: nowrap;
+}
+
+.rwa-bar__qrLabel svg {
+  width: 16px;
+  height: 16px;
+  margin-bottom: 2px;
+}
+
+/* Le popup QR : un grand code sur fond sombre pour scanner facilement. */
+.rwa-qrPopup__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  background: rgba(10, 9, 8, 0.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: rwa-fadeIn 200ms ease-out;
+}
+
+.rwa-qrPopup {
+  position: relative;
+  background: #1b1a17;
+  border: 1px solid rgba(233, 207, 142, 0.3);
+  border-radius: 24px;
+  padding: 36px 40px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: rwa-scaleIn 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.rwa-qrPopup__close {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(233, 207, 142, 0.25);
+  background: rgba(255, 250, 238, 0.06);
+  color: #d8cdb6;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rwa-qrPopup__close:hover {
+  background: rgba(255, 250, 238, 0.12);
+  color: #fbf4e4;
+}
+
+.rwa-qrPopup__hint {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #d8cdb6;
+  font-family: "IBM Plex Sans Arabic", "Cairo", system-ui, sans-serif;
+}
+
+@keyframes rwa-scaleIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+@keyframes rwa-fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* --- Le popup. ------------------------------------------------------------- */
+
+.rwa-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(10, 9, 8, 0.62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.rwa-modal {
+  position: relative;
+  height: min(780px, calc(100vh - 40px));
+  width: min(500px, calc(var(--rwa-modal-h) * 0.68), calc(100vw - 40px));
+  --rwa-modal-h: min(780px, calc(100vh - 40px));
+  border-radius: 34px;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 80% 0%, #3a2f1e 0%, #1b1813 50%, #100f0c 100%);
+  box-shadow: 0 50px 120px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(233, 207, 142, 0.35);
+  font-family: "IBM Plex Sans Arabic", "Cairo", system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 18px 16px;
+  box-sizing: border-box;
+  animation: rwa-pop 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+@keyframes rwa-pop {
+  from { transform: translateY(30px) scale(0.94); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.rwa-modal .rwa-decor__star {
+  top: 40px;
+  left: -10px;
+}
+
+.rwa-modal .rwa-decor__halo {
+  top: 120px;
+  left: 50%;
+  margin-left: -220px;
+}
+
+.rwa-modal__close {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 245, 225, 0.2);
+  background: rgba(255, 250, 238, 0.08);
+  color: #f7f3ec;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.rwa-modal__close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.rwa-modal__head {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.rwa-modal__badge {
+  height: 28px;
+  padding: 0 12px 0 6px;
+  border-radius: 14px;
+  background: rgba(255, 250, 238, 0.1);
+  border: 1px solid rgba(233, 207, 142, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e9cf8e;
+}
+
+.rwa-modal__badge em {
+  height: 18px;
+  padding: 0 7px;
+  border-radius: 9px;
+  background: #d4ae62;
+  color: #1b1a17;
+  font-size: 10.5px;
+  font-weight: 800;
+  font-style: normal;
+  display: flex;
+  align-items: center;
+}
+
+.rwa-modal__title {
+  margin: 0;
+  font-family: "Noto Kufi Arabic", "Cairo", sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1.35;
+  color: #fbf4e4;
+}
+
+.rwa-modal__deck {
+  position: relative;
+  z-index: 3;
+  margin-top: 14px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* Ce qui n'est pas le paquet occupe environ 360 px : le titre, la carte en verre, le lien du
+   bas et les marges. On donne au paquet ce qui reste, et pas un pixel de plus — sinon il
+   deborde du cadre et passe sous la carte en verre, comme c'etait le cas. */
+.rwa-modal__deck .rwd {
+  --rwd-max-h: max(150px, calc(var(--rwa-modal-h) - 324px));
+}
+
+.rwa-modal__glass {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255, 250, 238, 0.16), rgba(255, 250, 238, 0.05));
+  border: 1px solid rgba(255, 245, 225, 0.22);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.rwa-modal__glass:not(:has(.rwa-qr)) .rwa-modal__glassText {
+  align-items: center;
+  text-align: center;
+}
+
+.rwa-modal__glassText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rwa-modal__glassText b {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #fbf4e4;
+}
+
+.rwa-modal__glassText b svg {
+  width: 15px;
+  height: 15px;
+}
+
+.rwa-modal__glassText > span {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #cfc4ae;
+}
+
+.rwa-modal__stores {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.rwa-modal__stores .rwa-store {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.rwa-modal__stores .rwa-store__text {
+  overflow: hidden;
+}
+
+.rwa-modal__stores .rwa-store__text b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rwa-modal__stores .rwa-store {
+  height: 44px;
+  padding: 0 7px;
+  border-radius: 13px;
+  gap: 7px;
+}
+
+.rwa-modal__stores .rwa-store__mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.rwa-modal__stores .rwa-store__mark svg {
+  width: 14px;
+  height: 14px;
+}
+
+.rwa-modal__stores .rwa-store__text b {
+  font-size: 13.5px;
+}
+
+.rwa-modal__continue {
+  position: relative;
+  z-index: 5;
+  height: 36px;
+  margin-top: 6px;
+  background: none;
+  border: 0;
+  color: #d8cdb6;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.rwa-modal__continue svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* --- Ecrans etroits. -------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .rwa-bar {
+    width: min(100% - 40px, 760px);
+  }
+
+  .rwa-bar__card {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    /* La marge verticale reste : sans elle, les boutons des magasins se font rogner par le
+       bord de la bande, exactement comme avant la correction. */
+    padding: 22px 28px;
+  }
+
+  /* Le QR disparait : on ne scanne pas l'ecran sur lequel on est deja. */
+  .rwa-bar__qrBtn {
+    display: none;
+  }
+
+  .rwa-bar__title {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .rwa-bar {
+    width: calc(100% - 32px);
+  }
+
+  .rwa-bar__card {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 18px 20px;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .rwa-bar__copy {
+    align-items: center;
+  }
+
+  .rwa-bar__badge {
+    align-self: center;
+  }
+
+  .rwa-bar__title {
+    font-size: 21px;
+  }
+
+  .rwa-bar__actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .rwa-bar__actions .rwa-store {
+    width: 100%;
+  }
+
+  /* Le paquet tiendrait mal dans cette largeur : on garde la carte du centre seule. */
+  .rwa-bar__deck {
+    margin-top: 0;
+    justify-self: center;
+  }
+}
+
+/* --- Moins d'animations : tout s'arrete, rien ne disparait. ----------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .rwd *,
+  .rwd,
+  .rwa-bar *,
+  .rwa-modal *,
+  .rwa-modal {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .rwa-decor__spark {
+    display: none;
+  }
+
+  .rwd__dot i {
+    width: 100%;
+  }
+
+  .rwa-gold {
+    background: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    color: #e9cf8e;
+  }
+}

@@ -327,7 +327,7 @@ export const LANDING_PROGRAMS: BookingProgram[] = [
     id: "economy",
     badge: "اقتصادية",
     title: "عمرة اقتصادية 7 ليالي",
-    image: "/landingpage/lit.png",
+    image: "/landingpage/lit.webp",
     nights: "7 ليالي",
     city: "مكة - المدينة",
     transport: "طيران اقتصادي",
@@ -339,7 +339,7 @@ export const LANDING_PROGRAMS: BookingProgram[] = [
     id: "premium",
     badge: "الأكثر طلباً",
     title: "عمرة مميزة 10 ليالي",
-    image: "/landingpage/chambre.png",
+    image: "/landingpage/chambre.webp",
     nights: "10 ليالي",
     city: "مكة - المدينة",
     transport: "طيران اقتصادي",
@@ -351,7 +351,7 @@ export const LANDING_PROGRAMS: BookingProgram[] = [
     id: "vip",
     badge: "VIP",
     title: "عمرة VIP 14 ليلة",
-    image: "/landingpage/dormir.png",
+    image: "/landingpage/dormir.webp",
     nights: "14 ليلة",
     city: "مكة - المدينة",
     transport: "طيران درجة أعمال",
@@ -362,11 +362,11 @@ export const LANDING_PROGRAMS: BookingProgram[] = [
 ];
 
 export const BOOKING_SERVICES: BookingService[] = [
-  { id: "insurance", title: "تأمين سفر شامل", subtitle: "تغطية كاملة أثناء الرحلة", price: "5 د.ك", image: "/landingpage/mains.png" },
-  { id: "extra-night", title: "سكن إضافي", subtitle: "ليلة إضافية في مكة", price: "15 د.ك", image: "/landingpage/lit.png" },
-  { id: "transfer", title: "خدمة نقل VIP", subtitle: "مطار ومدينة", price: "20 د.ك", image: "/landingpage/bus.png" },
-  { id: "upgrade", title: "ترقية الطيران", subtitle: "درجة أعلى للراحة", price: "120 د.ك", image: "/landingpage/avion.png" },
-  { id: "support", title: "استشارة مرافقة", subtitle: "متابعة من فريقنا", price: "مجاني", image: "/landingpage/reunion.png" }
+  { id: "insurance", title: "تأمين سفر شامل", subtitle: "تغطية كاملة أثناء الرحلة", price: "5 د.ك", image: "/landingpage/mains.webp" },
+  { id: "extra-night", title: "سكن إضافي", subtitle: "ليلة إضافية في مكة", price: "15 د.ك", image: "/landingpage/lit.webp" },
+  { id: "transfer", title: "خدمة نقل VIP", subtitle: "مطار ومدينة", price: "20 د.ك", image: "/landingpage/bus.webp" },
+  { id: "upgrade", title: "ترقية الطيران", subtitle: "درجة أعلى للراحة", price: "120 د.ك", image: "/landingpage/avion.webp" },
+  { id: "support", title: "استشارة مرافقة", subtitle: "متابعة من فريقنا", price: "مجاني", image: "/landingpage/reunion.webp" }
 ];
 
 export const DEFAULT_BOOKING_STATE: BookingState = {
@@ -391,5 +391,84 @@ export function SectionHeading({ title }: { title: string }) {
       <span className="section-heading__ornament">◆</span>
       <span className="section-heading__line" />
     </div>
+  );
+}
+
+// Icones ajoutees pour le pied de page : les documents juridiques, les reseaux sociaux et
+// l'arche « استخراج التأشيرات ». Meme grille 24x24 et meme trait 1.7 que les autres, pour que
+// les six arches du bandeau se ressemblent.
+
+export function LockIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <rect x="4.8" y="10.5" width="14.4" height="9.2" rx="2.4" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M8.3 10.5V8.2a3.7 3.7 0 0 1 7.4 0v2.3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <circle cx="12" cy="15" r="1.3" fill="currentColor" />
+    </SvgIcon>
+  );
+}
+
+export function RefundIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <path d="M4.6 12a7.4 7.4 0 1 0 2.2-5.2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M4.3 4.6v3.9h3.9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 8.8v6.4M10 10.6h3a1.6 1.6 0 0 1 0 3.2h-2a1.6 1.6 0 0 0 0 3.2h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </SvgIcon>
+  );
+}
+
+export function VisaStampIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <rect x="4" y="5.4" width="16" height="14.2" rx="2.6" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M4 9.6h16M8.4 3.6v3.2M15.6 3.6v3.2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="m9.4 14.4 1.8 1.8 3.4-3.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </SvgIcon>
+  );
+}
+
+export function InstagramIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <rect x="3.8" y="3.8" width="16.4" height="16.4" rx="4.8" stroke="currentColor" strokeWidth="1.7" />
+      <circle cx="12" cy="12" r="3.8" stroke="currentColor" strokeWidth="1.7" />
+      <circle cx="16.6" cy="7.4" r="1.1" fill="currentColor" />
+    </SvgIcon>
+  );
+}
+
+export function SnapchatIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <path d="M12 3.4c2.6 0 4.2 1.9 4.2 4.4 0 .8-.1 1.6-.1 2.2.5.3 1.1.2 1.6 0 .5-.2.9.1 1 .5.1.5-.2.8-.8 1.1-.7.3-1.4.5-1.4 1 0 .7 2 2.4 3.2 2.8.4.1.5.4.4.7-.2.6-1.3 1-2.3 1.2-.3 0-.4.2-.5.5-.1.4-.2.8-.7.8-.6 0-1.2-.3-2.1-.3-1.1 0-1.6 1.3-3.5 1.3s-2.4-1.3-3.5-1.3c-.9 0-1.5.3-2.1.3-.5 0-.6-.4-.7-.8-.1-.3-.2-.5-.5-.5-1-.2-2.1-.6-2.3-1.2-.1-.3 0-.6.4-.7 1.2-.4 3.2-2.1 3.2-2.8 0-.5-.7-.7-1.4-1-.6-.3-.9-.6-.8-1.1.1-.4.5-.7 1-.5.5.2 1.1.3 1.6 0 0-.6-.1-1.4-.1-2.2 0-2.5 1.6-4.4 4.2-4.4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </SvgIcon>
+  );
+}
+
+export function TikTokIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <path d="M13.6 3.4v10.9a3.1 3.1 0 1 1-3.1-3.1c.3 0 .6 0 .9.1" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13.6 3.4c.3 2.3 1.9 3.9 4.2 4.1" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </SvgIcon>
+  );
+}
+
+export function HeartIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <path d="M12 20s-7-4.35-7-10A4.5 4.5 0 0 1 12 6.09 4.5 4.5 0 0 1 19 10c0 5.65-7 10-7 10Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    </SvgIcon>
+  );
+}
+
+export function CreditCardIcon({ className }: IconProps) {
+  return (
+    <SvgIcon className={className}>
+      <rect x="3" y="5.5" width="18" height="13" rx="3" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M3 10h18" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M6.5 14.5h3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </SvgIcon>
   );
 }
