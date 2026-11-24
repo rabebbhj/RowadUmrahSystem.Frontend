@@ -36,7 +36,6 @@ import {
   DocumentIcon,
   GlobeIcon,
   HeadsetIcon,
-  HeartIcon,
   LocationIcon,
   MailIcon,
   MosqueIcon,
@@ -54,86 +53,35 @@ const packages = [
   {
     badge: "الرحلات",
     type: "travel",
-    variant: "package" as const,
     image: landingAsset("avion.webp"),
     price: "45",
     imageText: ["من كل مكان إلى أطهر بقاع", "الأرض"],
     features: ["حجوزات طيران", "حجوزات فنادق", "تنظيم الجولات", "دعم مباشر"],
     people: "1-2",
     city: "مكة",
-    duration: "7",
-    cta: "عرض التفاصيل",
-    comingSoon: false
+    duration: "7"
   },
   {
     badge: "التأشيرات",
     type: "visa",
-    variant: "package" as const,
     image: landingAsset("mains.webp"),
     price: "55",
     imageText: ["خطوة أسهل", "لرحلة أيسر"],
     features: ["تأشيرات سياحية", "حجز المواعيد", "متابعة الطلب", "استشارات السفر"],
     people: "3-4",
     city: "مكة والمدينة",
-    duration: "10",
-    cta: "عرض التفاصيل",
-    comingSoon: false
+    duration: "10"
   },
   {
     badge: "برامج الشركات",
     type: "corporate",
-    variant: "package" as const,
     image: landingAsset("reunion.webp"),
     price: "60",
     imageText: ["شراكات تسهل رحلتكم", "الإيمانية"],
     features: ["رحلات عمل", "حجوزات جماعية", "تنظيم الفعاليات", "خدمة مخصصة"],
     people: "5+",
     city: "المدينة",
-    duration: "14",
-    cta: "عرض التفاصيل",
-    comingSoon: false
-  },
-  {
-    badge: "المزارات",
-    type: "mazarat",
-    variant: "service" as const,
-    image: landingAsset("paysage.webp"),
-    price: "",
-    imageText: ["اكتشف أجمل المعالم", "في مكة والمدينة"],
-    features: ["جولات مكة", "جولات المدينة", "مواقع تاريخية", "مرشد خاص"],
-    people: "",
-    city: "",
-    duration: "",
-    cta: "اكتشف",
-    comingSoon: true
-  },
-  {
-    badge: "عمرة البدل",
-    type: "badal",
-    variant: "dark" as const,
-    image: "",
-    price: "",
-    imageText: ["عمرة بالنيابة", "عن من تحب"],
-    features: ["بث مباشر", "توثيق كامل", "شهادة رسمية", "دعاء مخصوص"],
-    people: "",
-    city: "",
-    duration: "",
-    cta: "اطلب الآن",
-    comingSoon: false
-  },
-  {
-    badge: "الطيران",
-    type: "flight",
-    variant: "service" as const,
-    image: landingAsset("avion.webp"),
-    price: "",
-    imageText: ["احجز رحلتك الجوية", "بأفضل الأسعار"],
-    features: ["حجز تذاكر", "أفضل الأسعار", "جميع الخطوط", "دعم فوري"],
-    people: "",
-    city: "",
-    duration: "",
-    cta: "احجز تذكرتك",
-    comingSoon: true
+    duration: "14"
   }
 ];
 
@@ -2053,120 +2001,58 @@ export default function LandingPage({ initialAuthView = null }: LandingPageProps
           )}
         </div>
         <div className="gv-package-grid">
-          {packages.map((program, cardIndex) => {
-            const badgeIcon = {
-              travel: <ArrowRightIcon className="icon icon-sm" />,
-              visa: <DocumentIcon className="icon icon-sm" />,
-              corporate: <UsersIcon className="icon icon-sm" />,
-              mazarat: <LocationIcon className="icon icon-sm" />,
-              badal: <HeartIcon className="icon icon-sm" />,
-              flight: <PlaneIcon className="icon icon-sm" />
-            }[program.type];
-
-            const featureFirstIcon = {
-              travel: <ArrowRightIcon className="icon icon-sm" />,
-              visa: <DocumentIcon className="icon icon-sm" />,
-              corporate: <CalendarIcon className="icon icon-sm" />,
-              mazarat: <LocationIcon className="icon icon-sm" />,
-              badal: <StarIcon className="icon icon-sm" />,
-              flight: <PlaneIcon className="icon icon-sm" />
-            }[program.type];
-
-            if (program.variant === "dark") {
-              return (
-                <article
-                  className="gv-card gv-card--dark"
-                  key={program.badge}
-                  style={{ animationDelay: `${cardIndex * 0.08}s` }}
-                >
-                  <div className="gv-card--dark__inner">
-                    <span className="gv-card--dark__star" aria-hidden="true">
-                      <StarIcon className="icon" />
+          {filteredPackages.map((program) => (
+            <article
+              className={`gv-card ${program.type === "travel" ? "is-clickable" : ""}`}
+              key={program.badge}
+              onClick={() => openPackageView(program.type)}
+            >
+              <div className="gv-card__media" style={{ backgroundImage: `url(${program.image})` }}>
+                <span className="gv-card__badge">
+                  {program.type === "travel" ? <ArrowRightIcon className="icon icon-sm" /> : null}
+                  {program.type === "visa" ? <DocumentIcon className="icon icon-sm" /> : null}
+                  {program.type === "corporate" ? <UsersIcon className="icon icon-sm" /> : null}
+                  {program.badge}
+                </span>
+                <p className={`gv-card__image-text gv-card__image-text--${program.type}`}>
+                  {program.imageText.map((line) => (
+                    <span key={line}>{line}</span>
+                  ))}
+                </p>
+              </div>
+              <div className="gv-card__body">
+                <div className="gv-card__features">
+                  {program.features.map((feature, index) => (
+                    <span key={feature}>
+                      {index === 0 && program.type === "travel" ? <ArrowRightIcon className="icon icon-sm" /> : null}
+                      {index === 0 && program.type === "visa" ? <DocumentIcon className="icon icon-sm" /> : null}
+                      {index === 0 && program.type === "corporate" ? <CalendarIcon className="icon icon-sm" /> : null}
+                      {index > 0 ? packageFeatureIcons[index] : null}
+                      {feature}
                     </span>
-                    <div className="gv-card--dark__icon-circle">
-                      <HeartIcon className="icon" />
-                    </div>
-                    <span className="gv-card__badge gv-card__badge--dark">
-                      {badgeIcon}
-                      {program.badge}
-                    </span>
-                    <span className="gv-card--dark__live">بث مباشر</span>
-                    <p className="gv-card--dark__text">
-                      {program.imageText.map((line) => (
-                        <span key={line}>{line}</span>
-                      ))}
-                    </p>
-                    <div className="gv-card__features">
-                      {program.features.map((feature, index) => (
-                        <span key={feature}>
-                          {index === 0 ? featureFirstIcon : packageFeatureIcons[index]}
-                          {feature}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="gv-card__divider" />
-                    <div className="gv-card__footer gv-card__footer--dark">
-                      <button type="button" className="gv-card--dark__cta">
-                        {program.cta}
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            }
-
-            return (
-              <article
-                className={`gv-card ${program.type === "travel" ? "is-clickable" : ""} ${program.comingSoon ? "gv-card--coming" : ""}`}
-                key={program.badge}
-                onClick={() => !program.comingSoon && openPackageView(program.type)}
-                style={{ animationDelay: `${cardIndex * 0.08}s` }}
-              >
-                <div className="gv-card__media" style={{ backgroundImage: program.image ? `url(${program.image})` : undefined }}>
-                  <span className="gv-card__badge">
-                    {badgeIcon}
-                    {program.badge}
-                  </span>
-                  <p className={`gv-card__image-text gv-card__image-text--${program.type}`}>
-                    {program.imageText.map((line) => (
-                      <span key={line}>{line}</span>
-                    ))}
-                  </p>
+                  ))}
                 </div>
-                <div className="gv-card__body">
-                  <div className="gv-card__features">
-                    {program.features.map((feature, index) => (
-                      <span key={feature}>
-                        {index === 0 ? featureFirstIcon : packageFeatureIcons[index]}
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="gv-card__divider" />
-                  <div className="gv-card__footer">
-                    {program.price ? (
-                      <p>تبدأ من <b>{program.price}</b> د.ك</p>
-                    ) : null}
-                    {program.comingSoon ? (
-                      <span className="gv-card__coming-badge">قيد الإنشاء</span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          openPackageView(program.type);
-                        }}
-                      >
-                        <ArrowRightIcon className="icon icon-sm" />
-                        {program.cta}
-                      </button>
-                    )}
-                  </div>
+                <div className="gv-card__divider" />
+                <div className="gv-card__footer">
+                  <p>تبدأ من <b>{program.price}</b> د.ك</p>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      openPackageView(program.type);
+                    }}
+                  >
+                    <ArrowRightIcon className="icon icon-sm" />
+                    عرض التفاصيل
+                  </button>
                 </div>
-              </article>
-            );
-          })}
+              </div>
+            </article>
+          ))}
         </div>
+        {filteredPackages.length === 0 && (
+          <div className="gv-empty">لا توجد باقات مطابقة لهذا البحث. جرّب تعديل المدينة أو المدة.</div>
+        )}
       </section>
 
       {activePackageView === "travel" && (

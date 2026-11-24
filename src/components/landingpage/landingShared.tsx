@@ -455,14 +455,6 @@ export function TikTokIcon({ className }: IconProps) {
   );
 }
 
-export function HeartIcon({ className }: IconProps) {
-  return (
-    <SvgIcon className={className}>
-      <path d="M12 20s-7-4.35-7-10A4.5 4.5 0 0 1 12 6.09 4.5 4.5 0 0 1 19 10c0 5.65-7 10-7 10Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </SvgIcon>
-  );
-}
-
 export function CreditCardIcon({ className }: IconProps) {
   return (
     <SvgIcon className={className}>

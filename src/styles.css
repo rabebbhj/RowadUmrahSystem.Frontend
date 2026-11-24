@@ -2140,155 +2140,16 @@ body,
   animation: gv-rise 0.7s ease both;
 }
 
+.gv-card:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.gv-card:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
 .gv-card.is-clickable {
   cursor: pointer;
-}
-
-/* --- Variante « dark » (عمرة البدل) --- */
-.gv-card--dark {
-  background: radial-gradient(ellipse at 30% 20%, #1e1a14 0%, #0e0c09 70%);
-  border-color: rgba(212, 174, 98, 0.35);
-}
-
-.gv-card--dark__inner {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 32px 20px 24px;
-  gap: 14px;
-  text-align: center;
-  min-height: 100%;
-}
-
-.gv-card--dark__star {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  opacity: 0.08;
-  color: #d4ae62;
-}
-
-.gv-card--dark__star .icon {
-  width: 72px;
-  height: 72px;
-}
-
-.gv-card--dark__icon-circle {
-  width: 76px;
-  height: 76px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #d4ae62, #a9802f);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 10px;
-}
-
-.gv-card--dark__icon-circle .icon {
-  width: 36px;
-  height: 36px;
-  color: #fff;
-}
-
-.gv-card__badge--dark {
-  position: static;
-  margin-top: 4px;
-}
-
-.gv-card--dark__live {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 14px;
-  border-radius: 20px;
-  background: rgba(220, 50, 50, 0.18);
-  border: 1px solid rgba(220, 50, 50, 0.4);
-  color: #f56565;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.gv-card--dark__live::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #f56565;
-  animation: gv-pulse-dot 1.5s ease infinite;
-}
-
-@keyframes gv-pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-.gv-card--dark__text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin: 4px 0 0;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.5;
-}
-
-.gv-card--dark .gv-card__features {
-  width: 100%;
-}
-
-.gv-card--dark .gv-card__divider {
-  width: 100%;
-}
-
-.gv-card__footer--dark {
-  justify-content: center;
-  margin-top: auto;
-  width: 100%;
-}
-
-.gv-card--dark__cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 32px;
-  border: 1.5px solid #d4ae62;
-  border-radius: 30px;
-  background: transparent;
-  color: #d4ae62;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.gv-card--dark__cta:hover {
-  background: rgba(212, 174, 98, 0.12);
-  transform: translateY(-2px);
-}
-
-/* --- Variante « coming soon » (قيد الإنشاء) --- */
-.gv-card--coming {
-  cursor: default;
-}
-
-.gv-card--coming .gv-card__footer {
-  justify-content: center;
-}
-
-.gv-card__coming-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 18px;
-  border-radius: 20px;
-  background: rgba(212, 174, 98, 0.14);
-  border: 1px solid rgba(212, 174, 98, 0.35);
-  color: #e9cf8e;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.03em;
 }
 
 .gv-travel-card--standard {
